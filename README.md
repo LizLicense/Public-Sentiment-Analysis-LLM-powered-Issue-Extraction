@@ -259,7 +259,7 @@ streamlit run dashboard/app.py
 | File | Description |
 |------|-------------|
 | **cursor_cloud_agent.py** | Standalone helper for the Cursor Cloud Agents API (list/launch/status agents on GitHub repos). Uses Cursor API key (env or hardcoded). Not part of the sentiment pipeline; for repo automation only. |
-# Public-Sentiment-Analysis-LLM-powered-Issue-Extraction
+
 
 
 # Local token for scrapers

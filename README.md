@@ -260,3 +260,32 @@ streamlit run dashboard/app.py
 |------|-------------|
 | **cursor_cloud_agent.py** | Standalone helper for the Cursor Cloud Agents API (list/launch/status agents on GitHub repos). Uses Cursor API key (env or hardcoded). Not part of the sentiment pipeline; for repo automation only. |
 # Public-Sentiment-Analysis-LLM-powered-Issue-Extraction
+
+
+# Local token for scrapers
+
+This file is listed in `.gitignore` so it should not be pushed to GitHub.  
+Still prefer a **password manager** (1Password, Bitwarden, Apple Keychain) over a text file.
+
+Fill in **only on your machine**:
+
+| Item | Value (you type here) |
+|------|------------------------|
+| HWZ / forum username | |
+| HWZ / forum password | |
+| GitHub username | |
+| GitHub token (PAT) | `ghp_...` |
+| Twitter Bearer (optional) | |
+| OpenAI API key (optional) | |
+
+Environment variables (same info, safer for scripts):
+
+```bash
+export HWZ_USERNAME=""
+export HWZ_PASSWORD=""
+export TWITTER_BEARER_TOKEN=""
+export OPENAI_API_KEY=""
+```
+
+If any token or password was ever in git history or shared, **revoke it** and create a new one.
+

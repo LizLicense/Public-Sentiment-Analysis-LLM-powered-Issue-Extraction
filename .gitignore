@@ -1,0 +1,13 @@
+# Never commit local secrets / backup notes
+do not upload.md
+
+# Python
+__pycache__/
+*.py[cod]
+
+# OS
+.DS_Store
+
+# Local Python env (keep outside repo if possible)
+.conda/
+venv/

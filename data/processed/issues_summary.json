@@ -1,0 +1,84 @@
+{
+  "issue_counts": {
+    "other": 10310,
+    "pricing": 1548,
+    "network": 3402,
+    "customer_service": 696,
+    "porting": 516,
+    "roaming": 462
+  },
+  "issue_counts_by_telco": {
+    "Singtel": {
+      "other": 3430,
+      "pricing": 666,
+      "network": 2457,
+      "customer_service": 316,
+      "porting": 293,
+      "roaming": 210
+    },
+    "Eight": {
+      "other": 240,
+      "customer_service": 57,
+      "network": 173,
+      "porting": 33,
+      "pricing": 80,
+      "roaming": 52
+    },
+    "nan": {
+      "other": 6105,
+      "network": 591,
+      "customer_service": 237,
+      "pricing": 630,
+      "roaming": 161,
+      "porting": 99
+    },
+    "Starhub": {
+      "porting": 105,
+      "other": 259,
+      "network": 262,
+      "roaming": 66,
+      "pricing": 242,
+      "customer_service": 73
+    },
+    "SIMBA": {
+      "other": 291,
+      "network": 249,
+      "porting": 93,
+      "pricing": 117,
+      "customer_service": 59,
+      "roaming": 62
+    },
+    "M1": {
+      "network": 172,
+      "other": 297,
+      "pricing": 151,
+      "customer_service": 52,
+      "porting": 69,
+      "roaming": 40
+    },
+    "Zym": {
+      "network": 97,
+      "other": 45,
+      "roaming": 34,
+      "customer_service": 13,
+      "porting": 15,
+      "pricing": 18
+    },
+    "Giga": {
+      "other": 136,
+      "network": 77,
+      "customer_service": 16,
+      "pricing": 19,
+      "roaming": 6,
+      "porting": 14
+    },
+    "redONE": {
+      "pricing": 2,
+      "network": 2,
+      "roaming": 3,
+      "porting": 1,
+      "customer_service": 1,
+      "other": 1
+    }
+  }
+}

@@ -1,0 +1,13 @@
+# Core processing / labeling
+pandas>=1.0.0
+vaderSentiment>=3.3.2
+openai>=1.0.0
+
+# Sentiment benchmark
+scikit-learn>=1.0.0
+transformers>=4.30.0
+torch>=2.0.0
+
+# Dashboard
+streamlit>=1.30.0
+plotly>=5.15.0

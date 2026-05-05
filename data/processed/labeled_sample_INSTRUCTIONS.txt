@@ -1,0 +1,10 @@
+Manual labeling instructions
+========================================
+
+1. Open the CSV in Excel or Google Sheets.
+2. For each row, fill in:
+   - sentiment_label_manual: one of  happy | not_happy | neutral
+   - issue_manual: e.g. pricing, network, customer_service, porting, roaming, other (or comma-separated)
+   - notes: optional
+3. Save as labeled_sample.csv (or another name) for use in evaluation.
+Tip: run with --prefill-from-model to start from model labels and correct them manually.

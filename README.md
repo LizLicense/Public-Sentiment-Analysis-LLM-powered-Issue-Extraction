@@ -31,7 +31,7 @@ End-to-end flow: **collect raw posts → optionally clean → add telco + sentim
 - **Step 3 — Label:** Run `telco_labeler.py` on raw or cleaned CSV to add telco, sentiment (VADER/LLM), and per-telco summary.
 - **Step 4 — Evaluation (optional):** Run `create_labeled_sample.py` to get a template; fill manual labels and use for evaluating sentiment/issue models.
 
-All commands are run from the project root (`WIP/`). See `data/README.md` for column definitions.
+All commands are run from the project root (`WIP/`). See `data/README.md` for column definitions and [`data/Project_Progress.md`](data/Project_Progress.md) for pipeline documentation and planned next steps.
 
 ---
 
@@ -56,7 +56,8 @@ WIP/
 ├── data/
 │   ├── raw/               # Scraper outputs (CSV + JSONL)
 │   ├── processed/         # Cleaned CSV, labeled outputs, summary JSON, labeled-sample template
-│   └── README.md          # Data dictionary and reproducibility
+│   ├── README.md          # Data dictionary and reproducibility
+│   └── Project_Progress.md # Pipeline overview in `data/`, reproduction steps, planned next steps
 ├── cursor_cloud_agent.py  # Cursor Cloud Agents API (optional, for repo agents)
 ├── requirements_telco_labeler.txt
 └── README.md
@@ -72,7 +73,7 @@ WIP/
 6. **Issue extraction**: `processing/issue_extraction.py` → issue labels + issue summary JSON.
 7. **Dashboard**: `dashboard/app.py` → interactive analysis by source/telco/date.
 
-Run from project root (`WIP/`). See `data/README.md` for column definitions and reproducibility.
+Run from project root (`WIP/`). See `data/README.md` for column definitions and reproducibility, and [`data/Project_Progress.md`](data/Project_Progress.md) for the data-folder pipeline summary.
 
 ### 1. Scrape
 
@@ -260,7 +261,19 @@ streamlit run dashboard/app.py
 |------|-------------|
 | **cursor_cloud_agent.py** | Standalone helper for the Cursor Cloud Agents API (list/launch/status agents on GitHub repos). Uses Cursor API key (env or hardcoded). Not part of the sentiment pipeline; for repo automation only. |
 
+---
 
+## Next steps
+
+- **Use an LLM model to extract issues:** Issue extraction currently defaults to rule-based keywords. Enable the LLM classifier by setting `OPENAI_API_KEY` and running `processing/issue_extraction.py` with `--use-llm` (optionally `--llm-unresolved-only` so the model only refines rows labeled `other` by rules—lower cost).
+  ```bash
+  export OPENAI_API_KEY="sk-..."
+  python processing/issue_extraction.py --use-llm --llm-model gpt-4o-mini
+  ```
+  For hybrid mode (LLM only when rules are unsure):
+  ```bash
+  python processing/issue_extraction.py --use-llm --llm-unresolved-only --llm-model gpt-4o-mini
+  ```
 
 # Local token for scrapers
 

@@ -16,6 +16,7 @@ Capstone telco forum sentiment pipeline — scrape, label, analyse, and visualis
 | Sentiment benchmark | **Partial** | VADER evaluated; transformer pending `pip install transformers torch` |
 | Issue extraction | **Done** | `issues_posts_labeled_*.csv` with taxonomy labels |
 | Forum analysis report | **Done** | Executive summary, sentiment, issues, cross-brand comparison |
+| Dashboard generator | **Done** | `dashboard/generate_dashboard.py` rebuilds HTML + README from CSVs |
 | Static HTML dashboard | **Done** | `dashboard/index.html` (Chart.js) |
 | Streamlit dashboard | **Done** | `dashboard/app.py` (interactive filters) |
 
@@ -30,13 +31,13 @@ Capstone telco forum sentiment pipeline — scrape, label, analyse, and visualis
 5. **Benchmark** — VADER vs manual labels: **100% accuracy / F1** on n=150 (see `sentiment_benchmark.json`).
 6. **Issue extraction** — `issues_posts_labeled_2026-04-09_221819.csv` (pricing, network, customer_service, porting, roaming, other).
 7. **Qualitative analysis** — Forum sentiment report across all telcos (Reddit + HWZ sample).
-8. **Dashboards** — Static capstone summary (`index.html`) + interactive Streamlit app.
+8. **Dashboards** — `generate_dashboard.py` auto-builds static capstone summary (`index.html` + `Dash_README.md`); Streamlit app for interactive exploration.
 
 ---
 
 ## Key findings (forum analysis sample)
 
-Based on **192 telco-relevant posts** from `data/processed/labeled_sample.csv` (Reddit, n=150) and `hwz_telco_posts_labeled.csv` (HWZ, n=100).
+Based on **193 telco-relevant posts** from `data/processed/labeled_sample.csv` (Reddit) and `hwz_telco_posts_labeled.csv` (HWZ). Regenerate with `python dashboard/generate_dashboard.py`.
 
 ### Sentiment
 
@@ -44,9 +45,9 @@ Based on **192 telco-relevant posts** from `data/processed/labeled_sample.csv` (
 |-----------|-------|
 | Happy | 60% |
 | Not happy | 23% |
-| Neutral | 17% |
+| Neutral | 18% |
 
-- **Reddit** (n=90 telco-relevant): 50% happy / **32% not_happy** — more complaint-driven.
+- **Reddit** (n=93 telco-relevant): 50% happy / **32% not_happy** — more complaint-driven.
 - **HWZ** (n=100): 69% happy / 14% not_happy — skewed toward launch/plan threads (Eight).
 
 ### Issues (inferred; `issue_manual` not filled on Reddit sample)
@@ -108,11 +109,11 @@ hwz_telco_posts_labeled.csv   # 100 HWZ posts (project root; Eight/StarHub/M1/Zy
                                           │
                     ┌─────────────────────┼─────────────────────┐
                     ▼                     ▼                     ▼
-         create_labeled_sample.py  issue_extraction.py   dashboard/
-                    │                     │              index.html + app.py
-                    ▼                     ▼
-         labeled_sample.csv      issues_posts_labeled_*.csv
-                    │
+         create_labeled_sample.py  issue_extraction.py   generate_dashboard.py
+                    │                     │                     │
+                    ▼                     ▼                     ▼
+         labeled_sample.csv      issues_posts_labeled_*.csv   index.html + Dash_README.md
+                    │                                          app.py (Streamlit)
                     ▼
          sentiment_benchmark.py ──► sentiment_benchmark.json
 ```
@@ -125,15 +126,24 @@ hwz_telco_posts_labeled.csv   # 100 HWZ posts (project root; Eight/StarHub/M1/Zy
 | 4 Eval sample | `processing/create_labeled_sample.py` | `labeled_sample_template.csv` |
 | 5 Benchmark | `models/sentiment_benchmark.py` | `sentiment_benchmark.json` |
 | 6 Issues | `processing/issue_extraction.py` | `issues_posts_labeled_*.csv` |
-| 7 Dashboard | `dashboard/index.html`, `dashboard/app.py` | Static + interactive views |
+| 7 Dashboard | `dashboard/generate_dashboard.py`, `dashboard/app.py` | `index.html`, `Dash_README.md`, Streamlit UI |
 
 ---
 
 ## Dashboards
 
-### Static HTML (`dashboard/index.html`)
+### Generate static HTML (`dashboard/generate_dashboard.py`)
 
-Capstone summary report — no install required:
+Rebuild capstone summary from labeled CSVs (stdlib only):
+
+```bash
+python dashboard/generate_dashboard.py
+# optional: --reddit data/processed/labeled_sample.csv --hwz hwz_telco_posts_labeled.csv
+```
+
+Writes `dashboard/index.html` and `dashboard/Dash_README.md` with current metrics, charts, executive summary, and quotes.
+
+### View static HTML (`dashboard/index.html`)
 
 ```bash
 open dashboard/index.html
@@ -141,7 +151,7 @@ open dashboard/index.html
 
 Includes: executive summary, KPI cards, Chart.js visualisations (sentiment, source comparison, issues, brand mentions, negative tone), per-telco table, quotes, recommendations, limitations.
 
-See `dashboard/Dash_README.md`.
+See `dashboard/Dash_README.md` (auto-generated).
 
 ### Streamlit (`dashboard/app.py`)
 
@@ -192,7 +202,8 @@ python models/sentiment_benchmark.py --in data/processed/labeled_sample.csv
 # 4. Issue extraction
 python processing/issue_extraction.py
 
-# 5. View dashboards
+# 5. Regenerate + view dashboards
+python dashboard/generate_dashboard.py
 open dashboard/index.html
 streamlit run dashboard/app.py
 ```
@@ -207,7 +218,7 @@ Full CLI options: [`README.md`](README.md).
 - [ ] **Fill `issue_manual`** on evaluation sample; benchmark issue-extraction rules vs LLM.
 - [ ] **LLM issue extraction** — `processing/issue_extraction.py --use-llm --llm-unresolved-only`.
 - [ ] **Scale coverage** — `processing/coverage_checker.py --target 1000` per telco.
-- [ ] **Auto-regenerate dashboard** — script to rebuild `index.html` metrics from latest CSVs.
+- [x] **Auto-regenerate dashboard** — `dashboard/generate_dashboard.py` rebuilds `index.html` + `Dash_README.md` from CSVs.
 - [ ] **Label quality audit** — fix sarcasm/thread-context errors in auto-sentiment (e.g. positive roaming text tagged `not_happy`).
 - [ ] **Capstone write-up** — export dashboard screenshots + findings section for final report.
 
@@ -227,5 +238,6 @@ Full CLI options: [`README.md`](README.md).
 | `processing/issue_extraction.py` | Issue taxonomy + optional LLM |
 | `processing/coverage_checker.py` | Auto loop until per-telco target met |
 | `models/sentiment_benchmark.py` | VADER vs transformer evaluation |
-| `dashboard/index.html` | Static Chart.js summary dashboard |
+| `dashboard/generate_dashboard.py` | Regenerate static HTML dashboard + Dash_README from CSVs |
+| `dashboard/index.html` | Static Chart.js summary dashboard (generated) |
 | `dashboard/app.py` | Streamlit interactive dashboard |

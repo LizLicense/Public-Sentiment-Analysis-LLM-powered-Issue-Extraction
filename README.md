@@ -31,7 +31,7 @@ End-to-end flow: **collect raw posts → optionally clean → add telco + sentim
 - **Step 3 — Label:** Run `telco_labeler.py` on raw or cleaned CSV to add telco, sentiment (VADER/LLM), and per-telco summary.
 - **Step 4 — Evaluation (optional):** Run `create_labeled_sample.py` to get a template; fill manual labels and use for evaluating sentiment/issue models.
 
-All commands are run from the project root (`WIP/`). See `data/README.md` for column definitions and [`data/Project_Progress.md`](data/Project_Progress.md) for pipeline documentation and planned next steps.
+All commands are run from the project root (`WIP/`). See `data/README.md` for column definitions and [`Project_Progress.md`](Project_Progress.md) for pipeline status and planned next steps.
 
 ---
 
@@ -59,7 +59,7 @@ WIP/
 │   ├── raw/               # Scraper outputs (CSV + JSONL)
 │   ├── processed/         # Cleaned CSV, labeled outputs, summary JSON, labeled-sample template
 │   ├── README.md          # Data dictionary and reproducibility
-│   └── Project_Progress.md # Pipeline overview in `data/`, reproduction steps, planned next steps
+├── Project_Progress.md    # Pipeline status, findings, reproduction steps
 ├── cursor_cloud_agent.py  # Cursor Cloud Agents API (optional, for repo agents)
 ├── requirements_telco_labeler.txt
 └── README.md
@@ -75,7 +75,7 @@ WIP/
 6. **Issue extraction**: `processing/issue_extraction.py` → issue labels + issue summary JSON.
 7. **Dashboard**: `dashboard/index.html` → static summary report with charts; `dashboard/app.py` → interactive analysis by source/telco/date.
 
-Run from project root (`WIP/`). See `data/README.md` for column definitions and reproducibility, and [`data/Project_Progress.md`](data/Project_Progress.md) for the data-folder pipeline summary.
+Run from project root (`WIP/`). See `data/README.md` for column definitions and [`Project_Progress.md`](Project_Progress.md) for current status and findings.
 
 ### 1. Scrape
 

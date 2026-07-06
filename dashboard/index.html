@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Singapore Telco Forum Sentiment Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --bg: #0f1419;
+      --surface: #1a2332;
+      --surface-2: #243044;
+      --border: #2d3a4f;
+      --text: #e8edf4;
+      --muted: #8b9cb3;
+      --accent: #3b82f6;
+      --happy: #22c55e;
+      --not-happy: #ef4444;
+      --neutral: #94a3b8;
+      --pricing: #f59e0b;
+      --network: #8b5cf6;
+      --cs: #ec4899;
+      --porting: #06b6d4;
+      --roaming: #14b8a6;
+      --other: #64748b;
+      --radius: 12px;
+      --shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    .page {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 4rem;
+    }
+
+    header {
+      margin-bottom: 2rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    header h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.35rem;
+    }
+
+    header .meta {
+      color: var(--muted);
+      font-size: 0.875rem;
+    }
+
+    .exec-summary {
+      background: linear-gradient(135deg, var(--surface) 0%, var(--surface-2) 100%);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1.75rem;
+      box-shadow: var(--shadow);
+    }
+
+    .exec-summary h2 {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--accent);
+      margin-bottom: 0.75rem;
+    }
+
+    .exec-summary p {
+      font-size: 0.95rem;
+      color: #c5d0de;
+    }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.75rem;
+    }
+
+    .kpi {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem 1.15rem;
+      text-align: center;
+    }
+
+    .kpi .value {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .kpi .label {
+      font-size: 0.75rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-top: 0.25rem;
+    }
+
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.25rem;
+      margin-bottom: 1.75rem;
+    }
+
+    @media (max-width: 900px) {
+      .charts-grid { grid-template-columns: 1fr; }
+    }
+
+    .chart-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      box-shadow: var(--shadow);
+    }
+
+    .chart-card.full-width {
+      grid-column: 1 / -1;
+    }
+
+    .chart-card h3 {
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+
+    .chart-card .subtitle {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-bottom: 1rem;
+    }
+
+    .chart-wrap {
+      position: relative;
+      height: 280px;
+    }
+
+    .chart-wrap.tall { height: 320px; }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
+      margin-bottom: 1.75rem;
+    }
+
+    @media (max-width: 768px) {
+      .two-col { grid-template-columns: 1fr; }
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem 1.5rem;
+      box-shadow: var(--shadow);
+    }
+
+    .panel h2 {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--accent);
+      margin-bottom: 1rem;
+    }
+
+    .panel ul {
+      list-style: none;
+    }
+
+    .panel li {
+      padding: 0.5rem 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.875rem;
+      color: #c5d0de;
+    }
+
+    .panel li:last-child { border-bottom: none; }
+
+    .panel li::before {
+      content: "▸";
+      color: var(--accent);
+      margin-right: 0.5rem;
+    }
+
+    blockquote {
+      border-left: 3px solid var(--accent);
+      padding: 0.65rem 1rem;
+      margin: 0.65rem 0;
+      background: rgba(59, 130, 246, 0.08);
+      border-radius: 0 8px 8px 0;
+      font-size: 0.85rem;
+      font-style: italic;
+      color: #b8c5d6;
+    }
+
+    .quote-source {
+      font-size: 0.7rem;
+      color: var(--muted);
+      font-style: normal;
+      margin-top: 0.35rem;
+    }
+
+    .brand-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.8rem;
+    }
+
+    .brand-table th,
+    .brand-table td {
+      padding: 0.55rem 0.75rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .brand-table th {
+      color: var(--muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 0.7rem;
+      letter-spacing: 0.05em;
+    }
+
+    .neg-bar {
+      display: inline-block;
+      height: 6px;
+      border-radius: 3px;
+      background: var(--not-happy);
+      min-width: 4px;
+    }
+
+    footer {
+      margin-top: 2rem;
+      padding-top: 1.25rem;
+      border-top: 1px solid var(--border);
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    footer h3 {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 0.5rem;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <h1>Singapore Telco Forum Sentiment Dashboard</h1>
+      <p class="meta">
+        Scope: All telcos &middot; Sources: Reddit (r/askSingapore, r/singapore) + HWZ &middot;
+        Sample: 192 telco-relevant posts &middot; Generated from labeled_sample.csv + hwz_telco_posts_labeled.csv
+      </p>
+    </header>
+
+    <section class="exec-summary">
+      <h2>Executive Summary</h2>
+      <p>
+        Forum discussion is <strong>moderately positive on balance</strong> (~60% happy), but tone varies sharply by platform:
+        Reddit is more complaint-driven (32% negative) while HWZ skews toward launch chatter (14% negative).
+        <strong>Pricing and MVNO value</strong> dominate conversation, especially around Eight's launch and legacy MNO plan costs.
+        <strong>Network quality is location- and brand-tier-dependent</strong>; customer-service friction (porting, billing, promo fulfilment)
+        drives the strongest negative spikes for StarHub and Singtel. Among brands with enough mentions,
+        <strong>Giga and Eight attract the most scepticism</strong>, while Singtel and Zym appear relatively less negative.
+      </p>
+    </section>
+
+    <div class="kpi-grid">
+      <div class="kpi"><div class="value">192</div><div class="label">Telco posts</div></div>
+      <div class="kpi"><div class="value">60%</div><div class="label">Happy</div></div>
+      <div class="kpi"><div class="value">23%</div><div class="label">Not happy</div></div>
+      <div class="kpi"><div class="value">17%</div><div class="label">Neutral</div></div>
+      <div class="kpi"><div class="value">12</div><div class="label">Brands mentioned</div></div>
+      <div class="kpi"><div class="value">2</div><div class="label">Sources</div></div>
+    </div>
+
+    <div class="charts-grid">
+      <div class="chart-card">
+        <h3>Sentiment Distribution</h3>
+        <p class="subtitle">All telco-relevant posts (n=192)</p>
+        <div class="chart-wrap"><canvas id="sentimentChart"></canvas></div>
+      </div>
+
+      <div class="chart-card">
+        <h3>Sentiment by Source</h3>
+        <p class="subtitle">Reddit (n=90) vs HWZ (n=100)</p>
+        <div class="chart-wrap"><canvas id="sourceChart"></canvas></div>
+      </div>
+
+      <div class="chart-card full-width">
+        <h3>Issue Breakdown by Theme</h3>
+        <p class="subtitle">Inferred from post_text (issue_primary not available in Reddit export)</p>
+        <div class="chart-wrap tall"><canvas id="issueChart"></canvas></div>
+      </div>
+
+      <div class="chart-card">
+        <h3>Brand Mentions</h3>
+        <p class="subtitle">Row-expanded telco_label counts</p>
+        <div class="chart-wrap tall"><canvas id="brandChart"></canvas></div>
+      </div>
+
+      <div class="chart-card">
+        <h3>Negative Tone by Brand</h3>
+        <p class="subtitle">% not_happy (brands with &ge;5 mentions)</p>
+        <div class="chart-wrap tall"><canvas id="negRateChart"></canvas></div>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <section class="panel">
+        <h2>Per-Telco Highlights</h2>
+        <table class="brand-table">
+          <thead>
+            <tr>
+              <th>Telco</th>
+              <th>Mentions</th>
+              <th>Neg %</th>
+              <th>Top issues</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Eight</td><td>56</td><td>29%</td><td>Launch pricing, tiering, porting</td></tr>
+            <tr><td>StarHub</td><td>56</td><td>27%</td><td>Pricing, CS, promo fulfilment</td></tr>
+            <tr><td>M1</td><td>53</td><td>25%</td><td>Network coverage, 4G/5G</td></tr>
+            <tr><td>Singtel</td><td>51</td><td>16%</td><td>ONR/bridge mode, equipment</td></tr>
+            <tr><td>Zym</td><td>22</td><td>0%</td><td>Promotional plan posts</td></tr>
+            <tr><td>Giga</td><td>6</td><td>67%</td><td>Network reliability (small n)</td></tr>
+            <tr><td>SIMBA</td><td>6</td><td>17%</td><td>MVNO price benchmark</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="panel">
+        <h2>Representative Quotes</h2>
+        <blockquote>
+          "They are all same shit with different name/places."
+          <div class="quote-source">Reddit &middot; Singtel/StarHub/M1/MVNO parity</div>
+        </blockquote>
+        <blockquote>
+          "Suspect StarHub will tier priority by StarHub &gt; Giga &gt; Eight."
+          <div class="quote-source">HWZ &middot; MVNO network anxiety</div>
+        </blockquote>
+        <blockquote>
+          "Converted to MVNOs and never look back."
+          <div class="quote-source">HWZ &middot; StarHub pricing</div>
+        </blockquote>
+        <blockquote>
+          "Nex still no signal. Nothing done all these years."
+          <div class="quote-source">HWZ &middot; M1 coverage</div>
+        </blockquote>
+      </section>
+    </div>
+
+    <div class="two-col">
+      <section class="panel">
+        <h2>Recommendations</h2>
+        <ul>
+          <li>Disclose host-network and MVNO priority tiering transparently at launch.</li>
+          <li>Fix porting and identity-document edge cases (passport validity, dropdown gaps).</li>
+          <li>Market bundled roaming clearly — Malaysia threads are a key decision moment.</li>
+          <li>Avoid "low price hurts quality" messaging without evidence; it triggers switching intent.</li>
+          <li>Use location-based network proof points over national coverage claims.</li>
+        </ul>
+      </section>
+
+      <section class="panel">
+        <h2>Key Issue Insights</h2>
+        <ul>
+          <li><strong>Pricing:</strong> MVNO disruption vs legacy $72/3GB MNO plans; CEO rhetoric backlash.</li>
+          <li><strong>Network:</strong> Hyper-local coverage; M1 dead zones; MVNO deprioritisation fears.</li>
+          <li><strong>Customer service:</strong> StarHub porting blocks, Comex promo delays, Singtel ONR lock-in.</li>
+          <li><strong>Porting:</strong> Eight no port-in at launch; Eight missing from StarHub dropdown.</li>
+          <li><strong>Roaming:</strong> MVNOs (Vivifi, Giga, GOMO) mostly positive in Malaysia threads.</li>
+        </ul>
+      </section>
+    </div>
+
+    <footer>
+      <h3>Limitations</h3>
+      <p>
+        Sample size 192 telco-relevant rows — not nationally representative. Reddit over-indexes on complaints;
+        HWZ over-indexes on Eight launch threads. No issue_primary in Reddit export (themes inferred).
+        Sentiment auto-labels show sarcasm/context errors. Cannot infer churn, NPS, or network KPIs — only stated forum perceptions.
+      </p>
+    </footer>
+  </div>
+
+  <script>
+    Chart.defaults.color = "#8b9cb3";
+    Chart.defaults.borderColor = "#2d3a4f";
+    Chart.defaults.font.family = "'Segoe UI', system-ui, sans-serif";
+
+    const sentimentData = {
+      labels: ["Happy", "Not happy", "Neutral"],
+      values: [114, 44, 34],
+      colors: ["#22c55e", "#ef4444", "#94a3b8"]
+    };
+
+    new Chart(document.getElementById("sentimentChart"), {
+      type: "doughnut",
+      data: {
+        labels: sentimentData.labels,
+        datasets: [{
+          data: sentimentData.values,
+          backgroundColor: sentimentData.colors,
+          borderWidth: 0,
+          hoverOffset: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: "58%",
+        plugins: {
+          legend: { position: "right", labels: { padding: 14, usePointStyle: true } },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => {
+                const total = sentimentData.values.reduce((a, b) => a + b, 0);
+                const pct = ((ctx.raw / total) * 100).toFixed(1);
+                return ` ${ctx.label}: ${ctx.raw} (${pct}%)`;
+              }
+            }
+          }
+        }
+      }
+    });
+
+    new Chart(document.getElementById("sourceChart"), {
+      type: "bar",
+      data: {
+        labels: ["Reddit", "HWZ"],
+        datasets: [
+          { label: "Happy", data: [50, 69], backgroundColor: "#22c55e" },
+          { label: "Not happy", data: [32, 14], backgroundColor: "#ef4444" },
+          { label: "Neutral", data: [18, 17], backgroundColor: "#94a3b8" }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: { stacked: true, grid: { display: false } },
+          y: {
+            stacked: true,
+            max: 100,
+            ticks: { callback: (v) => v + "%" },
+            title: { display: true, text: "Share (%)" }
+          }
+        },
+        plugins: {
+          legend: { position: "bottom" },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => ` ${ctx.dataset.label}: ${ctx.raw}%`
+            }
+          }
+        }
+      }
+    });
+
+    const issueLabels = ["Other", "Pricing", "Network", "Customer service", "Roaming", "Porting"];
+    const issueValues = [97, 42, 17, 17, 9, 8];
+    const issueColors = ["#64748b", "#f59e0b", "#8b5cf6", "#ec4899", "#14b8a6", "#06b6d4"];
+
+    new Chart(document.getElementById("issueChart"), {
+      type: "bar",
+      data: {
+        labels: issueLabels,
+        datasets: [{
+          label: "Posts",
+          data: issueValues,
+          backgroundColor: issueColors,
+          borderRadius: 6
+        }]
+      },
+      options: {
+        indexAxis: "y",
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: { grid: { color: "#2d3a4f" } },
+          y: { grid: { display: false } }
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => {
+                const total = issueValues.reduce((a, b) => a + b, 0);
+                const pct = ((ctx.raw / total) * 100).toFixed(1);
+                return ` ${ctx.raw} posts (${pct}%)`;
+              }
+            }
+          }
+        }
+      }
+    });
+
+    const brandLabels = ["Eight", "StarHub", "M1", "Singtel", "Zym", "Giga", "SIMBA", "GOMO"];
+    const brandMentions = [56, 56, 53, 51, 22, 6, 6, 3];
+
+    new Chart(document.getElementById("brandChart"), {
+      type: "bar",
+      data: {
+        labels: brandLabels,
+        datasets: [{
+          label: "Mentions",
+          data: brandMentions,
+          backgroundColor: "#3b82f6",
+          borderRadius: 6
+        }]
+      },
+      options: {
+        indexAxis: "y",
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: { grid: { color: "#2d3a4f" } },
+          y: { grid: { display: false } }
+        },
+        plugins: { legend: { display: false } }
+      }
+    });
+
+    const negBrands = ["Giga", "Eight", "StarHub", "M1", "SIMBA", "Singtel", "Zym"];
+    const negRates = [67, 29, 27, 25, 17, 16, 0];
+
+    new Chart(document.getElementById("negRateChart"), {
+      type: "bar",
+      data: {
+        labels: negBrands,
+        datasets: [{
+          label: "% Not happy",
+          data: negRates,
+          backgroundColor: negRates.map((v) =>
+            v >= 50 ? "#ef4444" : v >= 25 ? "#f59e0b" : "#22c55e"
+          ),
+          borderRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: {
+            max: 80,
+            ticks: { callback: (v) => v + "%" },
+            title: { display: true, text: "Negative tone (%)" }
+          },
+          x: { grid: { display: false } }
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => ` ${ctx.raw}% not_happy`
+            }
+          }
+        }
+      }
+    });
+  </script>
+</body>
+</html>

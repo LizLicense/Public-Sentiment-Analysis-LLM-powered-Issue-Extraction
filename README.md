@@ -52,7 +52,9 @@ WIP/
 ├── models/
 │   └── sentiment_benchmark.py # Compare VADER vs transformer with manual labels
 ├── dashboard/
-│   └── app.py             # Streamlit dashboard for sentiment/issues/trends
+│   ├── index.html         # Static HTML summary dashboard (Chart.js, capstone report)
+│   ├── app.py             # Streamlit dashboard for interactive filters/trends
+│   └── Dash_README.md     # How to open index.html vs Streamlit
 ├── data/
 │   ├── raw/               # Scraper outputs (CSV + JSONL)
 │   ├── processed/         # Cleaned CSV, labeled outputs, summary JSON, labeled-sample template
@@ -71,7 +73,7 @@ WIP/
 4. **Evaluation**: `processing/create_labeled_sample.py` → template for manual labels; fill and use for model eval.
 5. **Benchmark**: `models/sentiment_benchmark.py` → compare VADER vs transformer (accuracy/F1).
 6. **Issue extraction**: `processing/issue_extraction.py` → issue labels + issue summary JSON.
-7. **Dashboard**: `dashboard/app.py` → interactive analysis by source/telco/date.
+7. **Dashboard**: `dashboard/index.html` → static summary report with charts; `dashboard/app.py` → interactive analysis by source/telco/date.
 
 Run from project root (`WIP/`). See `data/README.md` for column definitions and reproducibility, and [`data/Project_Progress.md`](data/Project_Progress.md) for the data-folder pipeline summary.
 
@@ -197,6 +199,17 @@ python processing/issue_extraction.py --use-llm --llm-unresolved-only
 
 ### 7. Dashboard
 
+**Static HTML summary** (no install; good for capstone report screenshots):
+
+```bash
+open dashboard/index.html
+# or: python3 -m http.server 8080  →  http://localhost:8080/dashboard/
+```
+
+Charts: sentiment distribution, source comparison (Reddit vs HWZ), issue themes, brand mentions, negative tone by brand. See `dashboard/Dash_README.md`.
+
+**Interactive Streamlit** (filters by source, telco, sentiment, date):
+
 ```bash
 streamlit run dashboard/app.py
 ```
@@ -253,7 +266,9 @@ streamlit run dashboard/app.py
 
 | File | Description |
 |------|-------------|
+| **index.html** | Standalone HTML summary dashboard (Chart.js): executive summary, KPI cards, sentiment/issue/brand charts, per-telco table, quotes, recommendations. Open in a browser; no server required. |
 | **app.py** | Streamlit dashboard with filters (source/telco/sentiment/date), sentiment distribution, issue breakdown, time trends, and cross-brand comparison. |
+| **Dash_README.md** | How to view `index.html` vs run the Streamlit app. |
 
 ### Root
 

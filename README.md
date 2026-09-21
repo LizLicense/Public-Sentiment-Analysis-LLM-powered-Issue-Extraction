@@ -6,7 +6,7 @@ Scrape posts from different forums (HWZ, Reddit, Twitter) → clean and label �
 
 ## Pipeline (overview)
 
-End-to-end flow: **collect raw posts → optionally clean → add telco + sentiment + summary → optionally create a labeled sample for model evaluation.**
+End-to-end flow: **collect raw posts → clean → add telco + VADER sentiment → extract issues (keyword rules, then GPT-4o on unresolved rows) → evaluate vs human labels → dashboard.**
 
 ```
   [Scrapers]                    [Processing]
@@ -31,7 +31,7 @@ End-to-end flow: **collect raw posts → optionally clean → add telco + sentim
 - **Step 3 — Label:** Run `telco_labeler.py` on raw or cleaned CSV to add telco, sentiment (VADER/LLM), and per-telco summary.
 - **Step 4 — Evaluation (optional):** Run `create_labeled_sample.py` to get a template; fill manual labels and use for evaluating sentiment/issue models.
 
-All commands are run from the project root (`WIP/`). See `data/README.md` for column definitions and [`Project_Progress.md`](Project_Progress.md) for pipeline status and planned next steps.
+All commands are run from the project root (`WIP/`). See `data/README.md` for column definitions and [`Project_Progress.md`](Project_Progress.md) for pipeline status.
 
 ---
 
@@ -48,8 +48,9 @@ WIP/
 │   ├── telco_labeler.py   # Telco detection, VADER/LLM sentiment, per-telco summary
 │   ├── preprocess.py      # Raw → cleaned dataset (noise removal, optional English filter)
 │   ├── create_labeled_sample.py  # Sample N rows + template for manual sentiment/issue labels
-│   └── issue_extraction.py # Structured issue labels (taxonomy + optional LLM)
+│   └── issue_extraction.py # Keyword taxonomy, then optional/batched GPT-4o on unresolved rows
 ├── models/
+│   ├── llm_evaluation.py      # VADER/rules vs GPT-4o-mini / GPT-4o on gold labels
 │   └── sentiment_benchmark.py # Compare VADER vs transformer with manual labels
 ├── dashboard/
 │   ├── generate_dashboard.py  # Regenerate index.html + Dash_README.md from CSVs
@@ -73,8 +74,8 @@ WIP/
 3. **Label** raw or cleaned CSV with `processing/telco_labeler.py` → telco + sentiment + summary in `data/processed/`.
 4. **Evaluation**: `processing/create_labeled_sample.py` → template for manual labels; fill and use for model eval.
 5. **Benchmark**: `models/sentiment_benchmark.py` → compare VADER vs transformer (accuracy/F1).
-6. **Issue extraction**: `processing/issue_extraction.py` → issue labels + issue summary JSON.
-7. **Dashboard**: `dashboard/generate_dashboard.py` → rebuild static report from CSVs; `dashboard/index.html` to view; `dashboard/app.py` for interactive filters.
+6. **Issue extraction**: `processing/issue_extraction.py` → keyword rules, then GPT-4o on `general_discussion` rows.
+7. **Dashboard**: `dashboard/generate_dashboard.py` overlays those hybrid issue labels; `dashboard/index.html` to view; `dashboard/app.py` for interactive filters.
 
 Run from project root (`WIP/`). See `data/README.md` for column definitions and [`Project_Progress.md`](Project_Progress.md) for current status and findings.
 
@@ -217,6 +218,17 @@ venv/bin/python models/llm_evaluation.py \
 
 Report the challenge sheet separately (`challenge_annotator_a.csv`, `--out-dir data/evaluation/llm_comparison_challenge`). Enter the provider's current USD prices per one million tokens so the saved cost calculation is traceable.
 
+Persisted runs on the 295-row representative set:
+
+| Model | Sentiment macro F1 | Issue macro F1 | Est. USD |
+|---|---:|---:|---:|
+| VADER / keyword rules | 0.360 | **0.639** | 0 |
+| gpt-4o-mini-2024-07-18 | **0.631** | 0.504 | 0.0087 |
+| gpt-4o-2024-08-06 (all rows) | 0.623 | 0.600 | 0.145 |
+| GPT-4o hybrid (rules, then unresolved only) | — | **0.680** | (reuses the GPT-4o predictions) |
+
+Challenge metrics are in `data/evaluation/llm_comparison_challenge/` and are not pooled with the headline table.
+
 Results include:
 
 - `metrics.json`: per-class sentiment metrics, issue metrics, confusion
@@ -227,18 +239,29 @@ Results include:
 
 ### 6. Structured issue extraction
 
+Keyword rules are the default. GPT-4o is used only on rows that rules labelled `general_discussion`. That hybrid **is done** on the 15,504-row corpus (`gpt-4o-2024-08-06`, 8,786 unresolved rows, 879 batches, 0 failures, ~$3.45). Do not rerun `--use-llm` on every row: all-row GPT-4o lost to rules on the gold set.
+
 ```bash
 python processing/issue_extraction.py
-# Input: latest posts_labeled_*.csv (or cleaned_posts.csv)
-# Output: data/processed/issues_<input>.csv
-#         data/processed/issues_summary.json
+# Keyword-only: latest posts_labeled_*.csv → data/processed/issues_<input>.csv
+#                 data/processed/issues_summary.json
 ```
 
-Optional LLM enhancement:
+Completed hybrid command (outputs already in `data/processed/`):
 
 ```bash
-python processing/issue_extraction.py --use-llm --llm-unresolved-only
+export OPENAI_API_KEY="..."
+python processing/issue_extraction.py \
+  --in data/processed/posts_labeled_2026-08-21_203752.csv \
+  --out data/processed/issues_posts_labeled_2026-08-21_203752_gpt4o_hybrid.csv \
+  --summary-out data/processed/issues_summary_gpt4o_hybrid.json \
+  --checkpoint data/processed/llm_unresolved_gpt4o_checkpoint.jsonl \
+  --use-llm --llm-unresolved-only --llm-model gpt-4o \
+  --input-cost-per-million 2.50 \
+  --output-cost-per-million 10.00
 ```
+
+General discussion counts fell from 8,786 to 6,180. The dashboard reads this hybrid file; the keyword-only issues CSV is kept for comparison.
 
 ### 7. Dashboard
 
@@ -246,7 +269,8 @@ python processing/issue_extraction.py --use-llm --llm-unresolved-only
 
 ```bash
 python dashboard/generate_dashboard.py
-# optional: --reddit data/processed/labeled_sample.csv --hwz hwz_telco_posts_labeled.csv
+# default overlay: data/processed/issues_posts_labeled_2026-08-21_203752_gpt4o_hybrid.csv
+# optional: --reddit ... --hwz ... --issues ...
 ```
 
 **View static summary** (no install; good for capstone report screenshots):
@@ -304,19 +328,20 @@ streamlit run dashboard/app.py
 | **preprocess.py** | Data cleaning only: reads from `data/raw/` (or `--in`), normalizes column names for HWZ/Reddit/Twitter, drops too-short and placeholder/noise rows, optionally keeps English-only (langdetect). Writes one cleaned CSV (default `data/processed/cleaned_posts.csv`) for use by the labeler, models, or dashboard. Does not compute sentiment. |
 | **coverage_checker.py** | Automation loop for data collection coverage. Repeatedly runs enabled scrapers (Reddit/HWZ/Twitter), rebuilds cleaned+labeled data, computes per-telco counts, and stops when each tracked telco reaches the target (default 1000) or max rounds is reached. |
 | **create_labeled_sample.py** | Samples N rows from a cleaned or labeled CSV, adds empty columns `sentiment_label_manual`, `issue_manual`, `notes`, and writes a template CSV plus an INSTRUCTIONS file. You fill the manual labels (e.g. in Excel) and save as e.g. `labeled_sample.csv` for evaluating sentiment and issue-extraction models. |
-| **issue_extraction.py** | Adds structured issue labels using the fixed ten-topic taxonomy (Network Quality, Pricing & Promotions, Mobile Plans, Roaming, Porting, Customer Service, Billing & Payment, App & Account, Devices, General Discussion) and optional LLM classification. Writes issues CSV + summary JSON. |
+| **issue_extraction.py** | Keyword issue labels using the ten-topic taxonomy, plus a batched GPT-4o pass on unresolved `general_discussion` rows (`--use-llm --llm-unresolved-only`). Completed hybrid output: `data/processed/issues_posts_labeled_2026-08-21_203752_gpt4o_hybrid.csv`. |
 
 ### Models (`models/`)
 
 | File | Description |
 |------|-------------|
+| **llm_evaluation.py** | Blind comparison of VADER, keyword rules, GPT-4o-mini, and GPT-4o against human labels. Writes metrics, predictions, disagreements, and cost. |
 | **sentiment_benchmark.py** | Benchmarks VADER and a transformer model against `sentiment_label_manual` and reports accuracy/F1/confusion matrix. |
 
 ### Dashboard (`dashboard/`)
 
 | File | Description |
 |------|-------------|
-| **generate_dashboard.py** | Reads Reddit + HWZ labeled CSVs, computes sentiment/issue/brand metrics, and regenerates `index.html` and `Dash_README.md`. Stdlib only; no pandas required. |
+| **generate_dashboard.py** | Reads Reddit + HWZ labeled CSVs, overlays hybrid issue labels, computes sentiment/issue/brand metrics, and regenerates `index.html` and `Dash_README.md`. Stdlib only; no pandas required. |
 | **index.html** | Standalone HTML summary dashboard (Chart.js): executive summary, KPI cards, sentiment/issue/brand charts, per-telco table, quotes, recommendations. Open in a browser; no server required. |
 | **app.py** | Streamlit dashboard with filters (source/telco/sentiment/date), sentiment distribution, issue breakdown, time trends, and cross-brand comparison. |
 | **Dash_README.md** | Auto-generated by `generate_dashboard.py`; documents data sources, row counts, and how to view/regenerate. |
@@ -329,17 +354,17 @@ streamlit run dashboard/app.py
 
 ---
 
-## Next steps
+## Remaining work
 
-- **Use an LLM model to extract issues:** Issue extraction currently defaults to rule-based keywords. Enable the LLM classifier by setting `OPENAI_API_KEY` and running `processing/issue_extraction.py` with `--use-llm` (optionally `--llm-unresolved-only` so the model only refines rows labeled `general_discussion` by rules—lower cost).
-  ```bash
-  export OPENAI_API_KEY="sk-..."
-  python processing/issue_extraction.py --use-llm --llm-model gpt-4o-mini
-  ```
-  For hybrid mode (LLM only when rules are unsure):
-  ```bash
-  python processing/issue_extraction.py --use-llm --llm-unresolved-only --llm-model gpt-4o-mini
-  ```
+LLM issue extraction is **done** (hybrid: keyword rules, then `gpt-4o-2024-08-06` on 8,786 unresolved rows). Do not paste the corpus into ChatGPT or rerun `--use-llm` on all 15,504 rows.
+
+Still open:
+
+- Second annotator and Cohen's κ on `double_annotation_annotator_b.csv`
+- Twitter-RoBERTa on the same 295 gold labels (`transformers` + `torch`)
+- Fill title-page placeholders and compile `final_report.tex`
+- Optional: `processing/coverage_checker.py --target 1000` per telco
+- Spot-check the 2,606 corpus rows GPT-4o moved out of `general_discussion` before treating huddle spikes as incidents
 
 # Local token for scrapers
 

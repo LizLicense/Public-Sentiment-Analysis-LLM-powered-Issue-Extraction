@@ -219,12 +219,12 @@ Full CLI options: [`README.md`](README.md).
 
 ## Planned next steps
 
-- [x] **Fill human issue/sentiment labels** on representative and challenge sheets; compare VADER/rules vs GPT-4o-mini.
+- [x] **Fill human issue/sentiment labels** on representative and challenge sheets; compare VADER/rules vs GPT-4o-mini and GPT-4o.
 - [ ] **Second annotator / kappa** on `double_annotation_annotator_b.csv`.
 - [ ] **Transformer benchmark** — install `transformers` + `torch`; compare against VADER on the representative labels.
-- [ ] **LLM issue extraction on the full corpus** — optional `processing/issue_extraction.py --use-llm --llm-unresolved-only`.
+- [x] **LLM issue extraction** — hybrid `processing/issue_extraction.py --use-llm --llm-unresolved-only --llm-model gpt-4o` on 8,786 unresolved rows; dashboard overlay complete. Do not rerun all-row LLM issues.
 - [ ] **Scale coverage** — `processing/coverage_checker.py --target 1000` per telco.
-- [x] **Auto-regenerate dashboard** — `dashboard/generate_dashboard.py` rebuilds `index.html` + `Dash_README.md` from CSVs.
+- [x] **Auto-regenerate dashboard** — `dashboard/generate_dashboard.py` rebuilds `index.html` + `Dash_README.md` from CSVs, overlaying hybrid issue labels.
 - [ ] **Capstone write-up** — title-page placeholders; compile `final_report.tex`.
 
 ---

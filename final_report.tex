@@ -212,7 +212,7 @@ General Discussion & telco news, opinions, no specific issue & Analysts: monitor
 \end{tabularx}
 \end{table}
 
-The categories remain compact enough to route to owners while separating previously conflated topics such as plan design from promotions, billing from customer service, and app access from device problems. Multi-label output permits a post to mention, for example, both pricing and roaming. The rule-based classifier assigns labels when predefined regular expressions match and otherwise assigns \texttt{general\_discussion}. The LLM option can classify every record or only unresolved general-discussion records. On the representative gold set, the unresolved-only hybrid with GPT-4o beats both keyword-only and LLM-only tagging, so that design was applied to the 8,786 unresolved corpus rows. The static dashboard overlays those hybrid labels onto the 158-row sample (97 posts matched; unmatched HWZ rows still use keyword inference).
+The categories remain compact enough to route to owners while separating previously conflated topics such as plan design from promotions, billing from customer service, and app access from device problems. Multi-label output permits a post to mention, for example, both pricing and roaming. The rule-based classifier assigns labels when predefined regular expressions match and otherwise assigns \texttt{general\_discussion}. GPT-4o was then applied only to those unresolved rows. On the representative gold set that hybrid beats both keyword-only and all-row LLM tagging, so it was run on the 8,786 unresolved corpus rows. The static dashboard overlays those hybrid labels onto the 158-row sample (97 posts matched; unmatched HWZ rows still use keyword inference).
 
 \section{Evaluation Design and Evidence}
 
@@ -336,7 +336,7 @@ General discussion & 40 & 0.464 & 0.446 & 0.608 & 0.559 \\
 
 \subsection{GPT-4o unresolved hybrid on the corpus}
 
-Because the hybrid beat rules on gold labels, \texttt{processing/issue\_extraction.py} was run with \texttt{--use-llm --llm-unresolved-only --llm-model gpt-4o} on the 15,504-row labelled corpus. The API snapshot was the same \textbf{gpt-4o-2024-08-06} used in evaluation, in batches of ten, with a resumable checkpoint. All 879 batches succeeded. Keyword-only labels were written to a separate file so the dashboard source was not overwritten.
+Because the hybrid beat rules on gold labels, \texttt{processing/issue\_extraction.py} was run with \texttt{--use-llm --llm-unresolved-only --llm-model gpt-4o} on the 15,504-row labelled corpus. The API snapshot was the same \textbf{gpt-4o-2024-08-06} used in evaluation, in batches of ten, with a resumable checkpoint. All 879 batches succeeded. Keyword-only labels were kept in a separate file; the dashboard now overlays the hybrid labels.
 
 \begin{table}[H]
 \centering
@@ -541,7 +541,7 @@ Although forum posts are publicly accessible, public availability does not remov
 
 \section{Future Work}
 
-Remaining work is operationalisation, not the missing baseline comparison:
+Remaining work is operationalisation. LLM issue extraction is complete: keyword rules plus GPT-4o on unresolved rows, evaluated on 295 gold labels and applied to the 8,786-row residual.
 
 \begin{enumerate}
   \item Obtain a second annotator on the 100-row overlap sheet, compute Cohen's $\kappa$ and adjudicate disagreements.
@@ -566,6 +566,8 @@ From the repository root, the main workflow is:
 python processing/preprocess.py
 python processing/telco_labeler.py
 python processing/issue_extraction.py
+# Keyword-only labels. Hybrid GPT-4o unresolved run is already saved as
+# data/processed/issues_posts_labeled_2026-08-21_203752_gpt4o_hybrid.csv
 python dashboard/generate_dashboard.py
 streamlit run dashboard/app.py
 
@@ -590,7 +592,7 @@ python models/llm_evaluation.py \
   --output-cost-per-million 10.00
 \end{verbatim}
 
-Optional GPT-4o issue classification on unresolved rows uses:
+Completed GPT-4o issue extraction on unresolved rows (already run; outputs persist):
 
 \begin{verbatim}
 python processing/issue_extraction.py \

@@ -2,7 +2,7 @@
 
 Capstone telco forum sentiment pipeline — scrape, label, analyse, and visualise Singapore mobile-plan discussions (Singtel, StarHub, M1, SIMBA, Giga, Eight, Zym, redONE, MVNOs).
 
-**Last updated:** April 2026
+**Last updated:** September 2026
 
 ---
 
@@ -12,8 +12,9 @@ Capstone telco forum sentiment pipeline — scrape, label, analyse, and visualis
 |------|--------|-------|
 | Data collection | **Done** (initial) | ~15.5k cleaned posts; Reddit multi-round + HWZ threads |
 | Telco + sentiment labeling | **Done** | Full labeled CSV + per-telco summary JSON |
-| Manual evaluation sample | **Done** | 150 Reddit rows with `sentiment_label_manual` |
-| Sentiment benchmark | **Partial** | VADER evaluated; transformer pending `pip install transformers torch` |
+| Manual evaluation sample | **Done** | Annotator A: 300 representative + 100 challenge; 295/100 used in LLM eval |
+| Sentiment benchmark | **Done (LLM)** | GPT-4o-mini vs VADER on independent labels; transformer still not installed |
+| LLM vs rules issues | **Done** | Keyword rules beat GPT-4o-mini on multi-label F1 (0.64 vs 0.50) |
 | Issue extraction | **Done** | `issues_posts_labeled_*.csv` with taxonomy labels |
 | Forum analysis report | **Done** | Executive summary, sentiment, issues, cross-brand comparison |
 | Dashboard generator | **Done** | `dashboard/generate_dashboard.py` rebuilds HTML + README from CSVs |
@@ -27,9 +28,9 @@ Capstone telco forum sentiment pipeline — scrape, label, analyse, and visualis
 1. **Scrapers** — HWZ (single + multi), Reddit (10+ keyword rounds), Twitter scaffold.
 2. **Preprocessing** — `cleaned_posts.csv` (15,504 rows).
 3. **Labeling** — `posts_labeled_2026-04-09_221819.csv` + `summary_*.json`.
-4. **Manual sample** — `labeled_sample.csv` (150 rows) for model evaluation.
-5. **Benchmark** — VADER vs manual labels: **100% accuracy / F1** on n=150 (see `sentiment_benchmark.json`).
-6. **Issue extraction** — `issues_posts_labeled_2026-04-09_221819.csv` (pricing, network, customer_service, porting, roaming, other).
+4. **Blind evaluation package** — 300 representative rows, 100 challenge rows, and 100-row second-annotator overlap; Annotator A complete; Annotator B not used for agreement.
+5. **Independent LLM evaluation** — `gpt-4o-mini-2024-07-18` on 295+100 human labels; sentiment LLM wins (macro F1 0.63 vs 0.36); issue rules win (0.64 vs 0.50); ~$0.012 total. The earlier 100% VADER file is not used.
+6. **Issue extraction** — ten-topic taxonomy: Network Quality, Pricing & Promotions, Mobile Plans, Roaming, Porting, Customer Service, Billing & Payment, App & Account, Devices, General Discussion.
 7. **Qualitative analysis** — Forum sentiment report across all telcos (Reddit + HWZ sample).
 8. **Dashboards** — `generate_dashboard.py` auto-builds static capstone summary (`index.html` + `Dash_README.md`); Streamlit app for interactive exploration.
 
@@ -37,42 +38,46 @@ Capstone telco forum sentiment pipeline — scrape, label, analyse, and visualis
 
 ## Key findings (forum analysis sample)
 
-Based on **193 telco-relevant posts** from `data/processed/labeled_sample.csv` (Reddit) and `hwz_telco_posts_labeled.csv` (HWZ). Regenerate with `python dashboard/generate_dashboard.py`.
+Based on **158 telco-relevant posts** from `data/processed/labeled_sample.csv` (Reddit) and `hwz_telco_posts_labeled.csv` (HWZ), after contextual brand validation. Regenerate with `python dashboard/generate_dashboard.py`.
 
 ### Sentiment
 
 | Sentiment | Share |
 |-----------|-------|
-| Happy | 60% |
-| Not happy | 23% |
+| Happy | 61% |
+| Not happy | 22% |
 | Neutral | 18% |
 
-- **Reddit** (n=93 telco-relevant): 50% happy / **32% not_happy** — more complaint-driven.
-- **HWZ** (n=100): 69% happy / 14% not_happy — skewed toward launch/plan threads (Eight).
+- **Reddit** (n=67 telco-relevant): 49% happy / **30% not_happy** — more complaint-driven.
+- **HWZ** (n=91): 69% happy / 15% not_happy — skewed toward launch/plan threads.
 
 ### Issues (inferred; `issue_manual` not filled on Reddit sample)
 
 | Theme | Share |
 |-------|-------|
-| Other | 51% |
-| Pricing | 22% |
-| Network | 9% |
-| Customer service | 9% |
-| Roaming | 5% |
-| Porting | 4% |
+| App & Account | 24% |
+| Network Quality | 19% |
+| General Discussion | 15% |
+| Mobile Plans | 12% |
+| Pricing & Promotions | 8% |
+| Billing & Payment | 8% |
+| Roaming | 6% |
+| Devices | 4% |
+| Porting | 3% |
+| Customer Service | 1% |
 
 ### Cross-brand (brands with ≥5 mentions)
 
 | Telco | Mentions | Negative tone | Dominant themes |
 |-------|----------|---------------|-----------------|
-| Eight | 56 | 29% | Launch pricing, MVNO tiering, porting limits |
 | StarHub | 56 | 27% | Pricing rhetoric, CS/porting friction, promo fulfilment |
 | M1 | 53 | 25% | Coverage dead zones, 4G/5G transition |
 | Singtel | 51 | 16% | ONR/bridge-mode policy, equipment quality |
 | Zym | 22 | 0%* | Promotional plan posts (*label noise) |
+| Eight | 14 | 29% | Launch pricing, MVNO tiering, porting limits |
 | Giga | 6 | 67% | Network reliability (small n) |
 
-**Takeaways:** Pricing and MVNO value dominate; network quality is location-dependent; StarHub/Singtel friction centres on porting, billing, and equipment policy; Giga shows highest negative rate but on very few rows.
+**Takeaways:** App/account access, network quality and mobile-plan comparisons lead the refined issue view; StarHub/Singtel friction includes porting, billing, and equipment policy; Giga shows the highest negative rate but on very few rows.
 
 Full narrative, quotes, and recommendations are embedded in `dashboard/index.html`.
 
@@ -175,7 +180,7 @@ Column details for raw and processed files are in [`data/README.md`](data/README
 | `telco_label` | Detected brand(s), comma-separated |
 | `sentiment_label` | `happy` / `not_happy` / `neutral` (VADER) |
 | `sentiment_label_manual` | Human label (evaluation sample only) |
-| `issue_primary` | `pricing`, `network`, `customer_service`, `porting`, `roaming`, `other` |
+| `issue_primary` | One of the ten canonical issue labels, such as `network_quality`, `pricing_promotions`, or `app_account` |
 | `thread_title` | Thread or post title |
 | `post_text` | Comment/post body |
 
@@ -214,13 +219,13 @@ Full CLI options: [`README.md`](README.md).
 
 ## Planned next steps
 
-- [ ] **Transformer benchmark** — install `transformers` + `torch`; compare against VADER on `labeled_sample.csv`.
-- [ ] **Fill `issue_manual`** on evaluation sample; benchmark issue-extraction rules vs LLM.
-- [ ] **LLM issue extraction** — `processing/issue_extraction.py --use-llm --llm-unresolved-only`.
+- [x] **Fill human issue/sentiment labels** on representative and challenge sheets; compare VADER/rules vs GPT-4o-mini.
+- [ ] **Second annotator / kappa** on `double_annotation_annotator_b.csv`.
+- [ ] **Transformer benchmark** — install `transformers` + `torch`; compare against VADER on the representative labels.
+- [ ] **LLM issue extraction on the full corpus** — optional `processing/issue_extraction.py --use-llm --llm-unresolved-only`.
 - [ ] **Scale coverage** — `processing/coverage_checker.py --target 1000` per telco.
 - [x] **Auto-regenerate dashboard** — `dashboard/generate_dashboard.py` rebuilds `index.html` + `Dash_README.md` from CSVs.
-- [ ] **Label quality audit** — fix sarcasm/thread-context errors in auto-sentiment (e.g. positive roaming text tagged `not_happy`).
-- [ ] **Capstone write-up** — export dashboard screenshots + findings section for final report.
+- [ ] **Capstone write-up** — title-page placeholders; compile `final_report.tex`.
 
 ---
 
@@ -237,6 +242,7 @@ Full CLI options: [`README.md`](README.md).
 | `processing/create_labeled_sample.py` | Manual-label evaluation template |
 | `processing/issue_extraction.py` | Issue taxonomy + optional LLM |
 | `processing/coverage_checker.py` | Auto loop until per-telco target met |
+| `models/llm_evaluation.py` | Blind GPT-4o-mini vs VADER/rules evaluation |
 | `models/sentiment_benchmark.py` | VADER vs transformer evaluation |
 | `dashboard/generate_dashboard.py` | Regenerate static HTML dashboard + Dash_README from CSVs |
 | `dashboard/index.html` | Static Chart.js summary dashboard (generated) |

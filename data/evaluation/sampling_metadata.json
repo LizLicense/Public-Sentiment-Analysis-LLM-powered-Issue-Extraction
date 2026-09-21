@@ -1,0 +1,49 @@
+{
+  "eligible_rows": 1609,
+  "eligible_by_source": {
+    "reddit": 1158,
+    "hwz": 451
+  },
+  "excluded_rows": {
+    "no_detected_telco": 7589,
+    "duplicate_text": 6306
+  },
+  "input_path": "data/processed/posts_labeled_2026-08-21_203752.csv",
+  "seed": 20260813,
+  "raw_rows": 15504,
+  "unique_eligible_threads": 104,
+  "representative_threads_available": 78,
+  "challenge_threads_reserved": 26,
+  "max_rows_per_thread": 5,
+  "representative_size": 300,
+  "representative_by_source": {
+    "reddit": 214,
+    "hwz": 86
+  },
+  "representative_source_allocation": {
+    "reddit": 214,
+    "hwz": 86
+  },
+  "source_sampling_weights": {
+    "reddit": 5.411214953271028,
+    "hwz": 5.244186046511628
+  },
+  "challenge_size": 100,
+  "challenge_by_source": {
+    "hwz": 30,
+    "reddit": 70
+  },
+  "double_annotation_size": 100,
+  "double_annotation_mix": {
+    "representative": 60,
+    "challenge": 40
+  },
+  "model_fields_excluded": [
+    "telco_label",
+    "sentiment_label",
+    "sentiment_score",
+    "llm_sentiment_label",
+    "issue_labels",
+    "issue_primary"
+  ]
+}

@@ -1,0 +1,120 @@
+{
+  "issue_counts": {
+    "billing_payment": 1122,
+    "app_account": 535,
+    "general_discussion": 6180,
+    "pricing_promotions": 1300,
+    "network_quality": 5687,
+    "customer_service": 1016,
+    "mobile_plans": 1524,
+    "devices": 1610,
+    "porting": 271,
+    "roaming": 598
+  },
+  "issue_counts_by_telco": {
+    "Singtel": {
+      "billing_payment": 499,
+      "app_account": 186,
+      "general_discussion": 407,
+      "pricing_promotions": 623,
+      "network_quality": 4612,
+      "mobile_plans": 946,
+      "devices": 1200,
+      "customer_service": 483,
+      "porting": 149,
+      "roaming": 279
+    },
+    "nan": {
+      "general_discussion": 5520,
+      "billing_payment": 482,
+      "network_quality": 653,
+      "pricing_promotions": 572,
+      "customer_service": 360,
+      "roaming": 214,
+      "mobile_plans": 235,
+      "app_account": 193,
+      "porting": 37,
+      "devices": 176
+    },
+    "Starhub": {
+      "network_quality": 321,
+      "mobile_plans": 268,
+      "pricing_promotions": 128,
+      "devices": 157,
+      "roaming": 79,
+      "general_discussion": 84,
+      "porting": 85,
+      "customer_service": 111,
+      "app_account": 40,
+      "billing_payment": 91
+    },
+    "SIMBA": {
+      "network_quality": 336,
+      "general_discussion": 118,
+      "pricing_promotions": 93,
+      "devices": 108,
+      "mobile_plans": 154,
+      "porting": 48,
+      "customer_service": 58,
+      "billing_payment": 42,
+      "app_account": 16,
+      "roaming": 64
+    },
+    "M1": {
+      "network_quality": 226,
+      "general_discussion": 143,
+      "pricing_promotions": 87,
+      "billing_payment": 90,
+      "customer_service": 75,
+      "mobile_plans": 174,
+      "devices": 120,
+      "porting": 56,
+      "roaming": 67,
+      "app_account": 49
+    },
+    "Eight": {
+      "network_quality": 84,
+      "general_discussion": 10,
+      "roaming": 43,
+      "pricing_promotions": 41,
+      "mobile_plans": 49,
+      "customer_service": 5,
+      "devices": 11,
+      "porting": 12,
+      "billing_payment": 3,
+      "app_account": 1
+    },
+    "Zym": {
+      "network_quality": 113,
+      "general_discussion": 18,
+      "mobile_plans": 37,
+      "roaming": 45,
+      "porting": 16,
+      "customer_service": 14,
+      "devices": 12,
+      "pricing_promotions": 14,
+      "billing_payment": 5,
+      "app_account": 2
+    },
+    "Giga": {
+      "mobile_plans": 75,
+      "network_quality": 91,
+      "app_account": 85,
+      "devices": 67,
+      "customer_service": 17,
+      "general_discussion": 5,
+      "roaming": 10,
+      "pricing_promotions": 3,
+      "porting": 15,
+      "billing_payment": 6
+    },
+    "redONE": {
+      "network_quality": 2,
+      "mobile_plans": 2,
+      "roaming": 3,
+      "porting": 2,
+      "devices": 2,
+      "billing_payment": 1
+    }
+  }
+}

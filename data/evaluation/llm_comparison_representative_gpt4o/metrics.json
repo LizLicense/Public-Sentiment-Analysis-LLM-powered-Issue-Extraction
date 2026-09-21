@@ -1,0 +1,803 @@
+{
+  "input_file": "data/evaluation/representative_annotator_a.csv",
+  "requested_model": "gpt-4o",
+  "returned_models": [
+    "gpt-4o-2024-08-06"
+  ],
+  "successful_rows": 295,
+  "failed_rows": 0,
+  "runtime": {
+    "llm_wall_seconds_this_run": 72.50713508401532,
+    "request_seconds_total": 72.4413861259236,
+    "llm_request_seconds_per_successful_row": 0.24556402076584272,
+    "vader_seconds": 0.09224745800020173,
+    "vader_seconds_per_row": 0.00031270324745831095,
+    "keyword_rules_seconds": 0.13127112499205396,
+    "keyword_rules_seconds_per_row": 0.00044498686437984393
+  },
+  "tokens": {
+    "input_tokens": 32015,
+    "output_tokens": 6530,
+    "total_tokens": 38545
+  },
+  "cost": {
+    "currency": "USD",
+    "pricing_provided": true,
+    "input_cost_per_million": 2.5,
+    "output_cost_per_million": 10.0,
+    "estimated_input_cost": 0.08003750000000001,
+    "estimated_output_cost": 0.0653,
+    "estimated_total_cost": 0.1453375
+  },
+  "sentiment": {
+    "vader": {
+      "n": 295,
+      "accuracy": 0.36610169491525424,
+      "macro_f1": 0.3595818189976219,
+      "per_class": {
+        "happy": {
+          "precision": 0.22627737226277372,
+          "recall": 0.5849056603773585,
+          "f1": 0.3263157894736843,
+          "support": 53
+        },
+        "not_happy": {
+          "precision": 0.6024096385542169,
+          "recall": 0.3401360544217687,
+          "f1": 0.43478260869565216,
+          "support": 147
+        },
+        "neutral": {
+          "precision": 0.36,
+          "recall": 0.28421052631578947,
+          "f1": 0.3176470588235294,
+          "support": 95
+        }
+      },
+      "confusion_matrix": [
+        [
+          31,
+          10,
+          12
+        ],
+        [
+          61,
+          50,
+          36
+        ],
+        [
+          45,
+          23,
+          27
+        ]
+      ],
+      "labels_order": [
+        "happy",
+        "not_happy",
+        "neutral"
+      ]
+    },
+    "llm": {
+      "n": 295,
+      "accuracy": 0.6745762711864407,
+      "macro_f1": 0.6229502411832007,
+      "per_class": {
+        "happy": {
+          "precision": 0.6896551724137931,
+          "recall": 0.37735849056603776,
+          "f1": 0.4878048780487806,
+          "support": 53
+        },
+        "not_happy": {
+          "precision": 0.7666666666666667,
+          "recall": 0.782312925170068,
+          "f1": 0.7744107744107744,
+          "support": 147
+        },
+        "neutral": {
+          "precision": 0.5517241379310345,
+          "recall": 0.6736842105263158,
+          "f1": 0.6066350710900473,
+          "support": 95
+        }
+      },
+      "confusion_matrix": [
+        [
+          20,
+          10,
+          23
+        ],
+        [
+          3,
+          115,
+          29
+        ],
+        [
+          6,
+          25,
+          64
+        ]
+      ],
+      "labels_order": [
+        "happy",
+        "not_happy",
+        "neutral"
+      ]
+    }
+  },
+  "issues": {
+    "keyword_rules": {
+      "n": 295,
+      "exact_match_accuracy": 0.37966101694915255,
+      "macro_f1": 0.6386054109668791,
+      "micro_precision": 0.7130977130977131,
+      "micro_recall": 0.6092362344582594,
+      "micro_f1": 0.6570881226053641,
+      "per_class": {
+        "network_quality": {
+          "precision": 0.8818181818181818,
+          "recall": 0.6298701298701299,
+          "f1": 0.734848484848485,
+          "support": 154,
+          "confusion_matrix": [
+            [
+              128,
+              13
+            ],
+            [
+              57,
+              97
+            ]
+          ]
+        },
+        "pricing_promotions": {
+          "precision": 0.7666666666666667,
+          "recall": 0.4423076923076923,
+          "f1": 0.5609756097560975,
+          "support": 52,
+          "confusion_matrix": [
+            [
+              236,
+              7
+            ],
+            [
+              29,
+              23
+            ]
+          ]
+        },
+        "mobile_plans": {
+          "precision": 0.85,
+          "recall": 0.6181818181818182,
+          "f1": 0.7157894736842104,
+          "support": 110,
+          "confusion_matrix": [
+            [
+              173,
+              12
+            ],
+            [
+              42,
+              68
+            ]
+          ]
+        },
+        "roaming": {
+          "precision": 0.8,
+          "recall": 0.7272727272727273,
+          "f1": 0.761904761904762,
+          "support": 22,
+          "confusion_matrix": [
+            [
+              269,
+              4
+            ],
+            [
+              6,
+              16
+            ]
+          ]
+        },
+        "porting": {
+          "precision": 0.8181818181818182,
+          "recall": 0.45,
+          "f1": 0.5806451612903226,
+          "support": 20,
+          "confusion_matrix": [
+            [
+              273,
+              2
+            ],
+            [
+              11,
+              9
+            ]
+          ]
+        },
+        "customer_service": {
+          "precision": 0.7272727272727273,
+          "recall": 0.41025641025641024,
+          "f1": 0.5245901639344261,
+          "support": 39,
+          "confusion_matrix": [
+            [
+              250,
+              6
+            ],
+            [
+              23,
+              16
+            ]
+          ]
+        },
+        "billing_payment": {
+          "precision": 0.7037037037037037,
+          "recall": 0.6333333333333333,
+          "f1": 0.6666666666666667,
+          "support": 30,
+          "confusion_matrix": [
+            [
+              257,
+              8
+            ],
+            [
+              11,
+              19
+            ]
+          ]
+        },
+        "app_account": {
+          "precision": 0.9130434782608695,
+          "recall": 0.4772727272727273,
+          "f1": 0.6268656716417911,
+          "support": 44,
+          "confusion_matrix": [
+            [
+              249,
+              2
+            ],
+            [
+              23,
+              21
+            ]
+          ]
+        },
+        "devices": {
+          "precision": 0.7,
+          "recall": 0.8076923076923077,
+          "f1": 0.75,
+          "support": 52,
+          "confusion_matrix": [
+            [
+              225,
+              18
+            ],
+            [
+              10,
+              42
+            ]
+          ]
+        },
+        "general_discussion": {
+          "precision": 0.32653061224489793,
+          "recall": 0.8,
+          "f1": 0.46376811594202894,
+          "support": 40,
+          "confusion_matrix": [
+            [
+              189,
+              66
+            ],
+            [
+              8,
+              32
+            ]
+          ]
+        }
+      }
+    },
+    "llm": {
+      "n": 295,
+      "exact_match_accuracy": 0.34576271186440677,
+      "macro_f1": 0.599989115323299,
+      "micro_precision": 0.751207729468599,
+      "micro_recall": 0.5523978685612788,
+      "micro_f1": 0.6366427840327533,
+      "per_class": {
+        "network_quality": {
+          "precision": 0.8066666666666666,
+          "recall": 0.7857142857142857,
+          "f1": 0.7960526315789475,
+          "support": 154,
+          "confusion_matrix": [
+            [
+              112,
+              29
+            ],
+            [
+              33,
+              121
+            ]
+          ]
+        },
+        "pricing_promotions": {
+          "precision": 0.7,
+          "recall": 0.40384615384615385,
+          "f1": 0.5121951219512195,
+          "support": 52,
+          "confusion_matrix": [
+            [
+              234,
+              9
+            ],
+            [
+              31,
+              21
+            ]
+          ]
+        },
+        "mobile_plans": {
+          "precision": 0.8947368421052632,
+          "recall": 0.4636363636363636,
+          "f1": 0.6107784431137725,
+          "support": 110,
+          "confusion_matrix": [
+            [
+              179,
+              6
+            ],
+            [
+              59,
+              51
+            ]
+          ]
+        },
+        "roaming": {
+          "precision": 0.8235294117647058,
+          "recall": 0.6363636363636364,
+          "f1": 0.717948717948718,
+          "support": 22,
+          "confusion_matrix": [
+            [
+              270,
+              3
+            ],
+            [
+              8,
+              14
+            ]
+          ]
+        },
+        "porting": {
+          "precision": 0.7647058823529411,
+          "recall": 0.65,
+          "f1": 0.7027027027027027,
+          "support": 20,
+          "confusion_matrix": [
+            [
+              271,
+              4
+            ],
+            [
+              7,
+              13
+            ]
+          ]
+        },
+        "customer_service": {
+          "precision": 0.4444444444444444,
+          "recall": 0.5128205128205128,
+          "f1": 0.47619047619047616,
+          "support": 39,
+          "confusion_matrix": [
+            [
+              231,
+              25
+            ],
+            [
+              19,
+              20
+            ]
+          ]
+        },
+        "billing_payment": {
+          "precision": 0.8333333333333334,
+          "recall": 0.6666666666666666,
+          "f1": 0.7407407407407408,
+          "support": 30,
+          "confusion_matrix": [
+            [
+              261,
+              4
+            ],
+            [
+              10,
+              20
+            ]
+          ]
+        },
+        "app_account": {
+          "precision": 0.9333333333333333,
+          "recall": 0.3181818181818182,
+          "f1": 0.47457627118644075,
+          "support": 44,
+          "confusion_matrix": [
+            [
+              250,
+              1
+            ],
+            [
+              30,
+              14
+            ]
+          ]
+        },
+        "devices": {
+          "precision": 0.65,
+          "recall": 0.25,
+          "f1": 0.3611111111111111,
+          "support": 52,
+          "confusion_matrix": [
+            [
+              236,
+              7
+            ],
+            [
+              39,
+              13
+            ]
+          ]
+        },
+        "general_discussion": {
+          "precision": 0.6153846153846154,
+          "recall": 0.6,
+          "f1": 0.6075949367088608,
+          "support": 40,
+          "confusion_matrix": [
+            [
+              240,
+              15
+            ],
+            [
+              16,
+              24
+            ]
+          ]
+        }
+      }
+    }
+  },
+  "failed_sample_ids": [],
+  "request_log": [
+    {
+      "requested_model": "gpt-4o",
+      "returned_model": "gpt-4o-2024-08-06",
+      "request_id": "chatcmpl-EPrHtiFBDbTxfrw8k0h9Goa9WX1Ta",
+      "attempts": 1,
+      "elapsed_seconds": 5.523959834012203,
+      "input_tokens": 1465,
+      "output_tokens": 230,
+      "total_tokens": 1695,
+      "error": ""
+    },
+    {
+      "requested_model": "gpt-4o",
+      "returned_model": "gpt-4o-2024-08-06",
+      "request_id": "chatcmpl-EPrHwphl9m7Ff4hQ21ObowZtRT4kY",
+      "attempts": 1,
+      "elapsed_seconds": 2.7986367080011405,
+      "input_tokens": 1064,
+      "output_tokens": 229,
+      "total_tokens": 1293,
+      "error": ""
+    },
+    {
+      "requested_model": "gpt-4o",
+      "returned_model": "gpt-4o-2024-08-06",
+      "request_id": "chatcmpl-EPrI009hVhg8hY2hpw5YkhRUgUBP8",
+      "attempts": 1,
+      "elapsed_seconds": 3.37729566602502,
+      "input_tokens": 908,
+      "output_tokens": 219,
+      "total_tokens": 1127,
+      "error": ""
+    },
+    {
+      "requested_model": "gpt-4o",
+      "returned_model": "gpt-4o-2024-08-06",
+      "request_id": "chatcmpl-EPrI20qnMIrJGyBckpwvKyRtsJhwC",
+      "attempts": 1,
+      "elapsed_seconds": 2.7627055830089375,
+      "input_tokens": 1044,
+      "output_tokens": 226,
+      "total_tokens": 1270,
+      "error": ""
+    },
+    {
+      "requested_model": "gpt-4o",
+      "returned_model": "gpt-4o-2024-08-06",
+      "request_id": "chatcmpl-EPrI4CvXTKskirkfZ0JTol1TzZRfn",
+      "attempts": 1,
+      "elapsed_seconds": 1.9828928749775514,
+      "input_tokens": 995,
+      "output_tokens": 206,
+      "total_tokens": 1201,
+      "error": ""
+    },
+    {
+      "requested_model": "gpt-4o",
+      "returned_model": "gpt-4o-2024-08-06",
+      "request_id": "chatcmpl-EPrI7IRxdrCKh6VQi8QJVEMRB3zx3",
+      "attempts": 1,
+      "elapsed_seconds": 2.7635127910180017,
+      "input_tokens": 911,
+      "output_tokens": 229,
+      "total_tokens": 1140,
+      "error": ""
+    },
+    {
+      "requested_model": "gpt-4o",
+      "returned_model": "gpt-4o-2024-08-06",
+      "request_id": "chatcmpl-EPrI9EYsxCtZ3dUWMAP6S7sSu2keh",
+      "attempts": 1,
+      "elapsed_seconds": 2.1008697919896804,
+      "input_tokens": 771,
+      "output_tokens": 209,
+      "total_tokens": 980,
+      "error": ""
+    },
+    {
+      "requested_model": "gpt-4o",
+      "returned_model": "gpt-4o-2024-08-06",
+      "request_id": "chatcmpl-EPrIBOYia9IrGjqOdYxKN9YOsP7gs",
+      "attempts": 1,
+      "elapsed_seconds": 2.151197500003036,
+      "input_tokens": 2165,
+      "output_tokens": 221,
+      "total_tokens": 2386,
+      "error": ""
+    },
+    {
+      "requested_model": "gpt-4o",
+      "returned_model": "gpt-4o-2024-08-06",
+      "request_id": "chatcmpl-EPrIE624xjYGe3dzEOZh8zdBVXs6Z",
+      "attempts": 1,
+      "elapsed_seconds": 2.441247124981601,
+      "input_tokens": 916,
+      "output_tokens": 218,
+      "total_tokens": 1134,
+      "error": ""
+    },
+    {
+      "requested_model": "gpt-4o",
+      "returned_model": "gpt-4o-2024-08-06",
+      "request_id": "chatcmpl-EPrIGJ14TvLk8dphd1k9IH2np3T79",
+      "attempts": 1,
+      "elapsed_seconds": 2.7932245419942774,
+      "input_tokens": 1048,
+      "output_tokens": 208,
+      "total_tokens": 1256,
+      "error": ""
+    },
+    {
+      "requested_model": "gpt-4o",
+      "returned_model": "gpt-4o-2024-08-06",
+      "request_id": "chatcmpl-EPrIJm8nxCPReDUUdJlYMFchVb3mw",
+      "attempts": 1,
+      "elapsed_seconds": 2.1313570420024917,
+      "input_tokens": 1174,
+      "output_tokens": 235,
+      "total_tokens": 1409,
+      "error": ""
+    },
+    {
+      "requested_model": "gpt-4o",
+      "returned_model": "gpt-4o-2024-08-06",
+      "request_id": "chatcmpl-EPrIL5bMUp0MLwKRpeCJI30BiOG3o",
+      "attempts": 1,
+      "elapsed_seconds": 2.4905028750072233,
+      "input_tokens": 857,
+      "output_tokens": 212,
+      "total_tokens": 1069,
+      "error": ""
+    },
+    {
+      "requested_model": "gpt-4o",
+      "returned_model": "gpt-4o-2024-08-06",
+      "request_id": "chatcmpl-EPrIN1poscwE9kiHmF4B7UMolaiBk",
+      "attempts": 1,
+      "elapsed_seconds": 2.2000669999979436,
+      "input_tokens": 913,
+      "output_tokens": 226,
+      "total_tokens": 1139,
+      "error": ""
+    },
+    {
+      "requested_model": "gpt-4o",
+      "returned_model": "gpt-4o-2024-08-06",
+      "request_id": "chatcmpl-EPrIQREaFanc9JhBit6uuRxKWFFzN",
+      "attempts": 1,
+      "elapsed_seconds": 1.9748529169592075,
+      "input_tokens": 1220,
+      "output_tokens": 220,
+      "total_tokens": 1440,
+      "error": ""
+    },
+    {
+      "requested_model": "gpt-4o",
+      "returned_model": "gpt-4o-2024-08-06",
+      "request_id": "chatcmpl-EPrIRUDBytzQyzlppHbqHYp9ZvXjX",
+      "attempts": 1,
+      "elapsed_seconds": 2.0025465000071563,
+      "input_tokens": 1467,
+      "output_tokens": 224,
+      "total_tokens": 1691,
+      "error": ""
+    },
+    {
+      "requested_model": "gpt-4o",
+      "returned_model": "gpt-4o-2024-08-06",
+      "request_id": "chatcmpl-EPrITmE8lJWiBmipD15b2l2kYpOXe",
+      "attempts": 1,
+      "elapsed_seconds": 2.1211515410104766,
+      "input_tokens": 909,
+      "output_tokens": 227,
+      "total_tokens": 1136,
+      "error": ""
+    },
+    {
+      "requested_model": "gpt-4o",
+      "returned_model": "gpt-4o-2024-08-06",
+      "request_id": "chatcmpl-EPrIWkYoDSIFSpqeIBpT2hZuNWCo1",
+      "attempts": 1,
+      "elapsed_seconds": 2.086063834023662,
+      "input_tokens": 1185,
+      "output_tokens": 213,
+      "total_tokens": 1398,
+      "error": ""
+    },
+    {
+      "requested_model": "gpt-4o",
+      "returned_model": "gpt-4o-2024-08-06",
+      "request_id": "chatcmpl-EPrIYpXok6IOhgvUWnm3ZpegrLkxt",
+      "attempts": 1,
+      "elapsed_seconds": 1.812538833997678,
+      "input_tokens": 893,
+      "output_tokens": 223,
+      "total_tokens": 1116,
+      "error": ""
+    },
+    {
+      "requested_model": "gpt-4o",
+      "returned_model": "gpt-4o-2024-08-06",
+      "request_id": "chatcmpl-EPrIaboKc2eZspzL8fJq67EhgTku4",
+      "attempts": 1,
+      "elapsed_seconds": 2.072831540950574,
+      "input_tokens": 1300,
+      "output_tokens": 222,
+      "total_tokens": 1522,
+      "error": ""
+    },
+    {
+      "requested_model": "gpt-4o",
+      "returned_model": "gpt-4o-2024-08-06",
+      "request_id": "chatcmpl-EPrIczcAckmsW6z35vyDNBrTXQpbW",
+      "attempts": 1,
+      "elapsed_seconds": 2.197900875005871,
+      "input_tokens": 961,
+      "output_tokens": 217,
+      "total_tokens": 1178,
+      "error": ""
+    },
+    {
+      "requested_model": "gpt-4o",
+      "returned_model": "gpt-4o-2024-08-06",
+      "request_id": "chatcmpl-EPrIeSQIyOrCby8bkzH7BtxDd72tE",
+      "attempts": 1,
+      "elapsed_seconds": 3.3189246249967255,
+      "input_tokens": 1231,
+      "output_tokens": 226,
+      "total_tokens": 1457,
+      "error": ""
+    },
+    {
+      "requested_model": "gpt-4o",
+      "returned_model": "gpt-4o-2024-08-06",
+      "request_id": "chatcmpl-EPrIhBd6JeX8GbOANvAepxcEke8av",
+      "attempts": 1,
+      "elapsed_seconds": 2.089580166968517,
+      "input_tokens": 938,
+      "output_tokens": 228,
+      "total_tokens": 1166,
+      "error": ""
+    },
+    {
+      "requested_model": "gpt-4o",
+      "returned_model": "gpt-4o-2024-08-06",
+      "request_id": "chatcmpl-EPrIkxZElTPbL4qN3OXRSR7R8NRml",
+      "attempts": 1,
+      "elapsed_seconds": 2.131336792022921,
+      "input_tokens": 1024,
+      "output_tokens": 212,
+      "total_tokens": 1236,
+      "error": ""
+    },
+    {
+      "requested_model": "gpt-4o",
+      "returned_model": "gpt-4o-2024-08-06",
+      "request_id": "chatcmpl-EPrIliRc49F2V8AHeX0RFiSspaYxl",
+      "attempts": 1,
+      "elapsed_seconds": 2.041028458974324,
+      "input_tokens": 1215,
+      "output_tokens": 225,
+      "total_tokens": 1440,
+      "error": ""
+    },
+    {
+      "requested_model": "gpt-4o",
+      "returned_model": "gpt-4o-2024-08-06",
+      "request_id": "chatcmpl-EPrInKrbFzxhi41m8xOy6BRve5nWg",
+      "attempts": 1,
+      "elapsed_seconds": 2.176565165980719,
+      "input_tokens": 891,
+      "output_tokens": 211,
+      "total_tokens": 1102,
+      "error": ""
+    },
+    {
+      "requested_model": "gpt-4o",
+      "returned_model": "gpt-4o-2024-08-06",
+      "request_id": "chatcmpl-EPrIqKKEyT2pMF6Dc1r8adYqOZQ3p",
+      "attempts": 1,
+      "elapsed_seconds": 2.2072961250087246,
+      "input_tokens": 1188,
+      "output_tokens": 222,
+      "total_tokens": 1410,
+      "error": ""
+    },
+    {
+      "requested_model": "gpt-4o",
+      "returned_model": "gpt-4o-2024-08-06",
+      "request_id": "chatcmpl-EPrIs4Z0WMes2e4rpHUGFgP3BNwru",
+      "attempts": 1,
+      "elapsed_seconds": 2.0884903330006637,
+      "input_tokens": 861,
+      "output_tokens": 226,
+      "total_tokens": 1087,
+      "error": ""
+    },
+    {
+      "requested_model": "gpt-4o",
+      "returned_model": "gpt-4o-2024-08-06",
+      "request_id": "chatcmpl-EPrIu47yzVXIxbnfiKXMPxpBeezP5",
+      "attempts": 1,
+      "elapsed_seconds": 3.101207792002242,
+      "input_tokens": 952,
+      "output_tokens": 230,
+      "total_tokens": 1182,
+      "error": ""
+    },
+    {
+      "requested_model": "gpt-4o",
+      "returned_model": "gpt-4o-2024-08-06",
+      "request_id": "chatcmpl-EPrIxjDU1yRp76Jj3pBGZhxCOUICa",
+      "attempts": 1,
+      "elapsed_seconds": 2.0916215839679353,
+      "input_tokens": 885,
+      "output_tokens": 222,
+      "total_tokens": 1107,
+      "error": ""
+    },
+    {
+      "requested_model": "gpt-4o",
+      "returned_model": "gpt-4o-2024-08-06",
+      "request_id": "chatcmpl-EPrIzYBCokUqPgJrsqZnfGE2TkD8X",
+      "attempts": 1,
+      "elapsed_seconds": 1.4099797080270946,
+      "input_tokens": 664,
+      "output_tokens": 114,
+      "total_tokens": 778,
+      "error": ""
+    }
+  ]
+}

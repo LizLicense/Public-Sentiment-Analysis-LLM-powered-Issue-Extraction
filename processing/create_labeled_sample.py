@@ -76,7 +76,7 @@ def main() -> None:
     parser.add_argument(
         "--prefill-from-model",
         action="store_true",
-        help="Prefill sentiment_label_manual from existing sentiment_label/llm_sentiment_label (recommended to speed up manual review).",
+        help="UNSAFE FOR EVALUATION: prefill draft labels from a model. Never benchmark against uncorrected prefills.",
     )
     parser.add_argument(
         "--instructions",
@@ -129,6 +129,10 @@ def main() -> None:
 
     # Add manual label columns (optionally prefill from model outputs)
     if args.prefill_from_model:
+        print(
+            "WARNING: model-prefilled labels are not independent ground truth. "
+            "Do not use this output for a benchmark unless every row is blindly reviewed."
+        )
         if "llm_sentiment_label" in df.columns:
             df["sentiment_label_manual"] = df["llm_sentiment_label"].fillna("").astype(str)
         elif "sentiment_label" in df.columns:
@@ -160,10 +164,16 @@ def main() -> None:
             f.write("1. Open the CSV in Excel or Google Sheets.\n")
             f.write("2. For each row, fill in:\n")
             f.write("   - sentiment_label_manual: one of  happy | not_happy | neutral\n")
-            f.write("   - issue_manual: e.g. pricing, network, customer_service, porting, roaming, other (or comma-separated)\n")
+            f.write(
+                "   - issue_manual: Network Quality, Pricing & Promotions, Mobile Plans, "
+                "Roaming, Porting, Customer Service, Billing & Payment, App & Account, "
+                "Devices, or General Discussion (comma-separated when needed)\n"
+            )
             f.write("   - notes: optional\n")
             f.write("3. Save as labeled_sample.csv (or another name) for use in evaluation.\n")
-            f.write("Tip: run with --prefill-from-model to start from model labels and correct them manually.\n")
+            f.write("\nIMPORTANT: Keep annotators blind to all model outputs for formal evaluation.\n")
+            f.write("Use processing/create_evaluation_set.py for the capstone benchmark.\n")
+            f.write("Do not benchmark a model against labels created with --prefill-from-model.\n")
         print(f"Saved instructions: {instr_path}")
 
 

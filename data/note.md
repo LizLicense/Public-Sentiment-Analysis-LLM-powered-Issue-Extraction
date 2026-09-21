@@ -18,7 +18,7 @@ Run VADER and the transformer on the same posts.
 Compare both to your labeled_sample.csv (accuracy / F1).
 Pick one as your “main” sentiment model and note it in the report.
 3. Phase 4: Structured issue extraction
-Define a fixed issue taxonomy (e.g. pricing, network, customer_service, porting, roaming, other).
+Use the fixed ten-topic taxonomy: Network Quality, Pricing & Promotions, Mobile Plans, Roaming, Porting, Customer Service, Billing & Payment, App & Account, Devices, and General Discussion.
 Add a step (script or part of the pipeline) that uses the LLM to assign one or more issues per post (reuse your existing LLM setup).
 Store results in a column like issues or issue_1, issue_2 in your processed/cleaned CSV.
 4. Phase 5: Streamlit dashboard

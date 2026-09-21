@@ -51,6 +51,9 @@ def _normalize_input_columns(df: pd.DataFrame) -> pd.DataFrame:
     if "post_text" not in df.columns and "selftext" in df.columns:
         df = df.copy()
         df["post_text"] = df["selftext"]
+    if "sentiment_label_manual" not in df.columns and "sentiment_manual" in df.columns:
+        df = df.copy()
+        df["sentiment_label_manual"] = df["sentiment_manual"]
     return df
 
 
@@ -182,11 +185,14 @@ def main() -> None:
 
     df = pd.read_csv(input_path)
     df = _normalize_input_columns(df)
+    if "telco_relevance_manual" in df.columns:
+        relevance = df["telco_relevance_manual"].fillna("").astype(str).str.strip().str.lower()
+        df = df[relevance == "yes"].copy()
     if "post_text" not in df.columns:
         print("Error: need post_text (or selftext) column.")
         return
     if "sentiment_label_manual" not in df.columns:
-        print("Error: need sentiment_label_manual column.")
+        print("Error: need sentiment_label_manual or sentiment_manual column.")
         return
 
     df["sentiment_label_manual_clean"] = df["sentiment_label_manual"].apply(_clean_manual_label)
@@ -195,9 +201,9 @@ def main() -> None:
     if df.empty:
         print("Error: no valid manual sentiment labels found in sentiment_label_manual.")
         print(f"Rows with non-empty sentiment_label_manual: {manual_non_empty}")
-        print("Create/fill labels with:")
-        print("  python processing/create_labeled_sample.py --prefill-from-model -n 150 --out data/processed/labeled_sample.csv")
-        print("Then manually correct sentiment_label_manual and rerun this benchmark.")
+        print("Create blind annotation sheets with:")
+        print("  python processing/create_evaluation_set.py")
+        print("Independently fill sentiment_manual, then rerun this benchmark.")
         return
 
     texts = df["post_text"].fillna("").astype(str).tolist()
@@ -228,7 +234,20 @@ def main() -> None:
 
     out_csv = Path(args.out_csv)
     out_csv.parent.mkdir(parents=True, exist_ok=True)
-    keep_cols = [c for c in ["post_text", "sentiment_label_manual", "sentiment_label_manual_clean", "pred_vader", "pred_transformer"] if c in df.columns]
+    keep_cols = [
+        c
+        for c in [
+            "sample_id",
+            "evaluation_set",
+            "source",
+            "post_text",
+            "sentiment_label_manual",
+            "sentiment_label_manual_clean",
+            "pred_vader",
+            "pred_transformer",
+        ]
+        if c in df.columns
+    ]
     df[keep_cols].to_csv(out_csv, index=False, encoding="utf-8-sig")
 
     print(f"Labeled rows used: {len(df)}")

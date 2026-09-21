@@ -161,27 +161,69 @@ python processing/coverage_checker.py \
   --max-rounds 12
 ```
 
-### 4. Labeled sample (for evaluation)
+### 4. Blind evaluation sample
 
-Create a template with N sampled rows and empty columns for manual sentiment + issue labels:
+Create thread-disjoint, model-blind annotation sheets for formal evaluation:
 
 ```bash
-python processing/create_labeled_sample.py -n 150
-# Output: data/processed/labeled_sample_template.csv + INSTRUCTIONS
+python processing/create_evaluation_set.py
+# Outputs under data/evaluation/:
+# - representative_annotator_a.csv (300 rows)
+# - challenge_annotator_a.csv (100 rows; report separately)
+# - double_annotation_annotator_b.csv (100-row independent overlap)
+# - sampling_metadata.json and ANNOTATION_GUIDE.md
 ```
 
-Open the CSV, fill in `sentiment_label_manual` (happy/not_happy/neutral) and `issue_manual` (e.g. pricing, network), save as `labeled_sample.csv` for evaluating models.
+Annotators must not view VADER, transformer, or LLM outputs. Fill the manual
+columns using `data/evaluation/ANNOTATION_GUIDE.md`; keep both annotators'
+original files unchanged and adjudicate disagreements in a separate copy.
+
+`processing/create_labeled_sample.py` remains available for quick exploratory
+sampling. Its `--prefill-from-model` option is unsafe for formal benchmarking
+because uncorrected prefills create target leakage.
 
 
 ### 5. Sentiment benchmark (VADER vs transformer)
 
-After labeling `data/processed/labeled_sample.csv`:
+After independently labeling the representative evaluation file:
 
 ```bash
-python models/sentiment_benchmark.py --in data/processed/labeled_sample.csv
-# Output: data/processed/sentiment_benchmark.json
-#         data/processed/sentiment_benchmark_predictions.csv
+python models/sentiment_benchmark.py \
+  --in data/evaluation/representative_annotator_a.csv \
+  --out-json data/evaluation/sentiment_benchmark.json \
+  --out-csv data/evaluation/sentiment_predictions.csv
 ```
+
+### 5b. Baseline vs LLM evaluation
+
+After independent annotation and adjudication, validate without an API call, then run the comparison. Headline metrics use the 300-row representative sheet, not the older 100-row mix:
+
+```bash
+venv/bin/python models/llm_evaluation.py \
+  --in data/evaluation/representative_annotator_a.csv \
+  --out-dir data/evaluation/llm_comparison_representative \
+  --model gpt-4o-mini \
+  --validate-only
+
+export OPENAI_API_KEY="..."
+
+venv/bin/python models/llm_evaluation.py \
+  --in data/evaluation/representative_annotator_a.csv \
+  --out-dir data/evaluation/llm_comparison_representative \
+  --model gpt-4o-mini \
+  --input-cost-per-million <CURRENT_INPUT_PRICE> \
+  --output-cost-per-million <CURRENT_OUTPUT_PRICE>
+```
+
+Report the challenge sheet separately (`challenge_annotator_a.csv`, `--out-dir data/evaluation/llm_comparison_challenge`). Enter the provider's current USD prices per one million tokens so the saved cost calculation is traceable.
+
+Results include:
+
+- `metrics.json`: per-class sentiment metrics, issue metrics, confusion
+  matrices, exact returned model IDs, runtime, tokens, failures, and cost
+- `predictions.csv`: manual, baseline, and LLM labels for every row
+- `qualitative_disagreements.csv`: examples where methods differ
+- `llm_checkpoint.jsonl`: resumable API progress (`--resume`)
 
 ### 6. Structured issue extraction
 
@@ -216,7 +258,7 @@ open dashboard/index.html
 
 Charts: sentiment distribution, source comparison (Reddit vs HWZ), issue themes, brand mentions, negative tone by brand. See `dashboard/Dash_README.md`.
 
-**Interactive Streamlit** (filters by source, telco, sentiment, date):
+**Interactive Streamlit** (filters by source, telco, sentiment, issue breakdown, date):
 
 ```bash
 streamlit run dashboard/app.py
@@ -262,7 +304,7 @@ streamlit run dashboard/app.py
 | **preprocess.py** | Data cleaning only: reads from `data/raw/` (or `--in`), normalizes column names for HWZ/Reddit/Twitter, drops too-short and placeholder/noise rows, optionally keeps English-only (langdetect). Writes one cleaned CSV (default `data/processed/cleaned_posts.csv`) for use by the labeler, models, or dashboard. Does not compute sentiment. |
 | **coverage_checker.py** | Automation loop for data collection coverage. Repeatedly runs enabled scrapers (Reddit/HWZ/Twitter), rebuilds cleaned+labeled data, computes per-telco counts, and stops when each tracked telco reaches the target (default 1000) or max rounds is reached. |
 | **create_labeled_sample.py** | Samples N rows from a cleaned or labeled CSV, adds empty columns `sentiment_label_manual`, `issue_manual`, `notes`, and writes a template CSV plus an INSTRUCTIONS file. You fill the manual labels (e.g. in Excel) and save as e.g. `labeled_sample.csv` for evaluating sentiment and issue-extraction models. |
-| **issue_extraction.py** | Adds structured issue labels using fixed taxonomy (`pricing`, `network`, `customer_service`, `porting`, `roaming`, `other`) and optional LLM classification. Writes issues CSV + summary JSON. |
+| **issue_extraction.py** | Adds structured issue labels using the fixed ten-topic taxonomy (Network Quality, Pricing & Promotions, Mobile Plans, Roaming, Porting, Customer Service, Billing & Payment, App & Account, Devices, General Discussion) and optional LLM classification. Writes issues CSV + summary JSON. |
 
 ### Models (`models/`)
 
@@ -289,7 +331,7 @@ streamlit run dashboard/app.py
 
 ## Next steps
 
-- **Use an LLM model to extract issues:** Issue extraction currently defaults to rule-based keywords. Enable the LLM classifier by setting `OPENAI_API_KEY` and running `processing/issue_extraction.py` with `--use-llm` (optionally `--llm-unresolved-only` so the model only refines rows labeled `other` by rules—lower cost).
+- **Use an LLM model to extract issues:** Issue extraction currently defaults to rule-based keywords. Enable the LLM classifier by setting `OPENAI_API_KEY` and running `processing/issue_extraction.py` with `--use-llm` (optionally `--llm-unresolved-only` so the model only refines rows labeled `general_discussion` by rules—lower cost).
   ```bash
   export OPENAI_API_KEY="sk-..."
   python processing/issue_extraction.py --use-llm --llm-model gpt-4o-mini

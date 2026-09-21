@@ -54,8 +54,9 @@ TELCO_PATTERNS: Dict[str, List[str]] = {
     ],
     # MVNOs and brands explicitly seen in the data
     "Eight": [
-        r"\beight\b",
-        r"\beight telecom\b",
+        r"\beight\s+(?:telecom|telco|mobile|sim(?:-only)?|plan)\b",
+        r"\b(?:telecom|telco|mobile|mvno)\s+(?:brand\s+)?eight\b",
+        r"\beight\.sg\b",
     ],
     "Zym": [
         r"\bzym\b",
@@ -76,13 +77,51 @@ COMPILED_PATTERNS: Dict[str, re.Pattern] = {
     for telco, pats in TELCO_PATTERNS.items()
 }
 
+EIGHT_CONTEXT_TERMS = (
+    r"telco|telecom|mobile|mvno|sim(?:-only)?|plan|network|roaming|"
+    r"port(?:ing)?|data|gb|4g|5g|starhub|singtel|m1|simba|giga|zym"
+)
+EIGHT_CONTEXT_PATTERN = re.compile(
+    rf"(?:\beight\b.{{0,60}}\b(?:{EIGHT_CONTEXT_TERMS})\b|"
+    rf"\b(?:{EIGHT_CONTEXT_TERMS})\b.{{0,60}}\beight\b)",
+    flags=re.IGNORECASE | re.DOTALL,
+)
+EIGHT_NON_BRAND_PATTERN = re.compile(
+    r"\beight(?:\s+|-)(?:"
+    r"buses?|people|persons?|years?|months?|weeks?|days?|hours?|minutes?|seconds?|"
+    r"times?|students?|workers?|cars?|teams?|points?|seats?|stations?|stops?|"
+    r"cases?|episodes?|members?|children|men|women"
+    r")\b",
+    flags=re.IGNORECASE,
+)
+
+
+def is_eight_telco_reference(text: Optional[str]) -> bool:
+    """Return True only when 'Eight' is used as a telco brand."""
+    if not isinstance(text, str) or not re.search(r"\beight\b", text, re.IGNORECASE):
+        return False
+
+    strong_brand_pattern = COMPILED_PATTERNS["Eight"]
+    if strong_brand_pattern.search(text):
+        return True
+
+    # Explicit count/transport phrases take precedence over generic context
+    # elsewhere in the same title or comment.
+    if EIGHT_NON_BRAND_PATTERN.search(text):
+        return False
+
+    return bool(EIGHT_CONTEXT_PATTERN.search(text))
+
 
 def detect_telcos(text: Optional[str]) -> List[str]:
     if not isinstance(text, str) or not text:
         return []
     hits: List[str] = []
     for telco, pattern in COMPILED_PATTERNS.items():
-        if pattern.search(text):
+        if telco == "Eight":
+            if is_eight_telco_reference(text):
+                hits.append(telco)
+        elif pattern.search(text):
             hits.append(telco)
     return hits
 
@@ -99,10 +138,17 @@ def assign_telco(row: pd.Series) -> Optional[str]:
 
     title_telcos = detect_telcos(title)
     text_telcos = detect_telcos(text)
+    combined_text = f"{title} {text}"
+    combined_eight = (
+        ["Eight"]
+        if "Eight" not in title_telcos + text_telcos
+        and is_eight_telco_reference(combined_text)
+        else []
+    )
 
     # Preserve order but deduplicate
     combined: List[str] = []
-    for t in title_telcos + text_telcos:
+    for t in title_telcos + text_telcos + combined_eight:
         if t not in combined:
             combined.append(t)
 

@@ -277,6 +277,25 @@ python processing/build_clean_corpus.py
 
 A thread is kept if at least 20% of its unique posts name a telco (`--min-telco-share`) or its title is about a telco. Report findings that hold under all three weightings.
 
+### 7b. Wave 2 (posts after 2026-04-09) and the v2 corpus
+
+```bash
+python scrapers/hwz_forum_scraper.py --forum-pages 5 --max-threads 60 --max-thread-pages 15 \
+  --latest-pages --since 2026-04-10 --out data/raw/wave2/hwz_latest
+python scrapers/reddit_archive_scraper.py --subreddits singapore,askSingapore \
+  --since 2026-04-10 --out data/raw/wave2/reddit_archive     # Arctic Shift archive, no Reddit key
+python processing/prepare_wave2.py            # clean, label, keyword issues -> data/processed/wave2/
+# GPT-4o hybrid pass on wave 2 (command printed by the script), then:
+python processing/prepare_wave2.py --merge    # -> data/processed/clean_posts_v2.csv (9,162 posts)
+python models/corpus_llm_sentiment.py --in data/processed/clean_posts_v2.csv \
+  --out data/processed/clean_posts_v2_mini_sentiment.csv \
+  --summary-out data/processed/clean_posts_v2_mini_sentiment_summary.json
+python dashboard/generate_dashboard.py --corpus data/processed/clean_posts_v2_mini_sentiment.csv \
+  --huddle-threshold auto --out-html dashboard/index_v2.html --out-readme dashboard/Dash_README_v2.md
+```
+
+Both scrapers add a timestamp to output names and refuse to overwrite. `--latest-pages` reads the newest HWZ thread pages (the page counter was fixed on 26 Sep 2026; earlier HWZ data covers page 1 of each thread only). A blind wave-2 gold sample for checking model accuracy is created by `processing/create_wave2_gold_set.py`.
+
 ### 8. Corpus sentiment and dashboard
 
 GPT-4o-mini labels sentiment on the clean corpus with the exact prompt, batching and model settings that scored macro F1 0.631 on the gold set. It is resumable: rerun the same command to retry failed batches only.

@@ -167,23 +167,23 @@
     "caveat": "Challenge-set rows often match Annotator A on every non-sentiment field; confirm independence before relying on the challenge kappa."
   },
   "corpus": {
-    "posts": 1706,
+    "posts": 1711,
     "threads": 105,
     "sentiment_gpt4o_mini": {
-      "happy": 18,
+      "happy": 17,
       "not_happy": 55,
       "neutral": 27,
-      "n": 1706
+      "n": 1711
     },
     "sentiment_gpt4o_mini_thread_weighted": {
       "happy": 19.3,
-      "not_happy": 48.6,
+      "not_happy": 48.5,
       "neutral": 32.2
     },
     "sentiment_vader_same_posts": {
       "happy": 40,
       "not_happy": 32,
-      "neutral": 28
+      "neutral": 29
     },
     "sentiment_human_gold": {
       "happy": 18,
@@ -197,39 +197,39 @@
       "not_happy": 300
     },
     "outage_threads": 22,
-    "posts_in_outage_threads": 662,
+    "posts_in_outage_threads": 665,
     "sentiment_outside_outage_threads": {
       "happy": 22,
       "not_happy": 42,
       "neutral": 36,
-      "n": 1044
+      "n": 1046
     },
     "source_sentiment": {
       "reddit": {
         "happy": 17,
         "not_happy": 60,
         "neutral": 22,
-        "n": 1253
+        "n": 1257
       },
       "hwz": {
         "happy": 18,
         "not_happy": 40,
         "neutral": 42,
-        "n": 453
+        "n": 454
       }
     },
     "source_sentiment_outside_outage_threads": {
       "reddit": {
         "happy": 25,
         "not_happy": 43,
-        "neutral": 31,
-        "n": 594
+        "neutral": 32,
+        "n": 595
       },
       "hwz": {
         "happy": 18,
         "not_happy": 40,
         "neutral": 42,
-        "n": 450
+        "n": 451
       }
     },
     "source_sentiment_human_gold": {
@@ -248,7 +248,7 @@
     },
     "source_years": {
       "reddit": {
-        "2026": 1253
+        "2026": 1257
       },
       "hwz": {
         "2019": 39,
@@ -257,25 +257,25 @@
         "2022": 20,
         "2023": 37,
         "2024": 86,
-        "2025": 153,
+        "2025": 154,
         "2026": 2
       }
     },
     "brands": {
       "Singtel": {
-        "posts": 1135,
+        "posts": 1139,
         "threads": 82,
         "not_happy_pct": 63,
         "not_happy_pct_thread_weighted": 51.2,
-        "posts_outside_outage_threads": 474,
-        "not_happy_pct_outside_outage_threads": 45
+        "posts_outside_outage_threads": 475,
+        "not_happy_pct_outside_outage_threads": 44
       },
       "StarHub": {
-        "posts": 360,
+        "posts": 361,
         "threads": 51,
         "not_happy_pct": 48,
         "not_happy_pct_thread_weighted": 45.3,
-        "posts_outside_outage_threads": 346,
+        "posts_outside_outage_threads": 347,
         "not_happy_pct_outside_outage_threads": 47
       },
       "M1": {
@@ -321,7 +321,7 @@
     },
     "issues": {
       "network_quality": {
-        "posts": 900,
+        "posts": 903,
         "threads": 89,
         "share_per_post": 52.8,
         "share_thread_weighted": 45.3,
@@ -332,7 +332,7 @@
         "posts": 116,
         "threads": 44,
         "share_per_post": 6.8,
-        "share_thread_weighted": 6.1,
+        "share_thread_weighted": 6.0,
         "not_happy_rate_pct": 50,
         "share_of_not_happy_thread_weighted": 4.8
       },
@@ -355,7 +355,7 @@
       "porting": {
         "posts": 47,
         "threads": 16,
-        "share_per_post": 2.8,
+        "share_per_post": 2.7,
         "share_thread_weighted": 2.7,
         "not_happy_rate_pct": 23,
         "share_of_not_happy_thread_weighted": 1.4
@@ -393,10 +393,10 @@
         "share_of_not_happy_thread_weighted": 4.7
       },
       "general_discussion": {
-        "posts": 156,
+        "posts": 158,
         "threads": 46,
-        "share_per_post": 9.1,
-        "share_thread_weighted": 10.7,
+        "share_per_post": 9.2,
+        "share_thread_weighted": 10.8,
         "not_happy_rate_pct": 32,
         "share_of_not_happy_thread_weighted": 7.8
       }
@@ -415,7 +415,7 @@
     "weeks_over_threshold": [
       [
         "2026-03-16",
-        349
+        352
       ],
       [
         "2026-03-23",
@@ -426,7 +426,287 @@
         42
       ]
     ],
+    "huddle_rule": "n ≥ 20",
+    "brand_rank_rule": "at least 17 posts and 10 threads",
+    "posts_without_llm_sentiment": 0,
+    "posts_by_source": {
+      "reddit": 1257,
+      "hwz": 454
+    },
     "weeks_with_queue_posts": 41
+  },
+  "corpus_v2": {
+    "posts": 9162,
+    "threads": 349,
+    "sentiment_gpt4o_mini": {
+      "happy": 19,
+      "not_happy": 44,
+      "neutral": 37,
+      "n": 9162
+    },
+    "sentiment_gpt4o_mini_thread_weighted": {
+      "happy": 18.4,
+      "not_happy": 41.9,
+      "neutral": 39.7
+    },
+    "sentiment_vader_same_posts": {
+      "happy": 46,
+      "not_happy": 28,
+      "neutral": 27
+    },
+    "sentiment_human_gold": {
+      "happy": 18,
+      "not_happy": 50,
+      "neutral": 32,
+      "n": 295
+    },
+    "vader_happy_relabelled_by_mini": {
+      "neutral": 1538,
+      "happy": 1162,
+      "not_happy": 1480
+    },
+    "outage_threads": 45,
+    "posts_in_outage_threads": 1102,
+    "sentiment_outside_outage_threads": {
+      "happy": 20,
+      "not_happy": 40,
+      "neutral": 40,
+      "n": 8060
+    },
+    "source_sentiment": {
+      "reddit": {
+        "happy": 19,
+        "not_happy": 48,
+        "neutral": 33,
+        "n": 5711
+      },
+      "hwz": {
+        "happy": 18,
+        "not_happy": 37,
+        "neutral": 44,
+        "n": 3451
+      }
+    },
+    "source_sentiment_outside_outage_threads": {
+      "reddit": {
+        "happy": 20,
+        "not_happy": 42,
+        "neutral": 37,
+        "n": 4612
+      },
+      "hwz": {
+        "happy": 18,
+        "not_happy": 37,
+        "neutral": 44,
+        "n": 3448
+      }
+    },
+    "source_sentiment_human_gold": {
+      "reddit": {
+        "happy": 21,
+        "not_happy": 51,
+        "neutral": 28,
+        "n": 209
+      },
+      "hwz": {
+        "happy": 12,
+        "not_happy": 47,
+        "neutral": 42,
+        "n": 86
+      }
+    },
+    "source_years": {
+      "reddit": {
+        "2026": 5711
+      },
+      "hwz": {
+        "2019": 39,
+        "2020": 59,
+        "2021": 57,
+        "2022": 20,
+        "2023": 37,
+        "2024": 86,
+        "2025": 154,
+        "2026": 2999
+      }
+    },
+    "brands": {
+      "Singtel": {
+        "posts": 3970,
+        "threads": 238,
+        "not_happy_pct": 48,
+        "not_happy_pct_thread_weighted": 44.8,
+        "posts_outside_outage_threads": 3185,
+        "not_happy_pct_outside_outage_threads": 42
+      },
+      "StarHub": {
+        "posts": 1638,
+        "threads": 180,
+        "not_happy_pct": 44,
+        "not_happy_pct_thread_weighted": 39.8,
+        "posts_outside_outage_threads": 1401,
+        "not_happy_pct_outside_outage_threads": 40
+      },
+      "M1": {
+        "posts": 1415,
+        "threads": 156,
+        "not_happy_pct": 40,
+        "not_happy_pct_thread_weighted": 42.8,
+        "posts_outside_outage_threads": 1396,
+        "not_happy_pct_outside_outage_threads": 40
+      },
+      "SIMBA": {
+        "posts": 1461,
+        "threads": 152,
+        "not_happy_pct": 44,
+        "not_happy_pct_thread_weighted": 44.5,
+        "posts_outside_outage_threads": 1383,
+        "not_happy_pct_outside_outage_threads": 43
+      },
+      "Giga": {
+        "posts": 360,
+        "threads": 69,
+        "not_happy_pct": 46,
+        "not_happy_pct_thread_weighted": 39.0,
+        "posts_outside_outage_threads": 331,
+        "not_happy_pct_outside_outage_threads": 43
+      },
+      "Eight": {
+        "posts": 734,
+        "threads": 109,
+        "not_happy_pct": 35,
+        "not_happy_pct_thread_weighted": 31.0,
+        "posts_outside_outage_threads": 732,
+        "not_happy_pct_outside_outage_threads": 35
+      },
+      "Zym": {
+        "posts": 580,
+        "threads": 73,
+        "not_happy_pct": 35,
+        "not_happy_pct_thread_weighted": 42.2,
+        "posts_outside_outage_threads": 566,
+        "not_happy_pct_outside_outage_threads": 35
+      },
+      "redONE": {
+        "posts": 53,
+        "threads": 13,
+        "not_happy_pct": 57,
+        "not_happy_pct_thread_weighted": 47.6,
+        "posts_outside_outage_threads": 53,
+        "not_happy_pct_outside_outage_threads": 57
+      }
+    },
+    "issues": {
+      "network_quality": {
+        "posts": 3733,
+        "threads": 267,
+        "share_per_post": 40.7,
+        "share_thread_weighted": 36.9,
+        "not_happy_rate_pct": 53,
+        "share_of_not_happy_thread_weighted": 46.2
+      },
+      "pricing_promotions": {
+        "posts": 745,
+        "threads": 163,
+        "share_per_post": 8.1,
+        "share_thread_weighted": 6.6,
+        "not_happy_rate_pct": 42,
+        "share_of_not_happy_thread_weighted": 6.7
+      },
+      "mobile_plans": {
+        "posts": 1263,
+        "threads": 202,
+        "share_per_post": 13.8,
+        "share_thread_weighted": 12.6,
+        "not_happy_rate_pct": 37,
+        "share_of_not_happy_thread_weighted": 13.0
+      },
+      "roaming": {
+        "posts": 335,
+        "threads": 81,
+        "share_per_post": 3.7,
+        "share_thread_weighted": 4.9,
+        "not_happy_rate_pct": 31,
+        "share_of_not_happy_thread_weighted": 4.5
+      },
+      "porting": {
+        "posts": 262,
+        "threads": 58,
+        "share_per_post": 2.9,
+        "share_thread_weighted": 2.8,
+        "not_happy_rate_pct": 35,
+        "share_of_not_happy_thread_weighted": 2.1
+      },
+      "customer_service": {
+        "posts": 338,
+        "threads": 115,
+        "share_per_post": 3.7,
+        "share_thread_weighted": 3.9,
+        "not_happy_rate_pct": 59,
+        "share_of_not_happy_thread_weighted": 4.6
+      },
+      "billing_payment": {
+        "posts": 264,
+        "threads": 90,
+        "share_per_post": 2.9,
+        "share_thread_weighted": 3.5,
+        "not_happy_rate_pct": 53,
+        "share_of_not_happy_thread_weighted": 3.6
+      },
+      "app_account": {
+        "posts": 335,
+        "threads": 115,
+        "share_per_post": 3.7,
+        "share_thread_weighted": 9.2,
+        "not_happy_rate_pct": 40,
+        "share_of_not_happy_thread_weighted": 4.0
+      },
+      "devices": {
+        "posts": 545,
+        "threads": 145,
+        "share_per_post": 5.9,
+        "share_thread_weighted": 6.5,
+        "not_happy_rate_pct": 35,
+        "share_of_not_happy_thread_weighted": 5.7
+      },
+      "general_discussion": {
+        "posts": 1342,
+        "threads": 178,
+        "share_per_post": 14.6,
+        "share_thread_weighted": 13.0,
+        "not_happy_rate_pct": 29,
+        "share_of_not_happy_thread_weighted": 9.6
+      }
+    },
+    "action_order": [
+      "network_quality",
+      "mobile_plans",
+      "pricing_promotions",
+      "devices",
+      "customer_service",
+      "roaming",
+      "app_account",
+      "billing_payment",
+      "porting"
+    ],
+    "weeks_over_threshold": [
+      [
+        "2026-03-16",
+        352
+      ],
+      [
+        "2026-09-14",
+        149
+      ]
+    ],
+    "huddle_rule": "n ≥ 115 (twice the median week of 57.5 over the last 26 weeks)",
+    "brand_rank_rule": "at least 92 posts and 10 threads",
+    "posts_without_llm_sentiment": 1,
+    "posts_by_source": {
+      "reddit": 5711,
+      "hwz": 3451
+    },
+    "weeks_with_queue_posts": 65
   },
   "method": "Paired bootstrap over posts, 2000 resamples, seed 7. Union is exploratory: chosen after seeing results."
 }

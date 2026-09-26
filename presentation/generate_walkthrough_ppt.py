@@ -407,10 +407,10 @@ def build(template_path: Path | None = None) -> Path:
              size=14, color=INK, space_after=2)
     add_box(s, 8.75, 1.35, 3.95, 5.35, fill=NAVY, radius=0.05)
     for i, (big, label) in enumerate([
-        ("1,706", "unique posts in 105 telco threads"),
+        ("9,162", "unique posts in 349 telco threads"),
         ("395", "posts hand-labelled for evaluation"),
         ("0.631", "sentiment macro F1, GPT-4o-mini (VADER 0.360)"),
-        ("< $4", "for every LLM job combined"),
+        ("≈ $6.50", "for all LLM work combined"),
     ]):
         stat(s, 9.1, 1.6 + i * 1.25, 3.4, big, label, big_color=GOLD, label_color=WHITE, big_size=30,
              label_size=13)
@@ -502,27 +502,27 @@ def build(template_path: Path | None = None) -> Path:
 
     # 7 — Data at a glance
     s = deck.content(
-        "15,504 rows, but 1,706 posts worth analysing",
-        "The scraped corpus has 15,504 rows, but only 2,686 unique posts: successive keyword rounds collected "
-        "the same posts again, a median of four times. Then 47 of 152 threads turned out to be off-topic. The "
-        "biggest was an insurance lawsuit thread with 98 posts that matched a keyword by accident.\n\n"
-        "So I built a clean corpus: one row per post, and a thread is kept only if at least 20% of its posts "
-        "name a telco or its title is about one. That leaves 1,706 posts in 105 threads. Every number from "
-        "here on is on that corpus, and I show shares both per post and with every thread weighted equally.",
+        "Two collection waves, 9,162 posts worth analysing",
+        "The first wave, up to 9 April, looked large: 15,504 rows. But it held only 2,693 unique posts, "
+        "because the scraper saved the same comments on repeated runs, and 47 of its 152 threads were "
+        "off-topic. Worse, 39% of what remained sat in threads about one Singtel outage.\n\n"
+        "So I collected a second wave, April to September: the newest HWZ thread pages, and Reddit posts and "
+        "replies from the Arctic Shift research archive, because Reddit now blocks unauthenticated access. "
+        "After removing duplicates by post ID and dropping off-topic threads, the combined corpus has 9,162 "
+        "posts in 349 threads, and only 12% are in outage threads.",
     )
     for i, (big, label) in enumerate([
-        ("15,504", "scraped rows"),
-        ("2,686", "unique posts"),
-        ("1,706", "posts in 105 telco threads"),
-        ("39%", "of posts in 22 outage threads"),
+        ("1,711", "wave 1 posts (to 9 Apr 2026)"),
+        ("+7,451", "wave 2 posts (Apr–Sep 2026)"),
+        ("9,162", "posts in 349 telco threads"),
+        ("12%", "in outage threads (was 39%)"),
     ]):
         x = LEFT + i * 3.1
         add_box(s, x, BODY_TOP + 0.2, 2.85, 2.2, fill=GOLD_TINT if i == 2 else TINT)
         stat(s, x + 0.25, BODY_TOP + 0.45, 2.4, big, label, big_size=38, label_size=15)
     callout(s, LEFT, 4.55, RIGHT - LEFT, 1.85, "Why it matters",
-            "Duplicates and off-topic threads inflated every count. 74% of clean posts are from 2026 and the "
-            "biggest thread is the March 2026 Singtel outage, so I check each finding with and without it.",
-            size=16)
+            "The first wave mostly measured one outage. Wave 2 adds six months of ordinary discussion, and "
+            "HWZ grows from 454 to 3,451 posts. Every share is shown per post and per thread.", size=16)
 
     # 8 — Eight problem
     s = deck.content(
@@ -729,37 +729,39 @@ def build(template_path: Path | None = None) -> Path:
 
     # 16 — Cost
     s = deck.content(
-        "Every LLM job together cost under $4",
+        "All the LLM work cost about $6.50",
         "Cost was a design constraint. Evaluating mini on 295 posts cost under one cent; GPT-4o on the same "
-        "posts cost 15 cents. The biggest job sent 8,786 unresolved posts to GPT-4o in 879 batches with a "
-        "resumable checkpoint: about 30 minutes, zero failed batches, $3.45. Labelling sentiment on the "
-        "whole clean corpus with mini cost under five cents. VADER and the rules label the same posts in a "
-        "fraction of a second for free.",
+        "posts cost 15 cents. The biggest job sent 8,786 unresolved wave-1 posts to GPT-4o: about 30 minutes, "
+        "zero failed batches, $3.45. The same pass on wave 2 cost $1.35, and sentiment on all 9,162 combined "
+        "posts cost 28 cents. The finished jobs total about $5.30; a wave-2 first pass I discarded, because "
+        "it sent Reddit posts without their thread titles, added about $1.15. VADER and the rules label the "
+        "same posts in a fraction of a second for free.",
     )
-    stat(s, LEFT, BODY_TOP + 0.1, 3.6, "$0.047", "GPT-4o-mini sentiment on all 1,706 clean posts", big_size=50,
+    stat(s, LEFT, BODY_TOP + 0.1, 3.6, "$0.28", "GPT-4o-mini sentiment on all 9,162 posts", big_size=50,
          label_size=15)
-    add_table(s, 4.6, BODY_TOP + 0.1, 8.13, [2.6, 1.6, 1.0, 1.3, 1.63],
+    add_table(s, 4.6, BODY_TOP + 0.05, 8.13, [2.9, 1.6, 1.0, 1.1, 1.53],
               ["Job", "Model", "Posts", "Seconds", "Est. USD"], [
                   ["Representative eval", "GPT-4o-mini", "295", "74", "0.0087"],
                   ["Representative eval", "GPT-4o", "295", "73", "0.145"],
                   ["Challenge eval", "GPT-4o-mini", "100", "28", "0.0030"],
                   ["Challenge eval", "GPT-4o", "100", "20", "0.050"],
-                  ["Corpus residual issues", "GPT-4o", "8,786", "1,785", "3.45"],
-                  ["Corpus sentiment", "GPT-4o-mini", "1,706", "382", "0.047"],
-              ], size=14, row_h=0.5, highlight_rows=(4, 5))
-    add_text(s, 4.6, 5.8, 8.13, 0.8,
+                  ["Wave-1 residual issues", "GPT-4o", "8,786", "1,785", "3.45"],
+                  ["Wave-2 residual issues", "GPT-4o", "3,711", "660", "1.35"],
+                  ["All-post sentiment", "GPT-4o-mini", "9,162", "—", "0.28"],
+              ], size=13, row_h=0.44, highlight_rows=(4, 5, 6))
+    add_text(s, 4.6, 5.75, 8.13, 0.8,
              "Per post: GPT-4o ≈ $0.0005, GPT-4o-mini ≈ $0.00003. VADER and rules: free, under 0.3 s.",
              size=15, color=INK)
 
     # 17 — Section D
     deck.section("D", "Findings", "What the labelled data says", "About 5 minutes",
-                 "Part D: what GPT-4o-mini sentiment and the hybrid issue labels show on the 1,706-post clean "
-                 "corpus, then a short dashboard demo.")
+                 "Part D: what GPT-4o-mini sentiment and the hybrid issue labels show on the 9,162-post "
+                 "combined corpus, the March outage as a case study, then a short dashboard demo.")
 
     # 18 — Corpus shift
     s = deck.content(
         "GPT-4o moved 2,606 posts out of General Discussion",
-        "On the full corpus, rules alone left 8,786 posts, 57%, in General Discussion. After GPT-4o "
+        "This slide is the first-wave corpus, where I ran the hybrid first. Rules alone left 8,786 posts, 57%, in General Discussion. After GPT-4o "
         "relabelled them, that dropped to 6,180. Most of the reassigned posts became Network Quality, which "
         "gained 2,080. Devices barely moved, which matches the gold result: rules already catch device posts.\n\n"
         "These corpus reassignments have no human check yet. Before they drive an alert, I'd sample them.",
@@ -777,70 +779,95 @@ def build(template_path: Path | None = None) -> Path:
 
     # 19 — Sentiment on the corpus
     s = deck.content(
-        "Most posts are not happy, and VADER hides it",
-        "On the clean corpus, GPT-4o-mini labels 55% of posts not happy and 18% happy. My human labels on the "
-        "gold set are 50% and 18%, so the corpus shares land close to human judgement. VADER on the same "
-        "posts says the opposite: 40% happy. Of the 681 posts VADER calls happy, mini reads 300 as not "
-        "happy.\n\n"
-        "Weighting every thread equally gives 49% not happy, so this isn't one thread. But one event does "
-        "drive it: the 22 outage threads hold 39% of posts, and outside them not happy is 42%.",
+        "Two in five posts are not happy, and VADER hides it",
+        "On the combined corpus, GPT-4o-mini labels 44% of posts not happy and 19% happy. With every thread "
+        "weighted equally it's 42%, and outside outage threads 40%, so this holds across weightings. VADER "
+        "on the same posts says the opposite: 46% happy. Of the 4,180 posts VADER calls happy, mini reads "
+        "1,480 as not happy.\n\n"
+        "Neutral is higher than in my gold set, 37% against 32%, probably because wave 2 adds long HWZ "
+        "plan-comparison threads. My gold labels come from wave 1 only, so I've drawn a 100-post wave-2 "
+        "gold sample to check that.",
     )
     grouped_chart(s, LEFT, BODY_TOP - 0.05, 7.6, 4.8, ["Happy", "Not happy", "Neutral"],
-                  [("VADER, clean corpus", [40, 32, 28], GRAY_BAR),
-                   ("GPT-4o-mini, clean corpus", [18, 55, 27], GOLD),
+                  [("VADER, all posts", [46, 28, 27], GRAY_BAR),
+                   ("GPT-4o-mini, all posts", [19, 44, 37], GOLD),
                    ("Human labels, gold set", [18, 50, 32], NAVY)],
                   number_format='0"%"', maximum=70)
-    add_text(s, LEFT, 6.62, 7.6, 0.35, "Shares in %; corpus n = 1,706, gold n = 295", size=12, color=MUTED)
-    stat(s, 8.6, BODY_TOP + 0.1, 4.1, "300 of 681", "posts VADER calls happy that GPT-4o-mini reads as not happy",
-         big_size=34, label_size=15)
-    callout(s, 8.6, 4.0, 4.13, 2.55, "One outage drives it",
-            "22 outage threads hold 39% of posts. Outside them, not happy falls from 55% to 42%.", size=15)
+    add_text(s, LEFT, 6.62, 7.6, 0.35, "Shares in %; corpus n = 9,162, gold n = 295 (wave 1)", size=12, color=MUTED)
+    stat(s, 8.6, BODY_TOP + 0.1, 4.1, "44% → 42% → 40%", "not happy: per post, per thread, outside outages",
+         big_size=30, label_size=15)
+    callout(s, 8.6, 4.0, 4.13, 2.55, "VADER reverses it",
+            "Of 4,180 posts VADER calls happy, GPT-4o-mini reads 1,480 as not happy and 1,538 as neutral.",
+            size=15)
 
-    # 20 — Platforms and brands
+    # 20 — Issues, platforms and brands
     s = deck.content(
-        "Platform and brand gaps are the outage, not the brand",
-        "Per post, Reddit is 60% not happy and HWZ 40%, and Singtel is 63% not happy, far above everyone "
-        "else. Both are the outage. Every Reddit post is from 2026 and Reddit holds the outage threads; HWZ "
-        "posts are mostly 2019 to 2025. Outside the outage threads, Reddit and HWZ are 43% and 40%, "
-        "matching my human labels, 51% and 47%. Singtel drops to 45%, level with StarHub at 47%.\n\n"
-        "So I don't rank brands. The smaller brands sit around 27 to 35% outside outages, but their "
-        "thread-weighted shares move by up to eleven points, and each post's one label is copied to every "
-        "brand it names.",
+        "Network leads; platforms and brands differ less than they seem",
+        "Network quality is still first, 37 to 41% of posts and 46% of the not-happy discussion. Mobile plans "
+        "are second and pricing third. App and account is small per post but spread across 115 threads.\n\n"
+        "Reddit is 48% not happy against HWZ 37% per post, 42 against 37 outside outages. The rest is topic: "
+        "HWZ is mostly plan megathreads. Brands outside outages sit within three points, 40 to 43%, except "
+        "Eight, the least negative at 35% under every weighting. So no league table.",
     )
-    add_table(s, LEFT, BODY_TOP + 0.05, 7.5, [1.7, 1.3, 2.0, 2.5], ["Not happy", "Posts", "All threads",
+    add_table(s, LEFT, BODY_TOP + 0.05, 7.5, [1.9, 1.3, 1.9, 2.4], ["Not happy", "Posts", "All threads",
                                                                     "Outside outage threads"], [
-        ["Reddit", "1,253", "60%", "43%"],
-        ["HWZ", "453", "40%", "40%"],
-        ["Singtel", "1,135", "63%", "45%"],
-        ["StarHub", "360", "48%", "47%"],
-        ["M1", "254", "35%", "34%"],
-        ["SIMBA", "157", "35%", "35%"],
-        ["Eight", "72", "28%", "27%"],
-    ], size=14, row_h=0.56, highlight_rows=(0, 2))
-    add_text(s, LEFT, 6.4, 7.5, 0.4, "Human gold labels: Reddit 51%, HWZ 47% not happy", size=12, color=MUTED)
-    callout(s, 8.5, BODY_TOP + 0.05, 4.23, 4.5, "Rule I apply",
-            ["Check every gap with the outage threads removed.",
-             "No brand league table.",
-             "Mentions are not customers: one post can name several brands."], size=15)
+        ["Reddit", "5,711", "48%", "42%"],
+        ["HWZ", "3,451", "37%", "37%"],
+        ["Singtel", "3,970", "48%", "42%"],
+        ["StarHub", "1,638", "44%", "40%"],
+        ["SIMBA", "1,461", "44%", "43%"],
+        ["M1", "1,415", "40%", "40%"],
+        ["Eight", "734", "35%", "35%"],
+    ], size=14, row_h=0.56, highlight_rows=(6,))
+    add_text(s, LEFT, 6.4, 7.5, 0.4, "Brands ranked only with ≥92 posts and ≥10 threads; human gold: Reddit 51%, HWZ 47%",
+             size=12, color=MUTED)
+    callout(s, 8.5, BODY_TOP + 0.05, 4.23, 4.5, "Top issues (share of posts)",
+            ["Network Quality 41%",
+             "Mobile Plans 14%",
+             "Pricing & Promotions 8%",
+             "App & Account 4%, in 115 threads"], size=15)
+
+    # 20b — Outage case study
+    s = deck.content(
+        "Case study: one outage distorted every number",
+        "Wave 1 is a natural experiment. 39% of it sat in threads about the 16 March Singtel outage. That "
+        "single event pushed not happy to 55%, made Singtel look uniquely negative at 63%, and made Reddit "
+        "look far more negative than HWZ, 60 against 40.\n\n"
+        "Remove the outage threads and all three collapse: 42% not happy, Singtel 44% level with StarHub 47%, "
+        "Reddit 43 against HWZ 40. That's why every finding in this deck is checked with and without them, "
+        "and why I didn't trust wave 1 alone.",
+    )
+    add_table(s, LEFT, BODY_TOP + 0.05, 7.6, [3.0, 2.3, 2.3], ["Wave 1 (1,711 posts)", "All threads",
+                                                                "Outside outage threads"], [
+        ["Not happy overall", "55%", "42%"],
+        ["Singtel not happy", "63%", "44%"],
+        ["StarHub not happy", "48%", "47%"],
+        ["Reddit vs HWZ", "60% vs 40%", "43% vs 40%"],
+    ], size=15, row_h=0.62, highlight_rows=(1, 3))
+    callout(s, 8.6, BODY_TOP + 0.05, 4.13, 4.5, "The lesson",
+            ["A single incident can create a brand gap and a platform gap.",
+             "Check with the incident removed.",
+             "More, broader data (wave 2) is the fix."], size=15)
 
     # 21 — Dashboard + huddle
     s = deck.content(
         "The dashboard runs a weekly 30-minute huddle",
         "The dashboard is built around one meeting. Step one, the queue: not-happy posts in Network Quality, "
-        "App & Account or Porting, and only act if there are at least 20. Step two, open ten source posts and "
+        "App & Account or Porting, but only act when the week is unusual. Step two, open ten source posts and "
         "drop sarcasm and mislabels. Step three, match what's left to tickets or outages. Step four, one owner "
         "and a date. Step five, next week, check whether that issue's share fell.\n\n"
-        "On the real data only three weeks cross the threshold, all in March 2026: 349, 70 and 42 posts, "
-        "the Singtel outage and its aftermath. Every other week stays quiet. That's the alert working.\n\n"
-        "[Demo] Open dashboard/index.html. Walk through: executive summary, the weekly queue chart, the tone "
-        "chart next to VADER and human labels, issue shares per post and per thread, and the recommendations "
-        "ordered by not-happy share.",
+        "A fixed threshold of 20 posts fired almost every week once I had more data, so the threshold is now "
+        "twice the median week, 115 posts. Only two weeks qualify: the March Singtel outage, 352 posts, and "
+        "14 September, 149 posts, a multi-brand week with StarHub broadband down and SIMBA app OTP failures. "
+        "That's the alert working.\n\n"
+        "[Demo] Open dashboard/index_v2.html. Walk through: executive summary, the weekly queue chart, the tone "
+        "chart next to VADER and human labels, issue shares per post and per thread, and the recommendations.",
     )
     flow(s, LEFT, 2.0, RIGHT - LEFT, 1.3, [
         "1  Queue", "2  Open 10", "3  Match", "4  One owner", "5  Next week",
     ], size=17)
     step_text = [
-        "Not-happy posts in Network, App & Account, Porting; act only if n ≥ 20",
+        "Not-happy posts in Network, App & Account, Porting; act only above 2× a normal week",
         "Read ten source posts; drop sarcasm and mislabels",
         "Tie what’s left to tickets, outages or bills",
         "Assign one squad and a response date",
@@ -850,10 +877,10 @@ def build(template_path: Path | None = None) -> Path:
     for i, text in enumerate(step_text):
         add_text(s, LEFT + i * (col_w + 0.08) + 0.05, 3.5, col_w - 0.15, 1.4, text, size=14, color=INK)
     add_box(s, LEFT, 5.2, RIGHT - LEFT, 1.3, fill=TINT)
-    add_text(s, LEFT + 0.3, 5.3, 4.3, 1.1, [[("3 weeks ", {"bold": True, "color": NAVY, "size": 22}),
-                                            ("crossed n ≥ 20", {})]], size=16, color=INK, anchor=MSO_ANCHOR.MIDDLE)
-    add_text(s, 5.4, 5.3, 7.1, 1.1, ["16, 23 and 30 March 2026: 349, 70 and 42 queue posts",
-                                    "Demo: open dashboard/index.html"],
+    add_text(s, LEFT + 0.3, 5.3, 4.3, 1.1, [[("2 weeks ", {"bold": True, "color": NAVY, "size": 22}),
+                                            ("crossed n ≥ 115", {})]], size=16, color=INK, anchor=MSO_ANCHOR.MIDDLE)
+    add_text(s, 5.4, 5.3, 7.1, 1.1, ["16 Mar: Singtel outage (352)  ·  14 Sep: multi-brand (149)",
+                                    "Demo: open dashboard/index_v2.html"],
              size=16, color=INK, anchor=MSO_ANCHOR.MIDDLE, space_after=4)
 
     # 22 — Section E
@@ -864,26 +891,26 @@ def build(template_path: Path | None = None) -> Path:
     # 23 — Recommendations
     s = deck.content(
         "Recommendations, ordered by not-happy share",
-        "The order comes from the data: each issue's share of not-happy discussion. Network is first by far, "
-        "and 412 of its 599 not-happy posts are in outage threads, so the first action is incident "
-        "communication, not coverage claims. Billing and customer service are small but the most negative "
-        "themes, 65% and 60% not happy, and their posts follow the outage: refund or goodwill credit, "
-        "support lines that couldn't be reached. Plan posts are about terms people discover late, like "
-        "fair-use limits and Caller ID charges.\n\n"
-        "App & Account is now last. My earlier sample had it at 25%; the corpus says 1 to 3%. I withdrew that "
-        "recommendation.",
+        "The order comes from the data: each issue's share of not-happy discussion on the combined corpus. "
+        "Network is first by far, and the huddle flagged two incident weeks, so the first action is incident "
+        "communication, then proving local fixes. Plans and pricing come next: terms people discover late, "
+        "like fair-use limits and Caller ID charges. Devices and the app are small but steady.\n\n"
+        "Billing and customer service are the most negative by rate but small, and in the outage case study "
+        "they were aftercare, so that's a plan for incidents rather than a standing priority. My earlier App "
+        "& Account priority, from the 158-post sample, is withdrawn.",
     )
     recs = [
         ("1  Network", "Status page and restoration ETA during incidents; join named-location posts to tickets",
          "Faster first update; fewer tickets at that location"),
-        ("2  Billing & service", "Publish the compensation rule with the outage notice; keep self-service open",
-         "Fewer compensation and “can’t reach support” posts"),
-        ("3  Product & commercial", "Show fair-use limits, add-on charges and recurring price at checkout",
+        ("2  Plans & pricing", "Show fair-use limits, add-on charges and recurring price at checkout",
          "Fewer hidden-charge threads"),
-        ("4  Devices", "Publish router, ONR and eSIM requirements per plan", "Fewer equipment threads"),
-        ("5  App, roaming, porting", "Small here (1–4% each): watch after releases; checklists and timelines",
+        ("3  Devices & app", "Publish router and eSIM requirements; watch posts after each app release",
+         "Fewer equipment and “can’t log in” threads"),
+        ("4  Incident aftercare", "Publish the compensation rule with the outage notice; keep self-service open",
+         "Fewer compensation and “can’t reach support” posts"),
+        ("5  Roaming, porting", "Small, mostly questions: a travel checklist and clearer port timelines",
          "No priority unless volume rises"),
-        ("6  Weekly huddle", "Act only when a week crosses n ≥ 20; one owner, one date",
+        ("6  Weekly huddle", "Act only when a week reaches twice a normal week; one owner, one date",
          "That issue’s share falls next week"),
     ]
     card_w, card_h = (RIGHT - LEFT - 0.25 * 2) / 3, 2.3
@@ -908,7 +935,8 @@ def build(template_path: Path | None = None) -> Path:
         "you don't tune on.\n\n"
         "Fourth, two gaps that looked like insights, Reddit versus HWZ and Singtel versus everyone, were one "
         "outage.\n\n"
-        "Fifth, row counts lie: 15,504 rows were 2,686 unique posts, and 47 threads weren't about telcos.",
+        "Fifth, the data itself had bugs: 15,504 rows were 2,693 unique posts, and the HWZ scraper had only "
+        "ever read page one of each thread. Fixing that is what made wave 2 possible.",
     )
     insights = [
         ("A perfect score was the warning sign", "100% VADER accuracy came from model-prefilled labels."),
@@ -917,7 +945,7 @@ def build(template_path: Path | None = None) -> Path:
                                                     "posts, where GPT-4o on every post won."),
         ("Two ‘insights’ were one outage", "Reddit vs HWZ and Singtel vs StarHub both close once the 22 outage "
                                            "threads are removed."),
-        ("Row counts overstate voices", "15,504 rows → 2,686 unique posts → 1,706 in telco threads."),
+        ("The data had bugs too", "15,504 rows → 2,693 unique posts; HWZ scraper only read page 1 of threads."),
     ]
     for i, (head, body) in enumerate(insights):
         y = BODY_TOP + i * 1.0
@@ -930,22 +958,21 @@ def build(template_path: Path | None = None) -> Path:
     # 25 — Limitations
     s = deck.content(
         "Limitations I’d flag to any reader",
-        "I want to be upfront about the limits. On the data side: forum users choose to post, so they aren't "
-        "Singapore subscribers at large; replies cluster by thread; 39% of the clean posts sit in outage "
-        "threads, and every Reddit post is from 2026, so the findings describe one incident period as much "
-        "as the market; and I have no tickets or NPS to validate against.\n\nOn the method side: mini matches "
-        "my labels on about two-thirds of posts, and two humans only agree at kappa 0.38; the hybrid's 0.680 "
-        "is optimistic; the 2,606 corpus reassignments aren't human-checked; and a multi-brand post gives its "
-        "one sentiment to every brand it names.",
+        "On the data side: forum users choose to post, so they aren't Singapore subscribers at large; replies "
+        "cluster by thread; 95% of posts are from 2026; wave-2 Reddit comes from a research archive, which "
+        "can miss deleted posts; and I have no tickets or NPS to validate against.\n\nOn the method side: "
+        "mini matches my labels on about two-thirds of posts, and two humans only agree at kappa 0.38; all my "
+        "gold labels are wave-1 posts, so accuracy on wave 2 is assumed until the new gold sample is labelled; "
+        "the hybrid's 0.680 is optimistic; and a multi-brand post gives its one sentiment to every brand.",
     )
     for x, head, items in [
         (LEFT, "Data", ["Forum posters self-select; they are not all subscribers",
-                        "39% of posts in outage threads; Reddit is all 2026",
-                        "Replies cluster by thread, so posts aren’t independent",
+                        "95% of posts from 2026; replies cluster by thread",
+                        "Wave-2 Reddit via a research archive",
                         "No tickets, outages or NPS to validate against"]),
         (6.8, "Method", ["Mini matches humans on ~2/3 of posts; humans agree at κ 0.38",
+                         "Gold labels are wave 1 only; wave-2 check pending",
                          "Hybrid’s 0.680 is optimistic (0.509 held out)",
-                         "2,606 corpus reassignments not human-checked",
                          "One sentiment is copied to every brand in a post"]),
     ]:
         add_box(s, x, BODY_TOP + 0.05, 5.93, 4.3, fill=TINT)
@@ -955,16 +982,16 @@ def build(template_path: Path | None = None) -> Path:
     # 26 — Next steps
     s = deck.content(
         "Next steps, in order",
-        "Four next steps. One: confirm the second annotator labelled the challenge posts independently, then "
-        "adjudicate disagreements in a separate file. Two: settle hybrid versus GPT-4o on every post with a "
-        "fresh held-out sample, since my two gold sets disagree. Three: collect beyond the 2026 outage, with "
-        "more HWZ threads from 2024 to 2026 and more MVNOs. Four: brand-level sentiment, so a post praising "
-        "StarHub and criticising Singtel gets two labels, and validation against real tickets.",
+        "Four next steps. One: label the 100-post wave-2 gold sample, which is already drawn, and score mini "
+        "on it, so the combined findings rest on measured accuracy. Two: relabel the double-annotation overlap "
+        "under the new guide rule and adjudicate. Three: settle hybrid versus GPT-4o on every post with a "
+        "fresh held-out sample, since my two gold sets disagree. Four: brand-level sentiment, so a post "
+        "praising StarHub and criticising Singtel gets two labels, and validation against real tickets.",
     )
     steps = [
-        ("1", "Agreement", "Confirm annotator B’s independence; adjudicate in a new file"),
-        ("2", "Fresh held-out test", "Hybrid vs GPT-4o on every post, on new posts"),
-        ("3", "Beyond the outage", "More HWZ threads 2024–2026 and more MVNOs"),
+        ("1", "Wave-2 gold check", "Label the 100-post sample; score GPT-4o-mini on it"),
+        ("2", "Agreement", "Relabel the overlap under the new rule; adjudicate"),
+        ("3", "Fresh held-out test", "Hybrid vs GPT-4o on every post, on new posts"),
         ("4", "Brand-level sentiment", "One label per brand per post; validate against tickets"),
     ]
     card_w = (RIGHT - LEFT - 0.25 * 3) / 4
@@ -1012,13 +1039,14 @@ def build(template_path: Path | None = None) -> Path:
         ("Why keep VADER at all?",
          "It’s free, local and deterministic: a baseline to beat. I no longer use it for any headline share."),
         ("Is Reddit more negative than HWZ? Is Singtel worst?",
-         "Neither, once the 22 outage threads are removed: Reddit 43% vs HWZ 40%, Singtel 45% vs StarHub 47%."),
+         "Outside outage threads, Reddit 42% vs HWZ 37%, mostly topic mix; brands sit within 3 points (Singtel "
+         "42%, StarHub 40%), with Eight lowest at 35%."),
         ("What about privacy and ethics?",
          "Public posts only, no usernames in outputs, no identifiers sent to the API, and API keys kept in "
          "environment variables, never in code."),
         ("Can this estimate NPS or market share?",
-         "No. Posters self-select, replies cluster by thread, and one outage dominates. It’s a triage queue, "
-         "not a population measure."),
+         "No. Posters self-select, replies cluster by thread, and 95% of posts are from 2026. It’s a triage "
+         "queue, not a population measure."),
     ]
     qa_notes = {
         0: "If pushed on cost: the whole clean corpus with GPT-4o on every post would be about $0.85.",

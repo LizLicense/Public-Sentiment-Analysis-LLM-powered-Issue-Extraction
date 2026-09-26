@@ -215,8 +215,11 @@ def annotator_agreement() -> dict:
     return out
 
 
-def corpus_findings() -> dict:
-    rows, stats = dash.analyse(dash.MINI_CORPUS, EVAL / "representative_annotator_a.csv")
+V2_CORPUS = PROJECT_ROOT / "data/processed/clean_posts_v2_mini_sentiment.csv"
+
+
+def corpus_findings(path: Path | None = None, threshold: str = str(dash.HUDDLE_THRESHOLD)) -> dict:
+    rows, stats = dash.analyse(path or dash.MINI_CORPUS, EVAL / "representative_annotator_a.csv", threshold)
     outage = {r["thread_key"] for r in rows if OUTAGE_TITLE.search(r["thread_title"])}
     rest = [r for r in rows if r["thread_key"] not in outage]
     pct_nh = lambda sub: dash.pct(sum(r["sentiment_final"] == "not_happy" for r in sub), len(sub))
@@ -267,6 +270,10 @@ def corpus_findings() -> dict:
         "issues": issues,
         "action_order": stats["action_order"],
         "weeks_over_threshold": stats["weeks_over"],
+        "huddle_rule": stats["huddle_rule"],
+        "brand_rank_rule": stats["brand_rank_rule"],
+        "posts_without_llm_sentiment": stats["llm_missing"],
+        "posts_by_source": {s: sum(r["source"] == s for r in rows) for s in ("reddit", "hwz")},
         "weeks_with_queue_posts": len(stats["weeks"]),
     }
 
@@ -287,6 +294,7 @@ def main() -> None:
         "stability": stability(),
         "annotator_agreement": annotator_agreement(),
         "corpus": corpus_findings(),
+        "corpus_v2": corpus_findings(V2_CORPUS, "auto") if V2_CORPUS.exists() else None,
         "method": f"Paired bootstrap over posts, {BOOTSTRAPS} resamples, seed {SEED}. Union is exploratory: chosen after seeing results.",
     }
     OUT.write_text(json.dumps(summary, indent=2, ensure_ascii=False), encoding="utf-8")

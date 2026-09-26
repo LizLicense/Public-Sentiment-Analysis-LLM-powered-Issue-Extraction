@@ -37,57 +37,24 @@ Capstone telco forum sentiment pipeline — scrape, label, analyse, and visualis
 
 ---
 
-## Key findings (clean corpus, 26 Sep 2026)
+## Key findings (v2 corpus, 26 Sep 2026)
 
-Based on **1,706 unique posts in 105 telco threads** (`data/processed/clean_posts_2026-08-21_203752_mini_sentiment.csv`): GPT-4o-mini sentiment, hybrid issue labels. All figures are in `data/evaluation/robustness_summary.json` (`python models/robustness_checks.py`).
+v2 = original corpus + wave 2 (10 Apr–26 Sep 2026): **9,162 unique posts in 349 telco threads** (5,711 Reddit, 3,451 HWZ; 12% in outage threads). Figures: `data/evaluation/robustness_summary.json` → `corpus_v2`. Dashboard: `dashboard/index_v2.html`.
 
-### Sentiment
-
-| Labeller | Happy | Not happy | Neutral |
-|----------|-------|-----------|---------|
-| GPT-4o-mini, per post | 18% | 55% | 27% |
-| GPT-4o-mini, thread-weighted | 19% | 49% | 32% |
-| VADER, same posts | 40% | 32% | 28% |
-| Human gold (295 posts) | 18% | 50% | 32% |
-
-- **One outage dominates:** 22 outage threads hold 662 posts (39%). Outside them, not happy falls to 42%.
-- **No platform gap:** Reddit 60% vs HWZ 40% not happy per post, but Reddit is all 2026 and holds the outage threads. Outside them: Reddit 43%, HWZ 40% (human gold: 51% vs 47%).
-
-### Issues
-
-| Theme | Share per post | Thread-weighted | Not-happy rate |
-|-------|----------------|-----------------|----------------|
-| Network Quality | 52.8% | 45.3% | 67% |
-| Mobile Plans | 12.2% | 13.4% | 38% |
-| General Discussion | 9.1% | 10.7% | 32% |
-| Pricing & Promotions | 6.8% | 6.1% | 50% |
-| Devices | 6.2% | 6.0% | 42% |
-| Billing & Payment | 3.6% | 4.7% | 65% |
-| Customer Service | 3.0% | 4.1% | 60% |
-| Porting | 2.8% | 2.7% | 23% |
-| Roaming | 2.2% | 3.7% | 37% |
-| App & Account | 1.2% | 3.3% | 52% |
-
-### Cross-brand (not happy; brands with ≥10 posts)
-
-| Telco | Posts | Overall | Outside outage threads |
-|-------|-------|---------|------------------------|
-| Singtel | 1,135 | 63% | 45% |
-| StarHub | 360 | 48% | 47% |
-| M1 | 254 | 35% | 34% |
-| SIMBA | 157 | 35% | 35% |
-| Zym | 48 | 38% | 33% |
-| Giga | 64 | 34% | 34% |
-| Eight | 72 | 28% | 27% |
-
-**Takeaways:** incident communication first (412 of 599 not-happy network posts are in outage threads); outage aftercare in billing and customer service (the most negative small themes); comparable plan terms (fair-use, add-on charges). App & Account, roaming and porting are small. Singtel's lead is the outage; no brand league table.
+- **Sentiment (GPT-4o-mini):** 19% happy / 44% not happy / 37% neutral per post; 42% not happy thread-weighted; 40% outside outage threads. VADER on the same posts: 46% happy.
+- **Issues:** Network Quality 41% of posts (37% thread-weighted), Mobile Plans 14%, Pricing 8%, App & Account 4% per post but in 115 threads (9% thread-weighted).
+- **Platforms:** Reddit 48% vs HWZ 37% not happy per post; 42% vs 37% outside outages — mostly topic mix.
+- **Brands (outside outages):** Singtel 42%, StarHub 40%, SIMBA 43%, M1 40%, Giga 43%, Eight 35% (least negative under every weighting). No league table.
+- **Huddle (threshold 2× median week = 115):** only 16 Mar 2026 (Singtel outage, 352) and 14 Sep 2026 (multi-brand: StarHub broadband, SIMBA app OTP, 149).
+- **Case study (original 1,711 posts):** 39% in outage threads; not happy 55% → 42% without them; Singtel 63% → 44%; Reddit vs HWZ 60/40 → 43/40.
 
 ### Evaluation updates
 
 - **Held-out challenge set:** GPT-4o-mini sentiment 0.773 vs GPT-4o 0.712 vs VADER 0.491. Issues: GPT-4o all posts 0.596 beats rules 0.499 and hybrid 0.509. The hybrid's representative-set 0.680 is optimistic.
 - **Bootstrap 95% CIs (representative):** mini − VADER +0.271 (0.191 to 0.347); mini − GPT-4o tie; GPT-4o all posts − rules tie; hybrid − rules +0.041 (0.011 to 0.072).
 - **Stability:** a second GPT-4o-mini run reproduced 292/295 sentiment labels (κ 0.98).
-- **Annotator agreement** (`double_annotation_annotator_b_filled_guide.csv`): sentiment κ 0.38 (representative, n=58), 0.63 (challenge, n=40; independence unconfirmed). Main disagreement: bare outage reports, `not_happy` (A) vs `neutral` (B).
+- **Annotator agreement** (`double_annotation_annotator_b_filled_guide.csv`): sentiment κ 0.38 (representative), 0.63 (challenge; independence unconfirmed).
+- **Pending:** label `data/evaluation/wave2_annotator_a.csv` (100 blind wave-2 posts) and score GPT-4o-mini on it.
 
 ---
 

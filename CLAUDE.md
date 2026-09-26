@@ -33,6 +33,9 @@ Handoff from Cursor agent chats in this workspace (through 21 Sep 2026). Read th
 - **Held-out result:** on the 100 challenge posts the hybrid (0.509) does not significantly beat rules (0.499); GPT-4o on every post is best (0.596). Present the hybrid's 0.680 as optimistic. All figures: `data/evaluation/robustness_summary.json` (`models/robustness_checks.py`, no API calls).
 - **Singtel / outage:** 22 outage threads hold 39% of clean posts. Singtel is 63% not happy overall but 45% outside them (StarHub 47%). Do not rank brands.
 
+- **v2 corpus is the main corpus (26 Sep 2026).** v2 = original + wave 2 (10 Apr–26 Sep 2026): 9,162 unique posts in 349 threads (`data/processed/clean_posts_v2_mini_sentiment.csv`; build with `processing/prepare_wave2.py` then `--merge`). Report findings, recommendations, `dashboard/index_v2.html` and the deck use v2; the original 1,711-post corpus (`index_v1.html`) is the March 2026 outage case study. v2 figures: `robustness_summary.json` → `corpus_v2`. Wave-2 Reddit comes from the Arctic Shift archive (`scrapers/reddit_archive_scraper.py`) because Reddit blocks unauthenticated access; HWZ wave 2 uses `--latest-pages` (the HWZ page counter was broken before, so old HWZ data is page 1 of each thread only). Model accuracy is measured on wave-1 gold only; `data/evaluation/wave2_annotator_a.csv` (100 posts, blank) is the pending wave-2 check. v2 huddle threshold is `auto` (2× median week = 115), not 20. Brands are ranked only with ≥1% of posts and ≥10 threads.
+- **LLM spend so far:** about $5.30 for finished jobs plus ~$1.15 for a discarded wave-2 pass (Reddit rows sent without thread titles); never say "under $4" again.
+
 ## Still open
 
 - Title page in `final_report.tex`: surname, student ID, course, supervisor. Then compile and skim the PDF.

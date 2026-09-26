@@ -1,0 +1,19 @@
+{
+  "input_path": "data/processed/clean_posts_v2_mini_sentiment.csv",
+  "seed": 20260926,
+  "wave2_rows": 7451,
+  "eligible_rows": 5719,
+  "eligible_by_source": {
+    "hwz": 2542,
+    "reddit": 3177
+  },
+  "eligible_threads": 224,
+  "max_rows_per_thread": 5,
+  "size": 100,
+  "by_source": {
+    "hwz": 44,
+    "reddit": 56
+  },
+  "threads_in_sample": 73,
+  "excluded": "no detected telco, duplicate text, or shorter than --min-chars"
+}

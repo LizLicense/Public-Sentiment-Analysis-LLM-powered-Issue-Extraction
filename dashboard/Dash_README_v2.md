@@ -2,7 +2,7 @@
 
 Static HTML dashboard for Singapore telco forum discussion (Reddit + HWZ).
 
-**Auto-generated:** 2026-09-26 12:36 UTC
+**Auto-generated:** 2026-09-26 12:38 UTC
 
 ## Generate / refresh
 
@@ -46,5 +46,5 @@ Sentiment (GPT-4o-mini): 19% happy / 44% not happy / 37% neutral.
 - Weekly huddle queue over time against the threshold: n ≥ 115 (twice the median week of 57.5 over the last 26 weeks)
 - Sentiment (with the human-label check), Reddit vs HWZ on the same labeller
 - Issue shares per post and thread-weighted; not-happy posts by issue
-- Brand mentions and not-happy share for brands with at least 10 mentions
+- Brand mentions and not-happy share for brands with at least 92 posts and 10 threads
 - Per-telco table, quotes, recommendations ordered by not-happy share, limitations

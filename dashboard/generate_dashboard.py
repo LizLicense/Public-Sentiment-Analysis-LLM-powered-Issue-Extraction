@@ -102,6 +102,9 @@ ISSUE_ACTIONS = {
 HUDDLE_ISSUES = ("network_quality", "app_account", "porting")
 HUDDLE_THRESHOLD = 20
 MIN_BRAND_MENTIONS = 10
+# A brand is ranked only with enough threads and enough of the corpus that one thread cannot drive it.
+MIN_BRAND_THREADS = 10
+MIN_BRAND_SHARE = 0.01
 
 
 def read_csv(path: Path) -> list[dict]:
@@ -320,7 +323,9 @@ def analyse(
             "neg_pct": pct(sum(r["sentiment_final"] == "not_happy" for r in sub), len(sub)),
             "top_issues": ", ".join(ISSUE_DISPLAY[k] for k, _ in ic.most_common(2)) or "General Discussion",
         })
-    ranked = sorted((b for b in brand_table if b["mentions"] >= MIN_BRAND_MENTIONS), key=lambda b: -b["neg_pct"])
+    min_posts = max(MIN_BRAND_MENTIONS, round(MIN_BRAND_SHARE * n))
+    rankable = lambda b: b["mentions"] >= min_posts and b["threads"] >= MIN_BRAND_THREADS
+    ranked = sorted((b for b in brand_table if rankable(b)), key=lambda b: -b["neg_pct"])
 
     weeks = weekly_queue(rows)
     huddle_n, huddle_rule = resolve_threshold(weeks, threshold)
@@ -355,6 +360,7 @@ def analyse(
         "brand_mentions": [(b["brand"], b["mentions"]) for b in brand_table],
         "brand_table": [b for b in brand_table if b["mentions"] >= 5],
         "brands_ranked": ranked,
+        "brand_rank_rule": f"at least {min_posts} posts and {MIN_BRAND_THREADS} threads",
         "weeks": weeks,
         "weeks_over": [w for w in weeks if w[1] >= huddle_n],
         "quotes": pick_quotes(rows, action_order),
@@ -401,7 +407,7 @@ def build_executive_summary(stats: dict) -> str:
         f"<strong>{ISSUE_DISPLAY[first]} leads</strong> ({it[first]}% with every thread weighted equally, {ip[first]}% per post), "
         f"then {ISSUE_DISPLAY[second]} ({it[second]}%). {ISSUE_DISPLAY[hurt]} carries the most not-happy discussion. "
         f"Using the same labeller on both sources, Reddit is {src.get('reddit', {}).get('not_happy', 0)}% not happy and "
-        f"HWZ {src.get('hwz', {}).get('not_happy', 0)}%. Among brands with at least {MIN_BRAND_MENTIONS} mentions, "
+        f"HWZ {src.get('hwz', {}).get('not_happy', 0)}% (the platforms also discuss different topics). Among brands with {stats['brand_rank_rule']}, "
         f"{brands} show the highest not-happy share. In the weekly huddle view, {huddle}. "
         f"Sentiment by {who}; issues by keyword rules plus GPT-4o."
     )
@@ -459,7 +465,7 @@ Sentiment ({labeller_name(stats)}): {s["happy"]}% happy / {s["not_happy"]}% not 
 - Weekly huddle queue over time against the threshold: {stats["huddle_rule"]}
 - Sentiment (with the human-label check), Reddit vs HWZ on the same labeller
 - Issue shares per post and thread-weighted; not-happy posts by issue
-- Brand mentions and not-happy share for brands with at least {MIN_BRAND_MENTIONS} mentions
+- Brand mentions and not-happy share for brands with {stats["brand_rank_rule"]}
 - Per-telco table, quotes, recommendations ordered by not-happy share, limitations
 """
 
@@ -504,8 +510,9 @@ def render_html(stats: dict) -> str:
     elif abs(reddit["not_happy"] - hwz["not_happy"]) < 10:
         source_title = "Reddit and HWZ read similarly on the same labeller"
     else:
-        louder, quieter = ("Reddit", "HWZ") if reddit["not_happy"] > hwz["not_happy"] else ("HWZ", "Reddit")
-        source_title = f"{louder} reads more negative than {quieter}"
+        # A per-post gap mixes platform with topic and period (e.g. an outage on one platform),
+        # so the title reports the gap without calling it a platform effect.
+        source_title = f"Reddit–HWZ gap of {abs(reddit['not_happy'] - hwz['not_happy'])} points: check topic mix first"
 
     def brand_cell(row: dict) -> str:
         note = f' <span class="small-n">n&lt;{MIN_BRAND_MENTIONS}</span>' if row["mentions"] < MIN_BRAND_MENTIONS else ""
@@ -535,7 +542,7 @@ def render_html(stats: dict) -> str:
         if weeks_over else "No week reached the threshold"
     )
     ranked_note = (
-        f"% not happy for brands with at least {MIN_BRAND_MENTIONS} mentions. A brand's share can be driven by one "
+        f"% not happy for brands with {stats['brand_rank_rule']}. A brand's share can be driven by one "
         f"event thread, so check the Threads column before reading it as brand-wide."
         if ranked else "No brand has at least 10 mentions."
     )
@@ -650,7 +657,7 @@ def render_html(stats: dict) -> str:
         <span class="huddle-pill">{queue_pill}</span>
       </div>
       <div class="chart-wrap"><canvas id="weekChart"></canvas></div>
-      <p class="huddle-warn">Rank only brands with at least {MIN_BRAND_MENTIONS} mentions. Never publish a brand league table.</p>
+      <p class="huddle-warn">Rank only brands with {html.escape(stats["brand_rank_rule"])}. Never publish a brand league table.</p>
     </section>
 
     <div class="kpi-grid">
@@ -673,6 +680,7 @@ def render_html(stats: dict) -> str:
         <p class="subtitle">
           {who}: Reddit {reddit["not_happy"]}% not happy (n={reddit["n"]:,}) vs HWZ {hwz["not_happy"]}% (n={hwz["n"]:,}).
           Human gold labels: Reddit {gold.get("reddit", {}).get("not_happy", 0)}% vs HWZ {gold.get("hwz", {}).get("not_happy", 0)}%.
+          The platforms discuss different topics and periods, so a gap is not a platform effect on its own.
         </p>
         <div class="chart-wrap"><canvas id="sourceChart"></canvas></div>
       </div>

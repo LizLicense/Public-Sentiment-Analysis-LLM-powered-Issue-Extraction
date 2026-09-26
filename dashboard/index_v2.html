@@ -76,7 +76,7 @@
       <p class="meta">
         Reddit + HWZ &middot; 9,162 unique posts in 349 telco threads &middot;
         2019-03-26 to 2026-09-26 &middot; sentiment: GPT-4o-mini &middot;
-        issues: keyword rules + GPT-4o &middot; generated 2026-09-26 12:36 UTC &middot; data/processed/clean_posts_v2_mini_sentiment.csv
+        issues: keyword rules + GPT-4o &middot; generated 2026-09-26 12:38 UTC &middot; data/processed/clean_posts_v2_mini_sentiment.csv
       </p>
     </header>
 
@@ -84,7 +84,7 @@
 
     <section class="exec-summary">
       <h2>Executive Summary</h2>
-      <p>An <strong>early-warning screen</strong>, not CSAT or NPS: 9,162 unique posts in 349 telco threads (2019-03-26 to 2026-09-26; 95% from 2026). The three largest threads hold 10% of posts; the biggest is “zym.sg Mobile (Singtel MVNO)”. GPT-4o-mini, the labeller that best matched human labels (macro F1 0.631 vs VADER 0.360), reads <strong>44% of posts as not happy</strong> and 19% as happy; VADER on the same posts says 28% and 46%. <strong>Network Quality leads</strong> (36.9% with every thread weighted equally, 40.7% per post), then Mobile Plans (12.6%). Network Quality carries the most not-happy discussion. Using the same labeller on both sources, Reddit is 48% not happy and HWZ 37%. Among brands with at least 10 mentions, redONE (57% not happy, n=53) and Singtel (48% not happy, n=3970) show the highest not-happy share. In the weekly huddle view, 2 week(s) crossed the huddle threshold (n ≥ 115 (twice the median week of 57.5 over the last 26 weeks)), the largest 352 posts in the week of 2026-03-16. Sentiment by GPT-4o-mini; issues by keyword rules plus GPT-4o.</p>
+      <p>An <strong>early-warning screen</strong>, not CSAT or NPS: 9,162 unique posts in 349 telco threads (2019-03-26 to 2026-09-26; 95% from 2026). The three largest threads hold 10% of posts; the biggest is “zym.sg Mobile (Singtel MVNO)”. GPT-4o-mini, the labeller that best matched human labels (macro F1 0.631 vs VADER 0.360), reads <strong>44% of posts as not happy</strong> and 19% as happy; VADER on the same posts says 28% and 46%. <strong>Network Quality leads</strong> (36.9% with every thread weighted equally, 40.7% per post), then Mobile Plans (12.6%). Network Quality carries the most not-happy discussion. Using the same labeller on both sources, Reddit is 48% not happy and HWZ 37% (the platforms also discuss different topics). Among brands with at least 92 posts and 10 threads, Singtel (48% not happy, n=3970) and Giga (46% not happy, n=360) show the highest not-happy share. In the weekly huddle view, 2 week(s) crossed the huddle threshold (n ≥ 115 (twice the median week of 57.5 over the last 26 weeks)), the largest 352 posts in the week of 2026-03-16. Sentiment by GPT-4o-mini; issues by keyword rules plus GPT-4o.</p>
     </section>
 
     <section class="huddle">
@@ -108,7 +108,7 @@
         <span class="huddle-pill">2 week(s) at or above threshold; peak 352 posts</span>
       </div>
       <div class="chart-wrap"><canvas id="weekChart"></canvas></div>
-      <p class="huddle-warn">Rank only brands with at least 10 mentions. Never publish a brand league table.</p>
+      <p class="huddle-warn">Rank only brands with at least 92 posts and 10 threads. Never publish a brand league table.</p>
     </section>
 
     <div class="kpi-grid">
@@ -127,10 +127,11 @@
         <div class="chart-wrap"><canvas id="sentimentChart"></canvas></div>
       </div>
       <div class="chart-card">
-        <h3>Reddit reads more negative than HWZ</h3>
+        <h3>Reddit–HWZ gap of 11 points: check topic mix first</h3>
         <p class="subtitle">
           GPT-4o-mini: Reddit 48% not happy (n=5,711) vs HWZ 37% (n=3,451).
           Human gold labels: Reddit 51% vs HWZ 47%.
+          The platforms discuss different topics and periods, so a gap is not a platform effect on its own.
         </p>
         <div class="chart-wrap"><canvas id="sourceChart"></canvas></div>
       </div>
@@ -156,7 +157,7 @@
       </div>
       <div class="chart-card">
         <h3>Investigate large-n brands first</h3>
-        <p class="subtitle">% not happy for brands with at least 10 mentions. A brand's share can be driven by one event thread, so check the Threads column before reading it as brand-wide.</p>
+        <p class="subtitle">% not happy for brands with at least 92 posts and 10 threads. A brand's share can be driven by one event thread, so check the Threads column before reading it as brand-wide.</p>
         <div class="chart-wrap tall"><canvas id="negRateChart"></canvas></div>
       </div>
     </div>
@@ -299,10 +300,10 @@
       options: { indexAxis: "y", responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
     });
 
-    const negRates = [57, 48, 46, 44, 44, 40, 35, 35];
+    const negRates = [48, 46, 44, 44, 40, 35, 35];
     new Chart(document.getElementById("negRateChart"), {
       type: "bar",
-      data: { labels: ["redONE (n=53)", "Singtel (n=3970)", "Giga (n=360)", "StarHub (n=1638)", "SIMBA (n=1461)", "M1 (n=1415)", "Eight (n=734)", "Zym (n=580)"],
+      data: { labels: ["Singtel (n=3970)", "Giga (n=360)", "StarHub (n=1638)", "SIMBA (n=1461)", "M1 (n=1415)", "Eight (n=734)", "Zym (n=580)"],
         datasets: [{ data: negRates, backgroundColor: negRates.map(v => v>=50?"#ef4444":v>=35?"#f59e0b":"#22c55e"), borderRadius: 6 }] },
       options: { responsive: true, maintainAspectRatio: false,
         scales: { y: { max: 100, ticks: { callback: v => v+"%" } } }, plugins: { legend: { display: false } } }

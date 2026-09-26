@@ -56,9 +56,9 @@ of Singapore Telecommunications Discussions}
 \vfill
 
 \begin{abstract}
-Singapore telecommunications operators receive continuous, unsolicited customer feedback through online forums, but the volume, informality and platform-specific language make manual monitoring difficult. This project develops an end-to-end pipeline that collects forum discussions, normalises heterogeneous records, identifies telecommunications brands, assigns sentiment and issue labels, and presents findings through static and interactive dashboards. The implemented dataset contains 15,504 cleaned records collected mainly from Reddit and HardwareZone (HWZ). After removing ambiguous uses of the Eight brand name, a focused dashboard sample contains 158 telco-relevant records: 96 (61\%) are labelled happy, 34 (22\%) not happy and 28 (18\%) neutral. Network quality is the largest primary issue theme (41 records, 26\%), followed by app and account (39 records, 25\%) and general discussion (18 records, 11\%).
+Singapore telecommunications operators receive continuous, unsolicited customer feedback through online forums, but the volume, informality and platform-specific language make manual monitoring difficult. This project develops an end-to-end pipeline that collects forum discussions, normalises heterogeneous records, identifies telecommunications brands, assigns sentiment and issue labels, and presents findings through a static HTML dashboard. The scraped corpus contains 15,504 rows from Reddit and HardwareZone (HWZ) but only 2,686 unique posts; after removing duplicates and 47 off-topic threads, the analysis corpus holds 1,706 posts in 105 telco threads. GPT-4o-mini labels 55\% of these posts not happy and 18\% happy, close to independent human labels on a gold set (50\% and 18\%), whereas VADER on the same posts reports 32\% and 40\%. Network quality is the largest issue theme per post and with threads weighted equally (53\% and 45\%), followed by mobile plans (12--13\%). Most negativity comes from a March 2026 Singtel outage: outside 22 outage threads the not-happy share falls to 42\%, an apparent Reddit--HWZ gap disappears (43\% versus 40\%), and Singtel's not-happy share (45\%) matches StarHub's (47\%).
 
-The system combines deterministic brand matching, VADER sentiment, a keyword issue taxonomy, an optional Hugging Face sentiment model and OpenAI chat-completions classification. Independent human labels on a blinded 300-row representative sample (295 telco-relevant rows) show that \textbf{gpt-4o-mini-2024-07-18} improves sentiment over VADER (macro F1 0.631 versus 0.360; accuracy 67\% versus 37\%). \textbf{gpt-4o-2024-08-06} is similar on sentiment (macro F1 0.623) and still loses to keyword issue rules when it labels every row (macro F1 0.600 versus 0.639). A hybrid that keeps rule labels and applies GPT-4o only to unresolved \texttt{general\_discussion} rows raises issue macro F1 to \textbf{0.680}. That hybrid was then applied to 8,786 unresolved corpus rows (29.7 minutes, estimated \textbf{\$3.45}). The 158-row dashboard sample uses VADER sentiment and hybrid issue labels (keyword rules, then GPT-4o on unmatched \texttt{general\_discussion} rows). An earlier 150-record VADER ``100\% accuracy'' file is discarded because its labels match VADER exactly and were model-prefilled. The operational recommendation is therefore hybrid: LLM sentiment (mini is sufficient) and keyword rules plus GPT-4o on unresolved issues. The business analysis indicates that operators should prioritise transparent pricing and network-tier communication, location-specific network evidence, robust number-porting journeys and clearer roaming propositions. The principal contribution is a reproducible analytics workflow that converts noisy forum data into decision-oriented signals while making its evidential limits explicit.
+The system combines deterministic brand matching, VADER sentiment, a keyword issue taxonomy, an optional Hugging Face sentiment model and OpenAI chat-completions classification. Independent human labels on a blinded 300-row representative sample (295 telco-relevant rows) show that \textbf{gpt-4o-mini-2024-07-18} improves sentiment over VADER (macro F1 0.631 versus 0.360; accuracy 67\% versus 37\%). \textbf{gpt-4o-2024-08-06} is similar on sentiment (macro F1 0.623) and still loses to keyword issue rules when it labels every row (macro F1 0.600 versus 0.639). A hybrid that keeps rule labels and applies GPT-4o only to unresolved \texttt{general\_discussion} rows raises issue macro F1 to \textbf{0.680}, and was applied to 8,786 unresolved corpus rows (29.7 minutes, estimated \textbf{\$3.45}). On a held-out 100-post challenge set of harder posts, the sentiment result holds (GPT-4o-mini 0.773 versus VADER 0.491), but the hybrid's gain over rules is not significant (0.509 versus 0.499) and GPT-4o labelling every post scores best (0.596), so no single issue method wins on both sets. GPT-4o-mini sentiment on the clean corpus cost \$0.047, and a repeated run reproduced 292 of 295 gold-set labels. An earlier 150-record VADER ``100\% accuracy'' file is discarded because its labels match VADER exactly and were model-prefilled. The operational recommendation is therefore LLM sentiment (mini is sufficient), keyword rules plus a targeted GPT-4o pass for issues, and human review of alerts. The business analysis indicates that operators should prioritise incident communication during outages, outage aftercare in billing and customer service, and comparable plan terms such as fair-use limits and add-on charges, ahead of app, roaming and porting issues, which are small in this corpus. The principal contribution is a reproducible analytics workflow that converts noisy forum data into decision-oriented signals while making its evidential limits explicit.
 \end{abstract}
 
 \vfill
@@ -101,13 +101,13 @@ The project has five objectives:
 
 \subsection{Scope and claimed contribution}
 
-The repository implements collection modules for HWZ, Reddit and Twitter/X, although the analysed records are mainly from Reddit and HWZ. It includes preprocessing, brand detection, sentiment labelling, issue extraction, evaluation scripts and two dashboard formats. The report only claims findings supported by persisted repository outputs. GPT-4o-mini is evaluated on human labels for the representative and challenge sets; GPT-4o is evaluated on the representative set and used on unresolved corpus issues. The 158-row dashboard sample remains VADER for sentiment and uses the hybrid issue overlay where posts match the corpus file.
+The repository implements collection modules for HWZ and Reddit. It includes preprocessing, brand detection, sentiment labelling, issue extraction, evaluation scripts and a static HTML dashboard. The report only claims findings supported by persisted repository outputs. GPT-4o-mini and GPT-4o are evaluated on human labels for both the representative and challenge sets, and GPT-4o is used on unresolved corpus issues. The findings and dashboard use GPT-4o-mini sentiment and hybrid issue labels on the 1,706-post clean corpus.
 
 \section{Data and Pipeline}
 
 \subsection{Data sources}
 
-Reddit data were collected from Singapore-focused communities through the public JSON interface using telco and mobile-plan keywords. HWZ data were collected from relevant XenForo forum threads. The scrapers preserve thread titles, post or comment text, timestamps, source identifiers and available engagement metadata. A Twitter/X collector is present but requires API credentials and recent-search access; no Twitter/X records contribute to the reported dashboard sample.
+Reddit data were collected from Singapore-focused communities through the public JSON interface using telco and mobile-plan keywords. HWZ data were collected from relevant XenForo forum threads. The scrapers preserve thread titles, post or comment text, timestamps, source identifiers and available engagement metadata.
 
 \begin{table}[H]
 \centering
@@ -120,19 +120,23 @@ Reddit data were collected from Singapore-focused communities through the public
 \texttt{cleaned\_posts.csv} & 15,504 & Normalised corpus used by labelling and issue extraction \\
 \texttt{posts\_labeled\_2026-08-21\_203752.csv} & 15,504 & Brand and VADER sentiment output \\
 \texttt{issues\_posts\_labeled\_\ldots.csv} & 15,504 & Rule-based multi-label issue output \\
-\texttt{issues\_\ldots\_gpt4o\_hybrid.csv} & 15,504 & Rules plus GPT-4o on 8,786 unresolved rows; dashboard overlay \\
+\texttt{issues\_\ldots\_gpt4o\_hybrid.csv} & 15,504 & Rules plus GPT-4o on 8,786 unresolved rows \\
+\texttt{clean\_posts\_2026-08-21\_203752.csv} & 1,706 & Unique posts in 105 telco threads; the analysis corpus \\
+\texttt{clean\_posts\_\ldots\_mini\_sentiment.csv} & 1,706 & Clean corpus plus GPT-4o-mini sentiment; dashboard input \\
 \texttt{representative\_annotator\_a.csv} & 300 & Blind human labels; 295 telco-relevant rows used for headline metrics \\
 \texttt{challenge\_annotator\_a.csv} & 100 & Harder posts; reported separately from the headline table \\
 \texttt{llm\_comparison\_representative/} & 295 & GPT-4o-mini vs VADER/rules predictions, metrics, tokens and cost \\
 \texttt{llm\_comparison\_representative\_gpt4o/} & 295 & GPT-4o vs VADER/rules on the same gold labels \\
 \texttt{llm\_comparison\_representative\_gpt4o\_hybrid/} & 295 & Rules, then GPT-4o only where rules output \texttt{general\_discussion} \\
-\texttt{labeled\_sample.csv} & 150 & Earlier Reddit sample; labels not independent; not used for model scores \\
-\texttt{hwz\_telco\_posts\_labeled.csv} & 100 & HWZ records used in the 158-row dashboard analysis \\
+\texttt{llm\_comparison\_challenge\_gpt4o/} & 100 & GPT-4o vs VADER/rules on the challenge set; hybrid scored from it \\
+\texttt{robustness\_summary.json} & --- & Bootstrap intervals, run-to-run stability, annotator agreement, corpus checks \\
+\texttt{labeled\_sample.csv} & 150 & Earlier Reddit sample; labels not independent; superseded \\
+\texttt{hwz\_telco\_posts\_labeled.csv} & 100 & Earlier HWZ sample for the 158-post dashboard; superseded \\
 \bottomrule
 \end{tabularx}
 \end{table}
 
-The dashboard filters the 150-row Reddit file to 67 telco-relevant records and the 100-row HWZ file to 91 relevant records after contextual brand validation, producing a focused analytical sample of 158. This sample should not be confused with the complete 15,504-row corpus.
+The scraped rows are not independent posts. The 15,504 rows hold 2,686 unique posts, because successive keyword rounds collected many posts several times (a median of four copies). Forty-seven of 152 threads were off-topic, such as a 98-post insurance lawsuit thread, and matched a keyword by accident. \texttt{processing/build\_clean\_corpus.py} keeps one row per post and drops a thread unless at least 20\% of its posts name a telco or its title is telco-related; kept threads name a telco in at least 25\% of their posts and dropped threads in at most 8\%. The resulting analysis corpus has 1,706 posts in 105 threads (1,253 Reddit, 453 HWZ). Every Reddit post is from 2026; HWZ posts almost all date from 2019--2025. An earlier 158-post dashboard sample (67 Reddit, 91 HWZ) is superseded.
 
 \subsection{Preprocessing}
 
@@ -147,17 +151,17 @@ The implemented sequence is:
 \begin{center}
 \begin{minipage}{0.92\textwidth}
 \small
-\textbf{Collection} (Reddit/HWZ/Twitter scrapers)
+\textbf{Collection} (Reddit and HWZ scrapers)
 $\rightarrow$ \textbf{raw CSV}
 $\rightarrow$ \textbf{preprocessing}
 $\rightarrow$ \textbf{brand and sentiment labelling}
 $\rightarrow$ \textbf{issue extraction}
 $\rightarrow$ \textbf{evaluation outputs}
-$\rightarrow$ \textbf{static and Streamlit dashboards}.
+$\rightarrow$ \textbf{static HTML dashboard}.
 \end{minipage}
 \end{center}
 
-The static dashboard generator is deliberately lightweight and produces a standalone HTML report. The Streamlit application supports source, brand, sentiment and date filters, issue breakdowns, time trends and cross-brand views. Together, they support both executive communication and analyst exploration.
+The static dashboard generator is deliberately lightweight and produces a standalone HTML report that opens in any browser without a server.
 
 \section{Analytical Methods}
 
@@ -184,7 +188,7 @@ VADER is a suitable operational baseline because it runs locally, is determinist
 
 The benchmark module supports \texttt{cardiffnlp/twitter-roberta-base-sentiment-latest}, a RoBERTa-family model adapted to social-media sentiment \cite{loureiro2022tweeteval}. Its positive, negative and neutral outputs are mapped to the project's three business labels. The persisted benchmark states that the required \texttt{transformers} package was unavailable, so no transformer metrics are reported.
 
-The main labelling module also implements LLM sentiment through an OpenAI-compatible chat-completions interface. Its configured default is \textbf{GPT-4o-mini}. Formal comparison uses the snapshots returned by the API, \textbf{gpt-4o-mini-2024-07-18} and \textbf{gpt-4o-2024-08-06}, with temperature 0 and JSON object responses in batches of ten posts. An earlier 100-record HWZ file contains 100 neutral LLM labels and no model-version metadata; that file is treated as a failed or fallback run and is not used as evidence. The 15,504-row corpus still has no LLM sentiment column; corpus dashboards use VADER.
+The main labelling module also implements LLM sentiment through an OpenAI-compatible chat-completions interface. Its configured default is \textbf{GPT-4o-mini}. Formal comparison uses the snapshots returned by the API, \textbf{gpt-4o-mini-2024-07-18} and \textbf{gpt-4o-2024-08-06}, with temperature 0 and JSON object responses in batches of ten posts. An earlier 100-record HWZ file contains 100 neutral LLM labels and no model-version metadata; that file is treated as a failed or fallback run and is not used as evidence. The clean corpus was labelled with the same prompt, batching and settings through \texttt{models/corpus\_llm\_sentiment.py}: 1,706 posts in 171 batches, no failures, 6.4 minutes and \$0.047.
 
 \subsection{Issue taxonomy and rationale}
 
@@ -212,7 +216,7 @@ General Discussion & telco news, opinions, no specific issue & Analysts: monitor
 \end{tabularx}
 \end{table}
 
-The categories remain compact enough to route to owners while separating previously conflated topics such as plan design from promotions, billing from customer service, and app access from device problems. Multi-label output permits a post to mention, for example, both pricing and roaming. The rule-based classifier assigns labels when predefined regular expressions match and otherwise assigns \texttt{general\_discussion}. GPT-4o was then applied only to those unresolved rows. On the representative gold set that hybrid beats both keyword-only and all-row LLM tagging, so it was run on the 8,786 unresolved corpus rows. The static dashboard overlays those hybrid labels onto the 158-row sample (97 posts matched; unmatched HWZ rows still use keyword inference).
+The categories remain compact enough to route to owners while separating previously conflated topics such as plan design from promotions, billing from customer service, and app access from device problems. Multi-label output permits a post to mention, for example, both pricing and roaming. The rule-based classifier assigns labels when predefined regular expressions match and otherwise assigns \texttt{general\_discussion}. GPT-4o was then applied only to those unresolved rows. On the representative gold set that hybrid beats both keyword-only and all-row LLM tagging, so it was run on the 8,786 unresolved corpus rows. Section~\ref{sec:challenge} tests it on held-out posts.
 
 \section{Evaluation Design and Evidence}
 
@@ -231,7 +235,7 @@ A blinded evaluation package was generated without VADER, transformer or LLM col
   \item a 100-row challenge sheet reserved for harder cases (negation, sarcasm or Singlish cues, mixed brands, weak VADER scores, long posts).
 \end{itemize}
 
-A 100-row second-annotator overlap sheet exists, but no independent Annotator~B labels were used in this report, so inter-annotator agreement is not claimed. Headline metrics use only the representative relevant rows. Challenge metrics are reported separately and are not pooled.
+A second annotator labelled a 100-row overlap (60 representative, 40 challenge). On the representative overlap, sentiment agreement is 74\% (Cohen's $\kappa=0.57$ \cite{cohen1960kappa}, $n=58$). That is moderate agreement, and it caps how closely any model can be expected to match a single annotator. Challenge-set agreement is higher ($\kappa=0.76$, $n=40$), with 21 of 40 rows identical on every field and four identical free-text notes. That is unexpected for harder posts, so the challenge overlap is not relied on until the second annotator's independence is confirmed. Headline metrics use Annotator~A's representative labels; challenge metrics are reported separately and are not pooled.
 
 An earlier 150-row file reported 100\% VADER accuracy. Those labels match VADER exactly and can be created by prefilling from the model, so that file is treated as leakage and is not used as evidence.
 
@@ -258,7 +262,9 @@ Issues: GPT-4o hybrid (unresolved only) & --- & \textbf{0.680} & \textbf{0.711} 
 \end{tabular}
 \end{table}
 
-GPT-4o-mini is the strongest sentiment tagger and is much cheaper than GPT-4o. Keyword rules beat every all-row LLM on issues. GPT-4o closes most of the mini gap (0.504 to 0.600) but still falls short of rules (0.639). The unresolved-only hybrid is the only issue method that beats rules, because it keeps Devices and other keyword-heavy labels and spends the model only on the 98 gold rows that rules could not classify.
+GPT-4o-mini matches GPT-4o on sentiment at about one-seventeenth of the cost. No all-row LLM beats keyword rules on issues: GPT-4o closes most of the mini gap (0.504 to 0.600) but does not exceed rules (0.639). The unresolved-only hybrid is the only issue method that beats rules on this set, because it keeps Devices and other keyword-heavy labels and spends the model only on the 98 gold rows that rules could not classify.
+
+Paired bootstrap intervals (2,000 resamples of the 295 posts) separate real gains from ties. GPT-4o-mini beats VADER on sentiment by 0.271 macro F1 (95\% CI 0.191 to 0.347). GPT-4o-mini and GPT-4o are tied (difference 0.008, CI $-0.043$ to 0.064). On issues, rules and all-row GPT-4o are also tied (GPT-4o minus rules $-0.039$, CI $-0.096$ to 0.019), while the hybrid's gain over rules is small but reliable (0.041, CI 0.011 to 0.072). A second GPT-4o-mini run on the same 295 posts reproduced 292 of 295 sentiment labels (run-to-run $\kappa=0.98$; macro F1 0.631 and 0.627), so the model's own run-to-run variation is far smaller than these differences.
 
 \begin{table}[H]
 \centering
@@ -360,11 +366,30 @@ Porting & 249 & 271 & $+$22 \\
 \end{tabular}
 \end{table}
 
-GPT-4o mainly pulled network talk out of the leftover bucket. Devices barely moved, which matches the gold set: rules already catch most device posts. These corpus counts have no human labels, so they are a production overlay rather than a second accuracy table. The 158-row dashboard in Section~5 now uses this overlay where posts can be matched.
+GPT-4o mainly pulled network talk out of the leftover bucket. Devices barely moved, which matches the gold set: rules already catch most device posts. These corpus counts have no human labels, so they are a production overlay rather than a second accuracy table. Section~5 uses these labels on the clean corpus.
 
-\subsection{Challenge set (reported separately, $n=100$)}
+\subsection{Held-out challenge set ($n=100$)}
+\label{sec:challenge}
 
-The challenge set was sampled from held-out threads using a difficulty score. It must not be mixed into Table~\ref{tab:headlinemetrics}. On these 100 posts, GPT-4o-mini sentiment accuracy is 0.80 and macro F1 is 0.773, versus VADER 0.50 and 0.491. Issue macro F1 is nearly tied (rules 0.499, LLM 0.470). The sentiment advantage therefore holds on harder text; all-row issue tagging still does not flip to mini. Devices recall remains 0.083 (1 of 12). App and account has only three positive labels, so that class F1 is not interpretable. GPT-4o was not rerun on the challenge set.
+The challenge set was sampled from threads not used in the representative set and weighted toward hard cases (negation, sarcasm, Singlish, mixed brands, long posts). It is reported separately and never pooled. Because the hybrid was chosen after seeing representative-set results, the challenge set is its held-out test. GPT-4o was run on it for this purpose (\$0.050), and the hybrid was scored from those predictions without new API calls.
+
+\begin{table}[H]
+\centering
+\caption{Challenge-set comparison against Annotator~A labels}
+\label{tab:challenge}
+\begin{tabular}{lrr}
+\toprule
+\textbf{Method} & \textbf{Sentiment macro F1} & \textbf{Issue macro F1} \\
+\midrule
+VADER / keyword rules & 0.491 & 0.499 \\
+GPT-4o-mini (all posts) & \textbf{0.773} & 0.470 \\
+GPT-4o (all posts) & 0.712 & \textbf{0.596} \\
+Hybrid: rules, then GPT-4o on unresolved posts & --- & 0.509 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The sentiment conclusion holds on hard posts. GPT-4o-mini beats VADER (difference 0.282, 95\% CI 0.138 to 0.413) and is not beaten by GPT-4o (mini minus GPT-4o 0.062, CI $-0.002$ to 0.127). The issue conclusion does not fully hold. The hybrid's gain over rules shrinks to 0.010 (CI $-0.039$ to 0.065), and GPT-4o labelling every post is best, beating both rules (0.097, CI 0.014 to 0.181) and the hybrid (0.087, CI 0.017 to 0.151). On these posts GPT-4o does better on customer service, roaming and billing, while rules still recall more device posts (0.75 versus 0.33). The hybrid remains the default for the corpus, because the representative set rather than the challenge set reflects its mix of posts, but its 0.680 should be read as optimistic. A union of rule and GPT-4o labels scored 0.703 on the representative set but 0.533 on the challenge set; it was found after seeing both results and is not adopted.
 
 \subsection{Qualitative disagreements}
 
@@ -393,121 +418,140 @@ Persisted logs from \texttt{models/llm\_evaluation.py} and the unresolved corpus
 Representative eval & GPT-4o-mini & 295 & 74 & 38,464 & 0.0087 & 0 \\
 Challenge eval & GPT-4o-mini & 100 & 28 & 12,948 & 0.0030 & 0 \\
 Representative eval & GPT-4o & 295 & 73 & 38,545 & 0.145 & 0 \\
+Challenge eval & GPT-4o & 100 & 20 & 12,920 & 0.050 & 0 \\
+Representative rerun & GPT-4o-mini & 295 & 66 & 38,476 & 0.0087 & 0 \\
 Corpus unresolved issues & GPT-4o & 8,786 & 1,785 & 917,697 & 3.45 & 0 \\
+Clean-corpus sentiment & GPT-4o-mini & 1,706 & 382 & 203,537 & 0.047 & 0 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Mini prices were \$0.15 per million input tokens and \$0.60 per million output tokens. GPT-4o prices were \$2.50 / \$10.00. VADER labelled the representative set in 0.22 seconds and keyword rules in 0.27 seconds, with no API charge. Twitter-RoBERTa was not run because \texttt{transformers} was not installed. The hybrid gold metrics in Table~\ref{tab:headlinemetrics} reuse the representative GPT-4o predictions and did not add API cost.
+Mini prices were \$0.15 per million input tokens and \$0.60 per million output tokens. GPT-4o prices were \$2.50 / \$10.00. VADER labelled the representative set in 0.22 seconds and keyword rules in 0.27 seconds, with no API charge. Twitter-RoBERTa was not run because \texttt{transformers} was not installed. The hybrid gold metrics in Tables~\ref{tab:headlinemetrics} and~\ref{tab:challenge} reuse the GPT-4o predictions and added no API cost. Per post, GPT-4o costs about \$0.0005 and GPT-4o-mini about \$0.00003.
 
 \section{Findings}
 
-RQ3 is answered in Section~4: GPT-4o-mini adds sentiment context over VADER; all-row GPT-4o still does not replace keyword issue rules; unresolved-only GPT-4o hybrid does beat rules on the gold set (macro F1 0.680 versus 0.639). The subsections below describe the 158-row dashboard sample, which remains VADER-labelled for sentiment and uses the hybrid issue overlay. It should not be confused with the 295-row evaluation.
+RQ3 is answered in Section~4: GPT-4o-mini adds sentiment context over VADER on typical and hard posts; for issues, rules plus GPT-4o on unresolved posts is best on typical posts, and GPT-4o labelling every post is best on hard ones. This section applies GPT-4o-mini sentiment and hybrid issue labels to the 1,706-post clean corpus. Shares are reported per post and with every thread weighted equally, so that one large thread cannot drive a finding on its own.
 
-\subsection{Overall sentiment and issue mix}
-
-The dashboard sample contains 158 telco-relevant records. Table~\ref{tab:overallfindings} reports exact counts and rounded shares.
+\subsection{Sentiment: most posts are not happy}
 
 \begin{table}[H]
 \centering
-\caption{Sentiment and issue distribution in the dashboard sample}
-\label{tab:overallfindings}
-\begin{tabular}{lrr@{\hspace{2cm}}lrr}
+\caption{Sentiment shares by labeller}
+\label{tab:corpussentiment}
+\begin{tabular}{lrrrr}
 \toprule
-\multicolumn{3}{c}{\textbf{Sentiment}} & \multicolumn{3}{c}{\textbf{Primary issue}} \\
-\cmidrule(r){1-3}\cmidrule(l){4-6}
-\textbf{Label} & \textbf{Count} & \textbf{Share} & \textbf{Label} & \textbf{Count} & \textbf{Share} \\
+\textbf{Labeller and data} & \textbf{Happy} & \textbf{Not happy} & \textbf{Neutral} & \textbf{$n$} \\
 \midrule
-Happy & 96 & 61\% & Network Quality & 41 & 26\% \\
-Not happy & 34 & 22\% & App \& Account & 39 & 25\% \\
-Neutral & 28 & 18\% & General Discussion & 18 & 11\% \\
- & & & Mobile Plans & 16 & 10\% \\
- & & & Pricing \& Promotions & 13 & 8\% \\
- & & & Roaming & 8 & 5\% \\
- & & & Billing \& Payment & 8 & 5\% \\
- & & & Customer Service & 6 & 4\% \\
- & & & Porting & 5 & 3\% \\
- & & & Devices & 4 & 3\% \\
+GPT-4o-mini, clean corpus (per post) & 18\% & 55\% & 27\% & 1,706 \\
+GPT-4o-mini, clean corpus (thread-weighted) & 19\% & 49\% & 32\% & 105 threads \\
+VADER, same posts & 40\% & 32\% & 28\% & 1,706 \\
+Human labels, representative gold set & 18\% & 50\% & 32\% & 295 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-The aggregate tone is moderately positive, but this should not be read as a satisfaction rate. Network quality is now the most frequent primary category in this sample, with app and account access close behind; mobile-plan comparisons remain a substantial theme. General Discussion shrank after the GPT-4o overlay (97 of 158 posts matched the hybrid corpus file; unmatched HWZ rows still use keyword inference), but a residual bucket remains.
+GPT-4o-mini's corpus shares sit close to the human gold distribution, while VADER nearly reverses them: of 681 posts VADER calls happy, GPT-4o-mini reads 300 as not happy and 208 as neutral. The corpus is predominantly negative (RQ1). That is expected of unsolicited forum discussion and should not be read as a satisfaction rate.
+
+\subsection{Issue themes}
+
+\begin{table}[H]
+\centering
+\caption{Primary issue themes in the clean corpus}
+\label{tab:overallfindings}
+\begin{tabular}{lrrrrr}
+\toprule
+\textbf{Issue} & \textbf{Posts} & \textbf{Threads} & \textbf{Share (post)} & \textbf{Share (thread)} & \textbf{Not happy} \\
+\midrule
+Network Quality & 900 & 89 & 52.8\% & 45.3\% & 67\% \\
+Mobile Plans & 208 & 61 & 12.2\% & 13.4\% & 38\% \\
+General Discussion & 156 & 46 & 9.1\% & 10.7\% & 32\% \\
+Pricing \& Promotions & 116 & 44 & 6.8\% & 6.1\% & 50\% \\
+Devices & 106 & 43 & 6.2\% & 6.0\% & 42\% \\
+Billing \& Payment & 62 & 25 & 3.6\% & 4.7\% & 65\% \\
+Customer Service & 52 & 31 & 3.0\% & 4.1\% & 60\% \\
+Porting & 47 & 16 & 2.8\% & 2.7\% & 23\% \\
+Roaming & 38 & 16 & 2.2\% & 3.7\% & 37\% \\
+App \& Account & 21 & 14 & 1.2\% & 3.3\% & 52\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Network quality leads under both weightings and carries 52.5\% of the thread-weighted not-happy discussion. Mobile-plan comparisons are second. Billing and customer service are small themes but the most negative (65\% and 60\% not happy), and many of their posts follow the outage: refund and ``goodwill'' credit questions, and support lines that could not be reached. App and account access, which the earlier 158-post sample put at 25\%, is 1--3\% of the corpus. Porting posts are mostly questions (23\% not happy).
+
+\subsection{One outage dominates the negativity}
+
+The corpus is concentrated in time. 74\% of posts are from 2026, and the largest thread is the 16~March~2026 Singtel mobile outage. Twenty-two threads have outage or service-down titles and hold 662 posts (39\%); 412 of the 599 not-happy network posts sit in them. Outside those threads the not-happy share falls from 55\% to 42\%. The weekly huddle view (Section~\ref{sec:dashboard}) catches the event: only three weeks cross the 20-post threshold, the weeks of 16, 23 and 30~March~2026, with 349, 70 and 42 queue posts.
 
 \subsection{Platform differences}
 
-Reddit contributes 67 relevant records, of which 49\% are happy, 30\% not happy and 21\% neutral after rounding. HWZ contributes 91 records, with 69\% happy, 15\% not happy and 15\% neutral. The 15-percentage-point difference in negative tone is substantial within the sample, but platform and topic are confounded: Reddit records are more complaint-oriented, while the HWZ selection over-represents plan-launch discussion. The difference therefore describes these samples, not inherent sentiment of each platform.
+Per post, Reddit is 60\% not happy and HWZ 40\%. That gap is not a platform effect. Every Reddit post in the corpus is from 2026 and Reddit holds the outage threads, while HWZ posts almost all date from 2019--2025. Outside the outage threads, Reddit and HWZ are 43\% and 40\% not happy. Human gold labels, which cap each thread at five posts, give the same picture (51\% and 47\%). An earlier VADER-based dashboard showed 30\% against 15\%; neither gap supports a claim that one platform is more negative. For RQ2, the platforms differ in topic and period rather than tone: HWZ holds long-running plan and launch threads, and Reddit is dominated by 2026 incidents.
 
 \subsection{Cross-brand observations}
 
 \begin{table}[H]
 \centering
-\caption{Brand discussion indicators for brands with at least five mentions}
+\caption{Not-happy share for brands with at least ten posts}
 \label{tab:brands}
-\begin{tabularx}{\textwidth}{@{}lrrX@{}}
+\begin{tabular}{lrrrrr}
 \toprule
-\textbf{Brand} & \textbf{Mentions} & \textbf{Negative tone} & \textbf{Dominant discussion context} \\
+\textbf{Brand} & \textbf{Posts} & \textbf{Threads} & \textbf{Not happy} & \textbf{Thread-weighted} & \textbf{Outside outage threads} \\
 \midrule
-StarHub & 56 & 27\% & Pricing, customer service and promotion fulfilment \\
-M1 & 53 & 25\% & Network coverage and 4G/5G transition \\
-Singtel & 51 & 16\% & ONR/bridge-mode policy and equipment \\
-Zym & 22 & 0\% & Promotional plan posts; likely label noise \\
-Eight & 14 & 29\% & Launch pricing, network tiering and porting \\
-Giga & 6 & 67\% & Network reliability; very small denominator \\
-SIMBA & 6 & 17\% & MVNO pricing benchmark; very small denominator \\
+Singtel & 1,135 & 82 & 63\% & 51\% & 45\% ($n=474$) \\
+StarHub & 360 & 51 & 48\% & 45\% & 47\% ($n=346$) \\
+M1 & 254 & 45 & 35\% & 42\% & 34\% ($n=244$) \\
+SIMBA & 157 & 39 & 35\% & 46\% & 35\% ($n=150$) \\
+Eight & 72 & 23 & 28\% & 26\% & 27\% ($n=71$) \\
+Giga & 64 & 18 & 34\% & 33\% & 34\% ($n=64$) \\
+Zym & 48 & 18 & 38\% & 33\% & 33\% ($n=39$) \\
 \bottomrule
-\end{tabularx}
+\end{tabular}
 \end{table}
 
-Mention counts are not unique customers because one record can mention several operators. Giga's 67\% negative tone is based on only six records and should not drive ranking or investment decisions. Similarly, Zym's 0\% value is contradicted by observed label noise and must not be interpreted as absence of complaints.
+Singtel's high not-happy share is the outage: 63\% overall but 45\% outside outage threads, level with StarHub (47\%). No brand ranking is defensible from this data. M1, SIMBA, Giga and Zym sit at 33--35\% outside outages and Eight is lowest at 27\%, but these brands have few threads, their thread-weighted shares move by up to eleven points, and each post carries one sentiment label copied to every brand it names. Mention counts are not unique customers.
 
 \subsection{Dashboard design}
+\label{sec:dashboard}
 
-The static dashboard and Streamlit app now pair each chart with a takeaway rather than a descriptive title. Both lead with a weekly 30-minute huddle playbook: (a) not-happy posts in Network Quality, App \& Account or Porting, only if $n$ meets a threshold; (b) open ten source posts; (c) match remaining items to tickets or outages; (d) assign one owner; (e) check next week whether the share fell. Brand negative-tone ranks require at least ten mentions. Never publish a league table from $n=6$.
+\texttt{dashboard/generate\_dashboard.py} builds the static dashboard from the clean corpus. Chart titles are computed from the data and state the takeaway (for example, ``Network Quality leads, then Mobile Plans''), so the page cannot show a claim the current data no longer supports. It opens with a weekly 30-minute huddle playbook and a weekly queue chart against the 20-post threshold: (a) not-happy posts in Network Quality, App \& Account or Porting; (b) open ten source posts; (c) match them to tickets or outages; (d) assign one owner; (e) check next week whether the share fell.
 
 \begin{itemize}
-  \item \textbf{Sentiment:} forum tone is a screen, not CSAT; VADER likely overstates happiness.
-  \item \textbf{Source:} start complaint review on Reddit; HWZ is launch-thread heavy.
-  \item \textbf{Issue volume:} route Network Quality and App \& Account first; General Discussion is a residual after the GPT-4o overlay.
-  \item \textbf{Not-happy by issue:} volume is not severity---porting can be rare but retention-critical.
-  \item \textbf{Brand mentions:} talk volume is not market share or dissatisfaction.
-  \item \textbf{Negative tone:} rank only brands with at least ten mentions; suppress Giga/SIMBA/Zym league-table use.
-  \item \textbf{Quotes and table:} inspect the posts behind a spike before assigning an owner.
+  \item \textbf{Tone:} GPT-4o-mini shares beside VADER and the human gold labels, so readers see why VADER is not used.
+  \item \textbf{Source:} Reddit and HWZ on the same labeller, with the gold-label comparison.
+  \item \textbf{Issue volume:} per-post and thread-weighted shares side by side; a finding that holds in both is not one thread talking.
+  \item \textbf{Not-happy by issue:} which themes carry the negative discussion.
+  \item \textbf{Brands:} only brands with at least ten posts are ranked, with thread counts in the table.
+  \item \textbf{Recommendations:} ordered by each issue's share of not-happy discussion.
 \end{itemize}
 
-Streamlit adds the same captions, a week-level trend with a minimum-volume alert rule, and a not-happy rate chart with mention counts on hover. Outputs remain screening signals, not verified customer facts.
+Outputs remain screening signals, not verified customer facts.
 
 \section{Business Recommendations}
 
-Each recommendation names an owner, an action and a check. Forum counts are a triage queue, not proof of market failure.
+Each recommendation names an owner, an action and a check. They are ordered by each issue's share of not-happy discussion in the clean corpus. Forum counts are a triage queue, not proof of market failure.
 
-\subsection{CX / digital: own App \& Account friction}
+\subsection{Network: communicate during incidents, then prove local fixes}
 
-App and account access is the second-largest primary theme in the dashboard sample, just behind network quality. Login failures, OTP gaps, white screens and chatbot dead-ends should sit with digital CX. After each app or chatbot release, sample forum posts tagged App \& Account and track time-to-human and login-related complaint share. Success is fewer ``cannot log in / no OTP'' posts in the following window, not a higher happy rate on VADER.
+Network quality carries 52\% of not-happy discussion, and 412 of 599 not-happy network posts sit in outage threads (``Is Singtel mobile data down?'', ``SingTel is down for local subscribers, unless you have a Malaysian SIM''). The first action is incident communication: a status page and proactive updates with an estimated restoration time, posted where customers are already asking. Outside outages, 64 not-happy network posts name a place such as MRT tunnels, homes or offices; network teams should join those posts to tickets and cell data. Success is a shorter time to the first public update during an incident, and fewer tickets at a named location after remediation.
 
-\subsection{Network: replace national coverage claims with local proof}
+\subsection{Billing and customer service: plan the outage aftercare}
 
-Network quality is the largest actionable theme and is location-specific (MRT, buildings, 5G SA). Network and CX teams should join named-location forum posts to tickets and cell-level telemetry, then publish indoor/MRT guidance and known fixes. Success is a drop in tickets for the named location after remediation, not a press claim of ``best coverage''.
+Billing (65\% not happy) and customer service (60\%) are small themes but the most negative, and many of their posts follow the outage. Customers ask whether compensation is a refund or a ``goodwill'' credit, object to a \$5 late-payment notice, and report help lines that were unreachable when needed. Service and billing teams should publish the compensation rule with the incident notice and keep a self-service path open during outages. Success is fewer compensation and ``cannot reach support'' posts after the next incident.
 
-\subsection{Product / MVNO partners: disclose host network and tier}
+\subsection{Product and commercial: make plan terms comparable}
 
-GOMO/Singtel, Eight/StarHub and Zym discussions show customers buying price and discovering the host later. Product and partnership teams should state host network, 5G SA support, fair-use rules and who owns escalation at checkout. Success is fewer ``which backend?'' threads and fewer mistaken Eight mentions of the ordinary number eight.
+Mobile plans (12--13\% of posts) and pricing (50\% not happy) centre on terms customers discover late: fair-use limits on ``unlimited'' plans, add-on charges such as Caller ID (which posts note the three network operators charge for while SIMBA includes it), and introductory prices that later change. Product and commercial teams should show fair-use rules, add-on charges, recurring price and host network at checkout. Success is fewer ``which plan?'' and hidden-charge threads.
 
-\subsection{MNP operations: treat porting as a retention event}
+\subsection{Devices: document equipment and eSIM requirements}
 
-Porting is a small share of posts but high severity (document mismatch, rejected ports, 30-day activation fees, IMDA). Operations should return a specific reject reason and next step, and jointly own avoidable-reject rate and median port time. Success is fewer repeat ``StarHub rejected my port'' narratives, not more mention volume.
+Device posts (6\%) cover eSIM failures during the outage and ONR/bridge-mode router policy. Device support should publish router and eSIM requirements per plan. Success is fewer equipment threads.
 
-\subsection{Commercial: make price and promotion fulfilment auditable}
+\subsection{Lower-volume themes: app, roaming and porting}
 
-Bridge-mode fees, intro versus recurring prices and missed promos drive switching talk. Commercial teams should publish comparable plan facts and treat promotion fulfilment as an operational metric. Success is a fall in fulfilment complaints, not a lower list price alone.
-
-\subsection{Roaming: intervene before the bill}
-
-Malaysia, New Zealand and Bali threads mix genuine praise with failed attach, 3G sunset and divert charges. Roaming product should ship an in-app ``travelling to X'' checklist (activation, coverage, overage cap). Success is fewer destination-specific bill-shock posts.
+App \& Account (1--3\%), roaming (2--4\%) and porting (3\%) are small in this corpus. App posts describe the app failing to launch on some Android phones after an update; digital teams should watch forum posts after each release. Roaming and porting posts are mostly questions (37\% and 23\% not happy), so a ``travelling to X'' checklist and clearer port timelines are low-cost fixes rather than priorities. The earlier sample-based priority on App \& Account is withdrawn.
 
 \subsection{Insight huddle: operate the dashboard as an alert-and-review tool}
 
-Do not publish a brand league table from $n=6$. A weekly 30-minute process is enough:
+Do not publish a brand league table. A weekly 30-minute process is enough:
 
 \begin{enumerate}
   \item flag not-happy posts in Network, App \& Account or Porting only when that week's volume clears a minimum (for example 20 posts);
@@ -517,23 +561,21 @@ Do not publish a brand league table from $n=6$. A weekly 30-minute process is en
   \item next week, check whether that issue's share fell.
 \end{enumerate}
 
-Use VADER on the full firehose for a first pass, then GPT-4o-mini for sentiment on a reviewed sample. For issues, keep keyword rules and apply GPT-4o only to \texttt{general\_discussion} rows. Keep a person in the loop before any public reply. That mix is the business reading of the evaluation, not a model contest.
+Use GPT-4o-mini for sentiment on the whole feed: the 1,706-post corpus cost \$0.047, so a daily run costs cents. For issues, keep keyword rules and apply GPT-4o to \texttt{general\_discussion} rows. On hard posts, GPT-4o labelling every post is more accurate and, at about \$0.0005 per post, affordable on a deduplicated feed. Keep a person in the loop before any public reply. That mix is the business reading of the evaluation, not a model contest.
 
 \section{Limitations and Ethical Considerations}
 
 \subsection{Representativeness and platform bias}
 
-Forum contributors are self-selecting and are not Singapore mobile users at large. The cleaned corpus has 15,504 rows but only about 2,700 unique comment texts and about 150 unique thread titles; most rows are duplicates or replies in the same event. About 7,589 rows have no detected telco brand and must not drive brand charts. The full corpus is about 97\% Reddit (15,050 versus 454 HWZ), while the dashboard sample was constructed as 67 Reddit and 91 HWZ relevant rows. Those two mixes are not interchangeable. Reddit over-represents outages, scams and ``which MVNO?'' threads; HWZ over-represents SIM-only launches. There are no Twitter/X records, app-store reviews, tickets or NPS in the analysed set. Results cannot be generalised to market share, population sentiment, churn or Net Promoter Score. Brands with fewer than ten mentions (Giga, SIMBA, redONE) are too small for investment ranking.
+Forum contributors are self-selecting and are not Singapore mobile users at large. The scraped corpus has 15,504 rows but 2,686 unique posts, and 47 of 152 threads were off-topic; findings use the 1,706-post clean corpus. That corpus is 73\% Reddit and concentrated in time: every Reddit post is from 2026, and 39\% of posts sit in 22 outage threads, mostly the March 2026 Singtel outage. The findings therefore describe a period dominated by one incident as much as the market. There are no app-store reviews, tickets or NPS in the analysed set, so results cannot be generalised to market share, population sentiment, churn or Net Promoter Score.
 
 \subsection{Unequal and dependent observations}
 
-One record can mention several brands, so mention counts are not unique customers. Comments in a thread are not independent: they respond to a shared outage or launch. A long Singtel downtime thread can dominate network counts without implying a nationwide prevalence. Mixed-brand posts were often labelled \texttt{neutral}, which can hide a Singtel complaint sitting next to StarHub praise. Charts therefore suppress negative-tone ranks below ten mentions and should be read with unique-thread counts in mind.
+One record can mention several brands, so mention counts are not unique customers. Comments in a thread are not independent: they respond to a shared outage or launch. A long Singtel downtime thread can dominate network counts without implying nationwide prevalence. The report therefore shows thread-weighted shares beside per-post shares, and brand shares outside outage threads. Mixed-brand posts were often labelled \texttt{neutral}, which can hide a Singtel complaint sitting next to StarHub praise.
 
 \subsection{Label quality and LLM misclassification}
 
-Dashboard and corpus sentiment are VADER. On 295 independent labels VADER not-happy recall is 0.34, so the dashboard's 61\% happy share is likely too optimistic. Keyword issue rules over-trigger on generic terms such as ``plan'' and leave 57\% of the full corpus in \texttt{general\_discussion} before the hybrid pass (40\% after GPT-4o on unresolved rows). The 158-row dashboard overlays those hybrid labels on 97 matched posts; unmatched HWZ rows still use keyword inference. Human gold labels are single-annotator; Cohen's $\kappa$ is not reported.
-
-GPT-4o-mini-2024-07-18 is better at tone (macro F1 0.631 versus 0.360) and worse at all-row multi-label issues (0.504 versus 0.639). GPT-4o-2024-08-06 does not beat mini on sentiment (0.623) and still loses to rules when it labels every issue row (0.600). All-row models systematically under-label Devices relative to rules (GPT-4o recall 0.25 versus 0.81), often return one topic when the post has several, and GPT-4o-mini over-uses \texttt{neutral} on the challenge set. Those errors are prompt- and snapshot-specific. The unresolved hybrid raises issue macro F1 to 0.680 on gold labels, but the 8,786 corpus reassignments have no second human check; the 2,080 extra network-quality tags in particular should be sampled before they drive a huddle. Forum text sent to a vendor API is also a privacy limit: production jobs must not submit NRIC, phone numbers or other identifiers. The defensible stance is therefore triage plus human review, not automated league tables.
+GPT-4o-mini matches Annotator~A on about two-thirds of posts (accuracy 0.67, macro F1 0.631), and happy is its weakest class (F1 0.54). The benchmark is itself one annotator: on the representative overlap two humans agree at $\kappa=0.57$. Corpus sentiment shares are therefore estimates, although they land close to the gold distribution. All-post LLMs under-label Devices relative to rules (GPT-4o recall 0.25 versus 0.81 on the representative set, 0.33 versus 0.75 on the challenge set) and often return one topic when the post has several. Keyword rules over-trigger on generic terms such as ``plan''. The hybrid's 0.680 was measured on the set used to choose it; on held-out hard posts its gain over rules was not significant and GPT-4o on every post did better. The 8,786 corpus reassignments have no second human check; the 2,080 extra network-quality tags in particular should be sampled before they drive a huddle. These errors are prompt- and snapshot-specific. Forum text sent to a vendor API is also a privacy limit: production jobs must not submit NRIC, phone numbers or other identifiers. The defensible stance is triage plus human review, not automated league tables.
 
 \subsection{Privacy and responsible use}
 
@@ -541,21 +583,20 @@ Although forum posts are publicly accessible, public availability does not remov
 
 \section{Future Work}
 
-Remaining work is operationalisation. LLM issue extraction is complete: keyword rules plus GPT-4o on unresolved rows, evaluated on 295 gold labels and applied to the 8,786-row residual.
-
 \begin{enumerate}
-  \item Obtain a second annotator on the 100-row overlap sheet, compute Cohen's $\kappa$ and adjudicate disagreements.
-  \item Install \texttt{transformers} and run Twitter-RoBERTa on the same 295 records.
+  \item Confirm that the second annotator labelled the challenge overlap independently, then report $\kappa$ for both sets and adjudicate disagreements in a separate file.
+  \item Compare the hybrid with GPT-4o labelling every post on a fresh held-out sample, since the two gold sets disagree on which is better.
   \item Spot-check the 2,606 corpus rows that GPT-4o moved out of \texttt{general\_discussion}, especially the extra network-quality tags, before treating huddle counts as incidents.
-  \item Add thread-aware and target-aware modelling so that sentiment is attached to a specific operator rather than copied to every brand mentioned in a record.
+  \item Extend collection beyond the 2026 incident period, with more HWZ threads from 2024--2026 and more MVNO brands, and install \texttt{transformers} to run Twitter-RoBERTa on the same 295 records.
+  \item Add target-aware sentiment, so that a post praising one operator and criticising another yields a label per brand.
   \item Validate dashboard alerts against internal service tickets and network events before operational deployment.
 \end{enumerate}
 
 \section{Conclusion}
 
-This project demonstrates a complete technical path from online forum collection to operator action. In the 158-record dashboard sample, Network Quality and App \& Account are the first teams to route, while porting is treated as high-severity despite low volume. Charts are captioned as takeaways, not as CSAT or brand league tables. The evaluation supports a hybrid operating model: VADER and keyword rules on the firehose, GPT-4o-mini for sentiment, GPT-4o only on unresolved issues, and a weekly human huddle before any public response.
+This project demonstrates a complete technical path from online forum collection to operator action. On a clean corpus of 1,706 unique posts, network quality dominates both the volume and the negativity of discussion, driven largely by the March 2026 Singtel outage, and the weekly huddle view flags exactly those weeks. Billing and customer service are small but the most negative themes, and plan-term transparency is the main theme outside incidents. Outside the outage, Reddit and HWZ read alike and no brand stands out.
 
-The analysis also demonstrates why model governance matters. A perfect score from non-independent labels is less useful than an imperfect but credible benchmark. On 295 blinded human labels, gpt-4o-mini-2024-07-18 raises sentiment macro F1 from 0.360 (VADER) to 0.631 at under \$0.01. gpt-4o-2024-08-06 does not improve sentiment (0.623) and loses to keyword rules on all-row issues (0.600 versus 0.639), but the unresolved-only hybrid reaches issue macro F1 0.680. Applying that hybrid to 8,786 corpus rows cost about \$3.45. The defensible deployment choice is therefore LLM sentiment, rule-based issues plus GPT-4o on the residual, with human review of alerts. With that mix, the system can serve as a practical early-warning layer alongside, rather than in place of, customer-service and network data.
+The analysis also shows why model governance matters. A perfect score from non-independent labels was discarded in favour of an imperfect but credible benchmark. On 295 blinded human labels, gpt-4o-mini-2024-07-18 raises sentiment macro F1 from 0.360 (VADER) to 0.631; the gain holds on hard posts (0.773 versus 0.491), gpt-4o-2024-08-06 adds nothing for sentiment at about 17 times the cost, and repeated runs are stable. For issues the evidence is split: rules plus GPT-4o on unresolved posts is best on typical posts (0.680), and GPT-4o labelling every post is best on hard ones (0.596). Relabelling the corpus residual cost \$3.45 and corpus sentiment \$0.047. The defensible deployment is LLM sentiment, rules plus a targeted LLM pass for issues, and human review of alerts, as an early-warning layer alongside, rather than in place of, customer-service and network data.
 
 \section*{Reproducibility Note}
 \addcontentsline{toc}{section}{Reproducibility Note}
@@ -568,8 +609,10 @@ python processing/telco_labeler.py
 python processing/issue_extraction.py
 # Keyword-only labels. Hybrid GPT-4o unresolved run is already saved as
 # data/processed/issues_posts_labeled_2026-08-21_203752_gpt4o_hybrid.csv
+python processing/build_clean_corpus.py     # 1,706 unique posts, 105 threads
+python models/corpus_llm_sentiment.py       # GPT-4o-mini sentiment, ~$0.05
 python dashboard/generate_dashboard.py
-streamlit run dashboard/app.py
+python models/robustness_checks.py          # CIs, stability, kappa; no API calls
 
 # Independent LLM vs baseline evaluation (after human labels)
 python models/llm_evaluation.py \
@@ -587,6 +630,12 @@ python models/llm_evaluation.py \
 python models/llm_evaluation.py \
   --in data/evaluation/representative_annotator_a.csv \
   --out-dir data/evaluation/llm_comparison_representative_gpt4o \
+  --model gpt-4o \
+  --input-cost-per-million 2.50 \
+  --output-cost-per-million 10.00
+python models/llm_evaluation.py \
+  --in data/evaluation/challenge_annotator_a.csv \
+  --out-dir data/evaluation/llm_comparison_challenge_gpt4o \
   --model gpt-4o \
   --input-cost-per-million 2.50 \
   --output-cost-per-million 10.00
@@ -654,11 +703,16 @@ J.~Cohen,
 \texttt{llm\_comparison\_representative\_gpt4o/metrics.json} & GPT-4o $n=295$ metrics, tokens, runtime and cost \\
 \texttt{llm\_comparison\_representative\_gpt4o\_hybrid/metrics.json} & Unresolved-only hybrid scored on the same gold labels \\
 \texttt{llm\_comparison\_challenge/metrics.json} & Separate $n=100$ hard-case mini metrics \\
+\texttt{llm\_comparison\_challenge\_gpt4o/} and \texttt{\_hybrid/} & GPT-4o and hybrid on the held-out challenge set \\
+\texttt{llm\_comparison\_representative\_rerun/} & Second GPT-4o-mini run for stability \\
+\texttt{robustness\_summary.json} & Bootstrap intervals, stability, $\kappa$ per set, corpus outage and brand checks \\
+\texttt{processing/build\_clean\_corpus.py}, \texttt{clean\_corpus\_summary.json} & Deduplication, off-topic thread filter, per-thread shares \\
+\texttt{models/corpus\_llm\_sentiment.py}, \texttt{clean\_posts\_mini\_sentiment\_summary.json} & Corpus GPT-4o-mini sentiment, tokens and cost \\
 \texttt{qualitative\_disagreements.csv} & Rows where methods disagree with human labels \\
 \texttt{sentiment\_benchmark.json} & Earlier leaked VADER 100\% file; not used as evidence \\
 \texttt{issues\_summary.json} & Keyword-only full-corpus issue-label counts \\
 \texttt{issues\_summary\_gpt4o\_hybrid.json} & Hybrid full-corpus issue-label counts after GPT-4o on unresolved rows \\
-\texttt{dashboard/generate\_dashboard.py} & Focused sample calculations, business insights, recommendations and limitations \\
+\texttt{dashboard/generate\_dashboard.py} & Clean-corpus dashboard: computed chart titles, weekly queue, recommendation order \\
 \texttt{dashboard/Dash\_README.md} & Dashboard input row counts and generated summary \\
 \bottomrule
 \end{longtable}
@@ -667,7 +721,7 @@ J.~Cohen,
 
 \begin{itemize}
   \item Replace the title-page placeholders with the official student, course and supervisor details.
-  \item Second-annotator agreement remains optional; do not describe the current labels as dual-adjudicated.
+  \item Confirm the second annotator labelled the challenge overlap independently before relying on its $\kappa$; do not describe the labels as dual-adjudicated.
   \item Confirm that no credentials are included in the submission archive, Terminal history files or Git history.
   \item Remove or anonymise usernames and any unnecessary personal identifiers.
 \end{itemize}

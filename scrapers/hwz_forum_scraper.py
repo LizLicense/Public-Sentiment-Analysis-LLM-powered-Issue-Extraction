@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+import os
 import csv
 import json
 import random
@@ -22,11 +23,10 @@ from tqdm import tqdm
 
 DEFAULT_KEYWORDS = ["singtel", "starhub", "m1", "gomo", "eight", "simba", "circles", "zym", "redone", "sim only", "mobile plan"]
 
-# WARNING: Hardcoding passwords in source code is a security risk.
-# Consider using environment variables or a config file instead.
-# If this code is shared or committed to version control, change your password immediately.
-login_uname = 'AllforResearch'
-password = '27xts79SzpHV8bL!'
+# Forum login is optional. Set HWZ_USERNAME and HWZ_PASSWORD in the environment;
+# never put credentials in this file.
+login_uname = os.getenv("HWZ_USERNAME", "").strip()
+password = os.getenv("HWZ_PASSWORD", "")
 
 USER_AGENT = (
     "Mozilla/5.0 (X11; Linux x86_64) "
@@ -509,9 +509,13 @@ def main():
     session = make_session()
     base_url = f"{urlparse(args.forum_url).scheme}://{urlparse(args.forum_url).netloc}"
     
-    print("Logging in to forum...")
-    login_success = login_to_forum(session, base_url, login_uname, password)
-    if not login_success:
+    if login_uname and password:
+        print("Logging in to forum...")
+        login_success = login_to_forum(session, base_url, login_uname, password)
+    else:
+        print("No HWZ_USERNAME/HWZ_PASSWORD set; scraping public pages without login.")
+        login_success = False
+    if not login_success and login_uname and password:
         print("Warning: Login failed. Continuing without authentication (may have limited access).")
     else:
         polite_sleep(1.0, 2.0)  # Brief pause after login

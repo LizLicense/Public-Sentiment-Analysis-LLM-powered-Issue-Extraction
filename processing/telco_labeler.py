@@ -406,7 +406,7 @@ def main() -> None:
         dest="input_path",
         type=str,
         default="data/raw/posts.csv",
-        help="Input CSV of posts from any scraper (default: data/raw/posts.csv). Use one file or combine HWZ/Reddit/Twitter CSVs.",
+        help="Input CSV of posts from any scraper (default: data/raw/posts.csv). Use one file or combine HWZ/Reddit CSVs.",
     )
     parser.add_argument(
         "--out",
@@ -486,7 +486,7 @@ def main() -> None:
 
     df = pd.read_csv(args.input_path)
 
-    # Normalize columns so HWZ, Reddit, Twitter CSVs all work (Reddit uses title/selftext)
+    # Normalize columns so HWZ and Reddit CSVs both work (Reddit uses title/selftext)
     if "post_text" not in df.columns and "selftext" in df.columns:
         df["post_text"] = df["selftext"]
     if "thread_title" not in df.columns and "title" in df.columns:

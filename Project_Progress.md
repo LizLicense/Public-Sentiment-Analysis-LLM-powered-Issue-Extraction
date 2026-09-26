@@ -14,72 +14,80 @@ Capstone telco forum sentiment pipeline — scrape, label, analyse, and visualis
 | Telco + sentiment labeling | **Done** | Full labeled CSV + per-telco summary JSON |
 | Manual evaluation sample | **Done** | Annotator A: 300 representative + 100 challenge; 295/100 used in LLM eval |
 | Sentiment benchmark | **Done (LLM)** | GPT-4o-mini vs VADER on independent labels; transformer still not installed |
-| LLM vs rules issues | **Done** | Keyword rules beat GPT-4o-mini on multi-label F1 (0.64 vs 0.50) |
+| LLM vs rules issues | **Done** | Representative: hybrid 0.680 > rules 0.639. Challenge: GPT-4o all posts 0.596 best |
+| Clean corpus | **Done** | 1,706 unique posts, 105 telco threads (`build_clean_corpus.py`) |
+| Corpus LLM sentiment | **Done** | GPT-4o-mini on 1,706 posts, $0.047 (`corpus_llm_sentiment.py`) |
 | Issue extraction | **Done** | `issues_posts_labeled_*.csv` with taxonomy labels |
 | Forum analysis report | **Done** | Executive summary, sentiment, issues, cross-brand comparison |
 | Dashboard generator | **Done** | `dashboard/generate_dashboard.py` rebuilds HTML + README from CSVs |
 | Static HTML dashboard | **Done** | `dashboard/index.html` (Chart.js) |
-| Streamlit dashboard | **Done** | `dashboard/app.py` (interactive filters) |
 
 ---
 
 ## Completed milestones
 
-1. **Scrapers** — HWZ (single + multi), Reddit (10+ keyword rounds), Twitter scaffold.
+1. **Scrapers** — HWZ (single + multi), Reddit (10+ keyword rounds).
 2. **Preprocessing** — `cleaned_posts.csv` (15,504 rows).
 3. **Labeling** — `posts_labeled_2026-04-09_221819.csv` + `summary_*.json`.
 4. **Blind evaluation package** — 300 representative rows, 100 challenge rows, and 100-row second-annotator overlap; Annotator A complete; Annotator B not used for agreement.
 5. **Independent LLM evaluation** — `gpt-4o-mini-2024-07-18` on 295+100 human labels; sentiment LLM wins (macro F1 0.63 vs 0.36); issue rules win (0.64 vs 0.50); ~$0.012 total. The earlier 100% VADER file is not used.
 6. **Issue extraction** — ten-topic taxonomy: Network Quality, Pricing & Promotions, Mobile Plans, Roaming, Porting, Customer Service, Billing & Payment, App & Account, Devices, General Discussion.
 7. **Qualitative analysis** — Forum sentiment report across all telcos (Reddit + HWZ sample).
-8. **Dashboards** — `generate_dashboard.py` auto-builds static capstone summary (`index.html` + `Dash_README.md`); Streamlit app for interactive exploration.
+8. **Dashboard** — `generate_dashboard.py` auto-builds the static capstone summary (`index.html` + `Dash_README.md`).
 
 ---
 
-## Key findings (forum analysis sample)
+## Key findings (clean corpus, 26 Sep 2026)
 
-Based on **158 telco-relevant posts** from `data/processed/labeled_sample.csv` (Reddit) and `hwz_telco_posts_labeled.csv` (HWZ), after contextual brand validation. Regenerate with `python dashboard/generate_dashboard.py`.
+Based on **1,706 unique posts in 105 telco threads** (`data/processed/clean_posts_2026-08-21_203752_mini_sentiment.csv`): GPT-4o-mini sentiment, hybrid issue labels. All figures are in `data/evaluation/robustness_summary.json` (`python models/robustness_checks.py`).
 
 ### Sentiment
 
-| Sentiment | Share |
-|-----------|-------|
-| Happy | 61% |
-| Not happy | 22% |
-| Neutral | 18% |
+| Labeller | Happy | Not happy | Neutral |
+|----------|-------|-----------|---------|
+| GPT-4o-mini, per post | 18% | 55% | 27% |
+| GPT-4o-mini, thread-weighted | 19% | 49% | 32% |
+| VADER, same posts | 40% | 32% | 28% |
+| Human gold (295 posts) | 18% | 50% | 32% |
 
-- **Reddit** (n=67 telco-relevant): 49% happy / **30% not_happy** — more complaint-driven.
-- **HWZ** (n=91): 69% happy / 15% not_happy — skewed toward launch/plan threads.
+- **One outage dominates:** 22 outage threads hold 662 posts (39%). Outside them, not happy falls to 42%.
+- **No platform gap:** Reddit 60% vs HWZ 40% not happy per post, but Reddit is all 2026 and holds the outage threads. Outside them: Reddit 43%, HWZ 40% (human gold: 51% vs 47%).
 
-### Issues (inferred; `issue_manual` not filled on Reddit sample)
+### Issues
 
-| Theme | Share |
-|-------|-------|
-| App & Account | 24% |
-| Network Quality | 19% |
-| General Discussion | 15% |
-| Mobile Plans | 12% |
-| Pricing & Promotions | 8% |
-| Billing & Payment | 8% |
-| Roaming | 6% |
-| Devices | 4% |
-| Porting | 3% |
-| Customer Service | 1% |
+| Theme | Share per post | Thread-weighted | Not-happy rate |
+|-------|----------------|-----------------|----------------|
+| Network Quality | 52.8% | 45.3% | 67% |
+| Mobile Plans | 12.2% | 13.4% | 38% |
+| General Discussion | 9.1% | 10.7% | 32% |
+| Pricing & Promotions | 6.8% | 6.1% | 50% |
+| Devices | 6.2% | 6.0% | 42% |
+| Billing & Payment | 3.6% | 4.7% | 65% |
+| Customer Service | 3.0% | 4.1% | 60% |
+| Porting | 2.8% | 2.7% | 23% |
+| Roaming | 2.2% | 3.7% | 37% |
+| App & Account | 1.2% | 3.3% | 52% |
 
-### Cross-brand (brands with ≥5 mentions)
+### Cross-brand (not happy; brands with ≥10 posts)
 
-| Telco | Mentions | Negative tone | Dominant themes |
-|-------|----------|---------------|-----------------|
-| StarHub | 56 | 27% | Pricing rhetoric, CS/porting friction, promo fulfilment |
-| M1 | 53 | 25% | Coverage dead zones, 4G/5G transition |
-| Singtel | 51 | 16% | ONR/bridge-mode policy, equipment quality |
-| Zym | 22 | 0%* | Promotional plan posts (*label noise) |
-| Eight | 14 | 29% | Launch pricing, MVNO tiering, porting limits |
-| Giga | 6 | 67% | Network reliability (small n) |
+| Telco | Posts | Overall | Outside outage threads |
+|-------|-------|---------|------------------------|
+| Singtel | 1,135 | 63% | 45% |
+| StarHub | 360 | 48% | 47% |
+| M1 | 254 | 35% | 34% |
+| SIMBA | 157 | 35% | 35% |
+| Zym | 48 | 38% | 33% |
+| Giga | 64 | 34% | 34% |
+| Eight | 72 | 28% | 27% |
 
-**Takeaways:** App/account access, network quality and mobile-plan comparisons lead the refined issue view; StarHub/Singtel friction includes porting, billing, and equipment policy; Giga shows the highest negative rate but on very few rows.
+**Takeaways:** incident communication first (412 of 599 not-happy network posts are in outage threads); outage aftercare in billing and customer service (the most negative small themes); comparable plan terms (fair-use, add-on charges). App & Account, roaming and porting are small. Singtel's lead is the outage; no brand league table.
 
-Full narrative, quotes, and recommendations are embedded in `dashboard/index.html`.
+### Evaluation updates
+
+- **Held-out challenge set:** GPT-4o-mini sentiment 0.773 vs GPT-4o 0.712 vs VADER 0.491. Issues: GPT-4o all posts 0.596 beats rules 0.499 and hybrid 0.509. The hybrid's representative-set 0.680 is optimistic.
+- **Bootstrap 95% CIs (representative):** mini − VADER +0.271 (0.191 to 0.347); mini − GPT-4o tie; GPT-4o all posts − rules tie; hybrid − rules +0.041 (0.011 to 0.072).
+- **Stability:** a second GPT-4o-mini run reproduced 292/295 sentiment labels (κ 0.98).
+- **Annotator agreement:** sentiment κ 0.57 (representative, n=58), 0.76 (challenge, n=40; independence unconfirmed).
 
 ---
 
@@ -92,7 +100,7 @@ data/
     ├── cleaned_posts.csv                              # 15,504 rows
     ├── posts_labeled_2026-04-09_221819.csv            # 15,504 rows
     ├── issues_posts_labeled_2026-04-09_221819.csv     # 15,504 rows (+ issue_primary)
-    ├── labeled_sample.csv                             # 150 rows (manual sentiment labels)
+    ├── labeled_sample.csv                             # 150 rows; sentiment_label_manual is a copy of VADER, not human labels
     ├── sentiment_benchmark.json                       # VADER metrics
     └── sentiment_benchmark_predictions.csv
 
@@ -108,8 +116,7 @@ hwz_telco_posts_labeled.csv   # 100 HWZ posts (project root; Eight/StarHub/M1/Zy
   ────────                                │
   hwz_forum_scraper                       ▼
   hwz_multi_forum_scraper        preprocess.py ──► cleaned_posts.csv
-  reddit_scraper                          │
-  twitter_scraper                         ▼
+  reddit_scraper                          ▼
                                    telco_labeler.py ──► posts_labeled_*.csv, summary_*.json
                                           │
                     ┌─────────────────────┼─────────────────────┐
@@ -118,7 +125,7 @@ hwz_telco_posts_labeled.csv   # 100 HWZ posts (project root; Eight/StarHub/M1/Zy
                     │                     │                     │
                     ▼                     ▼                     ▼
          labeled_sample.csv      issues_posts_labeled_*.csv   index.html + Dash_README.md
-                    │                                          app.py (Streamlit)
+                    │
                     ▼
          sentiment_benchmark.py ──► sentiment_benchmark.json
 ```
@@ -131,7 +138,8 @@ hwz_telco_posts_labeled.csv   # 100 HWZ posts (project root; Eight/StarHub/M1/Zy
 | 4 Eval sample | `processing/create_labeled_sample.py` | `labeled_sample_template.csv` |
 | 5 Benchmark | `models/sentiment_benchmark.py` | `sentiment_benchmark.json` |
 | 6 Issues | `processing/issue_extraction.py` | `issues_posts_labeled_*.csv` |
-| 7 Dashboard | `dashboard/generate_dashboard.py`, `dashboard/app.py` | `index.html`, `Dash_README.md`, Streamlit UI |
+| 7 Clean corpus | `processing/build_clean_corpus.py` | `clean_posts_*.csv`, `clean_corpus_summary.json` |
+| 8 Dashboard | `dashboard/generate_dashboard.py` | `index.html`, `Dash_README.md` |
 
 ---
 
@@ -139,11 +147,12 @@ hwz_telco_posts_labeled.csv   # 100 HWZ posts (project root; Eight/StarHub/M1/Zy
 
 ### Generate static HTML (`dashboard/generate_dashboard.py`)
 
-Rebuild capstone summary from labeled CSVs (stdlib only):
+Rebuild from the clean corpus (stdlib only). Uses GPT-4o-mini sentiment from `models/corpus_llm_sentiment.py` when that file exists, else VADER with a warning:
 
 ```bash
+python processing/build_clean_corpus.py
+python models/corpus_llm_sentiment.py   # needs OPENAI_API_KEY, ~$0.05
 python dashboard/generate_dashboard.py
-# optional: --reddit data/processed/labeled_sample.csv --hwz hwz_telco_posts_labeled.csv
 ```
 
 Writes `dashboard/index.html` and `dashboard/Dash_README.md` with current metrics, charts, executive summary, and quotes.
@@ -158,16 +167,6 @@ Includes: executive summary, KPI cards, Chart.js visualisations (sentiment, sour
 
 See `dashboard/Dash_README.md` (auto-generated).
 
-### Streamlit (`dashboard/app.py`)
-
-Interactive filters by source, telco, sentiment, and date:
-
-```bash
-streamlit run dashboard/app.py
-```
-
-Reads latest `issues_*.csv` → `posts_labeled_*.csv` → `cleaned_posts.csv`.
-
 ---
 
 ## Data dictionary (summary)
@@ -176,7 +175,7 @@ Column details for raw and processed files are in [`data/README.md`](data/README
 
 | Column | Description |
 |--------|-------------|
-| `source` | `reddit`, `hwz`, `twitter` |
+| `source` | `reddit`, `hwz` |
 | `telco_label` | Detected brand(s), comma-separated |
 | `sentiment_label` | `happy` / `not_happy` / `neutral` (VADER) |
 | `sentiment_label_manual` | Human label (evaluation sample only) |
@@ -207,10 +206,12 @@ python models/sentiment_benchmark.py --in data/processed/labeled_sample.csv
 # 4. Issue extraction
 python processing/issue_extraction.py
 
-# 5. Regenerate + view dashboards
+# 4b. Clean corpus: dedupe, drop off-topic threads, thread-weighted shares
+python processing/build_clean_corpus.py
+
+# 5. Regenerate + view dashboard
 python dashboard/generate_dashboard.py
 open dashboard/index.html
-streamlit run dashboard/app.py
 ```
 
 Full CLI options: [`README.md`](README.md).
@@ -220,11 +221,12 @@ Full CLI options: [`README.md`](README.md).
 ## Planned next steps
 
 - [x] **Fill human issue/sentiment labels** on representative and challenge sheets; compare VADER/rules vs GPT-4o-mini and GPT-4o.
-- [ ] **Second annotator / kappa** on `double_annotation_annotator_b.csv`.
+- [~] **Second annotator / kappa** — κ computed per set; confirm challenge-overlap independence before reporting it.
 - [ ] **Transformer benchmark** — install `transformers` + `torch`; compare against VADER on the representative labels.
 - [x] **LLM issue extraction** — hybrid `processing/issue_extraction.py --use-llm --llm-unresolved-only --llm-model gpt-4o` on 8,786 unresolved rows; dashboard overlay complete. Do not rerun all-row LLM issues.
 - [ ] **Scale coverage** — `processing/coverage_checker.py --target 1000` per telco.
 - [x] **Auto-regenerate dashboard** — `dashboard/generate_dashboard.py` rebuilds `index.html` + `Dash_README.md` from CSVs, overlaying hybrid issue labels.
+- [x] **Clean corpus + GPT-4o-mini sentiment + held-out hybrid test** — report findings, recommendations and limitations rewritten (26 Sep 2026).
 - [ ] **Capstone write-up** — title-page placeholders; compile `final_report.tex`.
 
 ---
@@ -236,14 +238,13 @@ Full CLI options: [`README.md`](README.md).
 | `scrapers/hwz_forum_scraper.py` | Single HWZ forum scrape |
 | `scrapers/hwz_multi_forum_scraper.py` | Multiple XenForo forums |
 | `scrapers/reddit_scraper.py` | Reddit posts/comments (no API key) |
-| `scrapers/twitter_scraper.py` | Twitter API v2 (Bearer token) |
 | `processing/telco_labeler.py` | Telco detection + VADER/LLM sentiment |
 | `processing/preprocess.py` | Clean + normalize raw CSVs |
 | `processing/create_labeled_sample.py` | Manual-label evaluation template |
 | `processing/issue_extraction.py` | Issue taxonomy + optional LLM |
 | `processing/coverage_checker.py` | Auto loop until per-telco target met |
+| `processing/build_clean_corpus.py` | Dedupe, drop off-topic threads, per-thread shares |
 | `models/llm_evaluation.py` | Blind GPT-4o-mini vs VADER/rules evaluation |
 | `models/sentiment_benchmark.py` | VADER vs transformer evaluation |
 | `dashboard/generate_dashboard.py` | Regenerate static HTML dashboard + Dash_README from CSVs |
 | `dashboard/index.html` | Static Chart.js summary dashboard (generated) |
-| `dashboard/app.py` | Streamlit interactive dashboard |

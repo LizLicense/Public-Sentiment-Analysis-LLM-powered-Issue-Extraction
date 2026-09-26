@@ -3,7 +3,7 @@
 Auto-collect telco samples until each target telco reaches threshold.
 
 Loop per batch:
-1) Run enabled scrapers (reddit / hwz / twitter)
+1) Run enabled scrapers (reddit / hwz)
 2) Rebuild cleaned + labeled datasets
 3) Count samples per telco from latest labeled CSV
 4) Stop when all requested telcos >= target
@@ -72,11 +72,10 @@ def main() -> None:
     ap.add_argument("--target", type=int, default=1000, help="Target samples per telco (default: 1000).")
     ap.add_argument("--telcos", type=str, default=",".join(DEFAULT_TELCOS), help="Comma-separated telcos to track.")
     ap.add_argument("--max-rounds", type=int, default=10, help="Maximum scrape rounds (default: 10).")
-    ap.add_argument("--keywords", type=str, default=DEFAULT_KEYWORDS, help="Keywords for reddit/twitter/HWZ title filter.")
+    ap.add_argument("--keywords", type=str, default=DEFAULT_KEYWORDS, help="Keywords for Reddit/HWZ title filter.")
 
     ap.add_argument("--disable-reddit", action="store_true", help="Skip Reddit scraper.")
     ap.add_argument("--disable-hwz", action="store_true", help="Skip HWZ scraper.")
-    ap.add_argument("--disable-twitter", action="store_true", help="Skip Twitter scraper.")
 
     ap.add_argument("--reddit-subreddits", type=str, default="singapore,asksingapore", help="Subreddits for reddit scraper.")
     ap.add_argument("--reddit-limit", type=int, default=1200, help="Max posts per subreddit per round.")
@@ -86,9 +85,6 @@ def main() -> None:
     ap.add_argument("--hwz-max-threads", type=int, default=250, help="HWZ matched threads per round.")
     ap.add_argument("--hwz-max-thread-pages", type=int, default=12, help="HWZ pages per thread per round.")
 
-    ap.add_argument("--twitter-max-tweets", type=int, default=1000, help="Max tweets per round.")
-    ap.add_argument("--twitter-bearer-token", type=str, default="", help="Optional token override for twitter scraper.")
-
     ap.add_argument("--skip-preprocess", action="store_true", help="Skip preprocess; label latest raw file directly.")
     args = ap.parse_args()
 
@@ -96,7 +92,7 @@ def main() -> None:
     if not telcos:
         print("Error: --telcos cannot be empty.")
         sys.exit(1)
-    if args.disable_reddit and args.disable_hwz and args.disable_twitter:
+    if args.disable_reddit and args.disable_hwz:
         print("Error: all sources disabled. Enable at least one scraper.")
         sys.exit(1)
 
@@ -152,23 +148,6 @@ def main() -> None:
             )
             if rc != 0:
                 print("Warning: HWZ scraper failed this round.")
-
-        if not args.disable_twitter:
-            cmd = [
-                py,
-                "scrapers/twitter_scraper.py",
-                "--keywords",
-                args.keywords,
-                "--max-tweets",
-                str(args.twitter_max_tweets),
-                "--out",
-                f"data/raw/twitter_posts_round{round_i}",
-            ]
-            if args.twitter_bearer_token.strip():
-                cmd.extend(["--bearer-token", args.twitter_bearer_token.strip()])
-            rc = run_cmd(cmd)
-            if rc != 0:
-                print("Warning: Twitter scraper failed this round.")
 
         if args.skip_preprocess:
             rc = run_cmd([py, "processing/telco_labeler.py"])

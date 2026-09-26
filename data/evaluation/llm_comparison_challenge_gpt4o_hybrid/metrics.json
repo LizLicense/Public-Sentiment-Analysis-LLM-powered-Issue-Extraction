@@ -1,0 +1,178 @@
+{
+  "design": "Keyword rules; GPT-4o issue labels only where rules output only general_discussion.",
+  "source_predictions": "data/evaluation/llm_comparison_challenge_gpt4o/predictions.csv",
+  "n": 100,
+  "unresolved_general_discussion": 23,
+  "llm_relabeled_from_gd": 19,
+  "new_api_calls": 0,
+  "issues": {
+    "n": 100,
+    "exact_match_accuracy": 0.29,
+    "macro_f1": 0.5089650770714844,
+    "micro_precision": 0.5722543352601156,
+    "micro_recall": 0.6111111111111112,
+    "micro_f1": 0.591044776119403,
+    "per_class": {
+      "network_quality": {
+        "precision": 0.6078431372549019,
+        "recall": 0.7560975609756098,
+        "f1": 0.6739130434782609,
+        "support": 41,
+        "confusion_matrix": [
+          [
+            39,
+            20
+          ],
+          [
+            10,
+            31
+          ]
+        ]
+      },
+      "pricing_promotions": {
+        "precision": 0.5,
+        "recall": 0.26666666666666666,
+        "f1": 0.3478260869565218,
+        "support": 15,
+        "confusion_matrix": [
+          [
+            81,
+            4
+          ],
+          [
+            11,
+            4
+          ]
+        ]
+      },
+      "mobile_plans": {
+        "precision": 0.6451612903225806,
+        "recall": 0.6060606060606061,
+        "f1": 0.625,
+        "support": 33,
+        "confusion_matrix": [
+          [
+            56,
+            11
+          ],
+          [
+            13,
+            20
+          ]
+        ]
+      },
+      "roaming": {
+        "precision": 0.8947368421052632,
+        "recall": 0.8947368421052632,
+        "f1": 0.8947368421052632,
+        "support": 19,
+        "confusion_matrix": [
+          [
+            79,
+            2
+          ],
+          [
+            2,
+            17
+          ]
+        ]
+      },
+      "porting": {
+        "precision": 0.75,
+        "recall": 0.75,
+        "f1": 0.75,
+        "support": 8,
+        "confusion_matrix": [
+          [
+            90,
+            2
+          ],
+          [
+            2,
+            6
+          ]
+        ]
+      },
+      "customer_service": {
+        "precision": 0.625,
+        "recall": 0.35714285714285715,
+        "f1": 0.45454545454545453,
+        "support": 14,
+        "confusion_matrix": [
+          [
+            83,
+            3
+          ],
+          [
+            9,
+            5
+          ]
+        ]
+      },
+      "billing_payment": {
+        "precision": 0.4,
+        "recall": 1.0,
+        "f1": 0.5714285714285715,
+        "support": 6,
+        "confusion_matrix": [
+          [
+            85,
+            9
+          ],
+          [
+            0,
+            6
+          ]
+        ]
+      },
+      "app_account": {
+        "precision": 0.25,
+        "recall": 0.3333333333333333,
+        "f1": 0.28571428571428575,
+        "support": 3,
+        "confusion_matrix": [
+          [
+            94,
+            3
+          ],
+          [
+            2,
+            1
+          ]
+        ]
+      },
+      "devices": {
+        "precision": 0.36,
+        "recall": 0.75,
+        "f1": 0.48648648648648657,
+        "support": 12,
+        "confusion_matrix": [
+          [
+            72,
+            16
+          ],
+          [
+            3,
+            9
+          ]
+        ]
+      },
+      "general_discussion": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 11,
+        "confusion_matrix": [
+          [
+            85,
+            4
+          ],
+          [
+            11,
+            0
+          ]
+        ]
+      }
+    }
+  }
+}

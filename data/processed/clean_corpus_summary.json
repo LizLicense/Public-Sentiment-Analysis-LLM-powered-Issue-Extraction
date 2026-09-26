@@ -1,0 +1,209 @@
+{
+  "input": "data/processed/issues_posts_labeled_2026-08-21_203752_gpt4o_hybrid.csv",
+  "output": "data/processed/clean_posts_2026-08-21_203752.csv",
+  "min_telco_share": 0.2,
+  "steps": {
+    "raw_rows": 15504,
+    "unique_posts": 2686,
+    "threads": 152,
+    "threads_kept": 105,
+    "threads_dropped_off_topic": 47,
+    "posts_in_dropped_threads": 980,
+    "clean_posts": 1706,
+    "clean_posts_naming_telco": 1610
+  },
+  "clean_by_source": {
+    "reddit": 1253,
+    "hwz": 453
+  },
+  "largest_kept_threads": [
+    {
+      "title": "16 March 26: Singtel mobile service outage",
+      "posts": 136,
+      "share_of_clean_pct": 8.0
+    },
+    {
+      "title": "Is Singtel Mobile Data down? Have no Internet",
+      "posts": 101,
+      "share_of_clean_pct": 5.9
+    },
+    {
+      "title": "SingTel is down for local subscribers, unless you have a Malaysian SIM",
+      "posts": 94,
+      "share_of_clean_pct": 5.5
+    },
+    {
+      "title": "Ultra-low telco prices may hurt service quality and security, says StarHub CEO",
+      "posts": 63,
+      "share_of_clean_pct": 3.7
+    },
+    {
+      "title": "Did SingTel just have a broadband and 5G outage again?",
+      "posts": 47,
+      "share_of_clean_pct": 2.8
+    }
+  ],
+  "largest_dropped_threads": [
+    {
+      "title": "Woman sues Prudential saying insurer used 'buried clause' to deny S$100,000 brain surgery claim",
+      "posts": 98,
+      "telco_share": 0.0
+    },
+    {
+      "title": "Singapore's narrow definition of success is a cage we built ourselves",
+      "posts": 97,
+      "telco_share": 0.0
+    },
+    {
+      "title": "Singaporeans don't want a Nordic model. We want to keep winning.",
+      "posts": 69,
+      "telco_share": 0.0
+    },
+    {
+      "title": "Where does your sense of self-worth come from?",
+      "posts": 51,
+      "telco_share": 0.0
+    },
+    {
+      "title": "Do u guys give parents allowance? Why or why not?",
+      "posts": 45,
+      "telco_share": 0.0
+    },
+    {
+      "title": "Would You Apply for a Job Like This?",
+      "posts": 41,
+      "telco_share": 0.0
+    },
+    {
+      "title": "Why do Asian parents like to comment about people’s weight and body?",
+      "posts": 40,
+      "telco_share": 0.0
+    },
+    {
+      "title": "How much cash in your wallet / purse?",
+      "posts": 38,
+      "telco_share": 0.03
+    },
+    {
+      "title": "Theres someone clearly slacking at Marine Parade Braddle Heights Town Council",
+      "posts": 37,
+      "telco_share": 0.0
+    },
+    {
+      "title": "Do you count calories in an attempt to be more aware of your health and weight?",
+      "posts": 29,
+      "telco_share": 0.0
+    }
+  ],
+  "raw_rows_view": {
+    "issue_primary": {
+      "general_discussion": 39.9,
+      "network_quality": 36.5,
+      "pricing_promotions": 5.6,
+      "mobile_plans": 4.7,
+      "customer_service": 3.5,
+      "billing_payment": 3.3,
+      "devices": 2.9,
+      "roaming": 1.8,
+      "app_account": 1.3,
+      "porting": 0.6
+    },
+    "sentiment_vader": {
+      "happy": 44.4,
+      "not_happy": 31.0,
+      "neutral": 24.6
+    }
+  },
+  "clean_views": {
+    "per_post": {
+      "posts": 1706,
+      "issue_primary": {
+        "network_quality": 52.8,
+        "mobile_plans": 12.2,
+        "general_discussion": 9.1,
+        "pricing_promotions": 6.8,
+        "devices": 6.2,
+        "billing_payment": 3.6,
+        "customer_service": 3.0,
+        "porting": 2.8,
+        "roaming": 2.2,
+        "app_account": 1.2
+      },
+      "sentiment_vader": {
+        "happy": 39.9,
+        "not_happy": 31.8,
+        "neutral": 28.3
+      },
+      "brand_share_of_mentions": {
+        "Singtel": 62.3,
+        "Starhub": 16.1,
+        "M1": 9.9,
+        "SIMBA": 5.4,
+        "Eight": 2.5,
+        "Giga": 2.4,
+        "Zym": 1.3,
+        "redONE": 0.1
+      }
+    },
+    "thread_equal": {
+      "posts": 1706,
+      "issue_primary": {
+        "network_quality": 45.3,
+        "mobile_plans": 13.4,
+        "general_discussion": 10.7,
+        "pricing_promotions": 6.1,
+        "devices": 6.0,
+        "billing_payment": 4.7,
+        "customer_service": 4.1,
+        "roaming": 3.7,
+        "app_account": 3.3,
+        "porting": 2.7
+      },
+      "sentiment_vader": {
+        "happy": 44.3,
+        "neutral": 28.5,
+        "not_happy": 27.2
+      },
+      "brand_share_of_mentions": {
+        "Singtel": 55.0,
+        "Starhub": 17.2,
+        "M1": 11.1,
+        "SIMBA": 8.2,
+        "Eight": 3.9,
+        "Giga": 3.1,
+        "Zym": 1.3,
+        "redONE": 0.2
+      }
+    },
+    "cap_5_per_thread": {
+      "posts": 487,
+      "issue_primary": {
+        "network_quality": 44.8,
+        "mobile_plans": 14.4,
+        "general_discussion": 9.2,
+        "pricing_promotions": 6.8,
+        "devices": 6.2,
+        "billing_payment": 5.3,
+        "customer_service": 4.1,
+        "roaming": 3.3,
+        "app_account": 3.1,
+        "porting": 2.9
+      },
+      "sentiment_vader": {
+        "happy": 44.1,
+        "neutral": 27.9,
+        "not_happy": 27.9
+      },
+      "brand_share_of_mentions": {
+        "Singtel": 53.8,
+        "Starhub": 18.1,
+        "M1": 11.6,
+        "SIMBA": 8.4,
+        "Eight": 3.3,
+        "Giga": 3.2,
+        "Zym": 1.3,
+        "redONE": 0.3
+      }
+    }
+  }
+}

@@ -1,0 +1,9 @@
+What I'd improve, most important first:
+
+Your headline findings rest on your weakest labels. The dashboard and the findings section of the report use VADER on a 158-post sample, but your own gold set shows VADER badly overstates happiness (61% vs 18% happy). The sample also distorts issue shares. App & Account is 25% of the sample but about 3.5% of the corpus hybrid labels (535 of 15,504). Recommendation #2 still calls it "the second-largest primary theme". Run GPT-4o-mini sentiment on the deduplicated corpus (about $0.50), rebuild the dashboard, and re-check the recommendations.
+Two comparisons the report states as wins aren't significant. "Rules beat all-row GPT-4o" (0.639 vs 0.600) has a 95% interval of −0.02 to +0.10, so it's a tie. Mini vs GPT-4o on sentiment is also a tie. Add confidence intervals to the report and call these "comparable".
+The hybrid was chosen and scored on the same 295 posts. That makes 0.680 optimistic. Run GPT-4o on the 100 challenge posts (about $0.05) to test it on held-out data.
+Annotator B is done, but the report still says no second annotator was used. Report kappa per set: sentiment κ is 0.57 on representative and 0.76 on challenge. Before you do, check that B labelled independently. Near-perfect issue agreement on the hard set (Jaccard 0.93, vs 0.57 on the representative set) is a red flag your professor may spot.
+Duplicate posts and same-thread replies inflate every count. Report unique-text and thread counts next to row counts. For extra rigour, resample whole threads rather than single posts when computing the confidence intervals.
+Loose ends in the write-up: the title page placeholders (surname, ID, course, supervisor) are still empty, and the PDF hasn't been compiled. LaTeX isn't installed on this machine.
+One sentiment label is copied to every brand a post names. Labelling each brand in a post separately would make the brand comparison defensible. It's a good "future work" answer if asked.

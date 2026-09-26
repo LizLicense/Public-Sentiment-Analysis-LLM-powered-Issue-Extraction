@@ -1,15 +1,20 @@
 #!/usr/bin/env python3
 """
-Regenerate dashboard/index.html and dashboard/Dash_README.md from labeled CSVs.
+Regenerate dashboard/index.html and dashboard/Dash_README.md from the clean corpus.
 
 Default inputs:
-  - data/processed/labeled_sample.csv   (Reddit)
-  - hwz_telco_posts_labeled.csv         (HWZ, project root)
-  - data/processed/issues_*_gpt4o_hybrid.csv (issue overlay)
+  - data/processed/clean_posts_2026-08-21_203752_mini_sentiment.csv
+      (clean corpus + GPT-4o-mini sentiment; written by models/corpus_llm_sentiment.py)
+  - falls back to data/processed/clean_posts_2026-08-21_203752.csv with VADER sentiment,
+    and says so on the page, if the GPT-4o-mini file does not exist yet
+  - data/evaluation/representative_annotator_a.csv (human sentiment check)
+
+The clean corpus is one row per unique post in telco threads (processing/build_clean_corpus.py).
+Issue labels are the hybrid (keyword rules, then GPT-4o on unresolved rows).
 
 Usage (from project root):
   python dashboard/generate_dashboard.py
-  python dashboard/generate_dashboard.py --reddit data/processed/labeled_sample.csv --hwz hwz_telco_posts_labeled.csv
+  python dashboard/generate_dashboard.py --corpus data/processed/clean_posts_2026-08-21_203752.csv
 """
 
 from __future__ import annotations
@@ -17,61 +22,22 @@ from __future__ import annotations
 import argparse
 import csv
 import html
+import json
 import re
 from collections import Counter, defaultdict
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 DASHBOARD_DIR = Path(__file__).resolve().parent
 
-TELCO_KEYWORDS = [
-    "singtel", "starhub", "m1", "simba", "giga", "eight", "zym",
-    "redone", "gomo", "circles", "vivifi", "myrepublic", "maxx", "heya", "zero1", "povo",
-]
-
-EIGHT_CONTEXT_TERMS = (
-    r"telco|telecom|mobile|mvno|sim(?:-only)?|plan|network|roaming|"
-    r"port(?:ing)?|data|gb|4g|5g|starhub|singtel|m1|simba|giga|zym"
-)
-EIGHT_STRONG_PATTERN = re.compile(
-    r"\beight\s+(?:telecom|telco|mobile|sim(?:-only)?|plan)\b|"
-    r"\b(?:telecom|telco|mobile|mvno)\s+(?:brand\s+)?eight\b|"
-    r"\beight\.sg\b",
-    re.IGNORECASE,
-)
-EIGHT_CONTEXT_PATTERN = re.compile(
-    rf"(?:\beight\b.{{0,60}}\b(?:{EIGHT_CONTEXT_TERMS})\b|"
-    rf"\b(?:{EIGHT_CONTEXT_TERMS})\b.{{0,60}}\beight\b)",
-    re.IGNORECASE | re.DOTALL,
-)
-EIGHT_NON_BRAND_PATTERN = re.compile(
-    r"\beight(?:\s+|-)(?:"
-    r"buses?|people|persons?|years?|months?|weeks?|days?|hours?|minutes?|seconds?|"
-    r"times?|students?|workers?|cars?|teams?|points?|seats?|stations?|stops?|"
-    r"cases?|episodes?|members?|children|men|women"
-    r")\b",
-    re.IGNORECASE,
-)
+MINI_CORPUS = ROOT / "data/processed/clean_posts_2026-08-21_203752_mini_sentiment.csv"
+VADER_CORPUS = ROOT / "data/processed/clean_posts_2026-08-21_203752.csv"
 
 BRAND_MAP = [
     ("singtel", "Singtel"), ("starhub", "StarHub"), ("m1", "M1"), ("simba", "SIMBA"),
     ("giga", "Giga"), ("eight", "Eight"), ("zym", "Zym"), ("redone", "redONE"),
-    ("gomo", "GOMO"), ("circles", "Circles"), ("vivifi", "Vivifi"),
-    ("myrepublic", "MyRepublic"), ("maxx", "Maxx"), ("heya", "Heya"), ("zero1", "Zero1"),
 ]
-
-ISSUE_KW = {
-    "network_quality": r"\b(signal|coverage|speed|slow|lte|5g|4g|network|dead spot|dark spot|drop|latency|bandwidth|apn|connection|priority|tier|outage)\b",
-    "pricing_promotions": r"\b(price|pricing|cheap|expensive|cost|fee|promo|promotion|discount|deal|value|cashback|voucher)\b|\$\d|s\$",
-    "mobile_plans": r"\b(plan|sim[- ]?only|subscription|contract|gb|unlimited|data allowance|minutes|sms|mvno)\b",
-    "roaming": r"\b(roam|roaming|malaysia|overseas|travel|idd|international data|apac|worldwide)\b",
-    "porting": r"\b(port|porting|port out|port in|number transfer|transfer number|mnp|switch telco)\b",
-    "customer_service": r"\b(customer service|support|hotline|agent|complain|frustrat|service cent(?:er|re)|escalat)\b",
-    "billing_payment": r"\b(bill|billing|charged|charge|payment|pay|refund|invoice|credit card|giro|auto[- ]?debit)\b",
-    "app_account": r"\b(app|application|account|log[ -]?in|sign[ -]?in|password|otp|portal|dashboard|verification)\b",
-    "devices": r"\b(device|phone|handset|iphone|android|esim|sim card|router|modem|onr|ont|equipment)\b",
-}
 
 ISSUE_LABELS = [
     "network_quality",
@@ -110,366 +76,329 @@ ISSUE_COLORS = {
     "general_discussion": "#64748b",
 }
 
+# Owner, action and check for each actionable issue. The page orders them by how
+# much not-happy discussion each issue carries, so the order follows the data.
+ISSUE_ACTIONS = {
+    "network_quality": ("Network", "Join named-location and outage posts to tickets and cell data; publish status and ETA during incidents.",
+                        "Tickets fall at that location; fewer “is it down?” threads."),
+    "mobile_plans": ("Product", "Show fair-use limits, add-on charges (e.g. Caller ID), recurring price and host network at checkout.",
+                     "Fewer “which plan / which backend?” threads."),
+    "pricing_promotions": ("Commercial", "Publish intro vs recurring price and promo expiry; audit promotion fulfilment.",
+                           "Fewer fulfilment complaints, not just a lower list price."),
+    "devices": ("Device support", "Document router, ONR/ONT and eSIM requirements per plan.",
+                "Fewer equipment and bridge-mode threads."),
+    "billing_payment": ("Billing", "Publish the outage compensation rule with the incident notice; explain charges before the bill lands.",
+                        "Fewer compensation and surprise-charge posts."),
+    "customer_service": ("Service operations", "Keep a self-service path and callback queue open during incidents; close escalations with a named owner.",
+                         "Fewer “cannot reach support” posts after the next incident."),
+    "porting": ("MNP operations", "Return a specific port-reject reason and next step.",
+                "Lower avoidable-reject rate and median port time."),
+    "roaming": ("Roaming", "In-app “travelling to X” checklist: activation, coverage, overage cap.",
+                "Fewer destination bill-shock posts."),
+    "app_account": ("Digital CX", "Fix login, OTP and chatbot dead-ends; watch posts after each release.",
+                    "Fewer “cannot log in” posts after a release."),
+}
+
 HUDDLE_ISSUES = ("network_quality", "app_account", "porting")
 HUDDLE_THRESHOLD = 20
-
-BRAND_TOP_ISSUE_HINTS = {
-    "Eight": "Launch pricing, tiering, porting",
-    "StarHub": "Pricing, CS, promo fulfilment",
-    "M1": "Network coverage, 4G/5G",
-    "Singtel": "ONR/bridge mode, equipment",
-    "Zym": "Promotional plan posts",
-    "Giga": "Network reliability (small n)",
-    "SIMBA": "MVNO price benchmark",
-    "GOMO": "Roaming, host-network",
-}
+MIN_BRAND_MENTIONS = 10
 
 
 def read_csv(path: Path) -> list[dict]:
-    with path.open(newline="", encoding="utf-8") as f:
+    csv.field_size_limit(10**9)
+    with path.open(newline="", encoding="utf-8-sig") as f:
         return list(csv.DictReader(f))
 
 
-def is_eight_telco_reference(text: str) -> bool:
-    if not re.search(r"\beight\b", text or "", re.IGNORECASE):
-        return False
-    if EIGHT_STRONG_PATTERN.search(text):
-        return True
-    if EIGHT_NON_BRAND_PATTERN.search(text):
-        return False
-    return bool(EIGHT_CONTEXT_PATTERN.search(text))
-
-
-def clean_telco_label(label: str, text: str, title: str) -> str:
-    parts = [part.strip() for part in re.split(r"[,;/|&]+", label or "") if part.strip()]
-    if any(part.lower().replace(" ", "") == "eight" for part in parts):
-        if not is_eight_telco_reference(f"{title} {text}"):
-            parts = [part for part in parts if part.lower().replace(" ", "") != "eight"]
-    return ",".join(parts)
-
-
-def text_match_key(text: str) -> str:
-    return re.sub(r"\s+", " ", html.unescape(text or "")).strip().lower()[:500]
-
-
-def load_hybrid_issue_lookup(path: Path) -> dict[str, dict[str, str]]:
-    lookup = {"by_comment": {}, "by_text": {}}
-    if not path.exists():
-        return lookup
-    for row in read_csv(path):
-        primary = (row.get("issue_primary") or "").strip()
-        labels = (row.get("issue_labels") or "").strip()
-        if not primary and labels:
-            primary = labels.split(",")[0].strip()
-        if primary not in ISSUE_DISPLAY:
-            continue
-        comment_id = str(row.get("comment_id") or "").strip()
-        if comment_id and comment_id.lower() not in {"nan", "none"}:
-            lookup["by_comment"][comment_id] = primary
-        key = text_match_key(row.get("post_text") or "")
-        if key:
-            lookup["by_text"][key] = primary
-    return lookup
-
-
-def lookup_hybrid_issue(row: dict, lookup: dict[str, dict[str, str]]) -> str:
-    comment_id = str(row.get("comment_id") or "").strip()
-    if comment_id and comment_id in lookup["by_comment"]:
-        return lookup["by_comment"][comment_id]
-    key = text_match_key(row.get("post_text") or "")
-    if key and key in lookup["by_text"]:
-        return lookup["by_text"][key]
-    return ""
-
-
-def normalize_row(row: dict, source: str) -> dict:
-    sentiment = (
-        row.get("sentiment_label")
-        or row.get("sentiment_label_manual")
-        or row.get("llm_sentiment_label")
-        or ""
-    ).strip()
-    issue = (row.get("issue_primary") or row.get("issue_manual") or "").strip()
-    thread_title = (row.get("thread_title") or row.get("title") or "").strip()
-    post_text = (row.get("post_text") or row.get("selftext") or "").strip()
-    telco_label = clean_telco_label(
-        (row.get("telco_label") or row.get("telco_mentioned") or "").strip(),
-        post_text,
-        thread_title,
-    )
-    return {
-        "source": source,
-        "comment_id": str(row.get("comment_id") or "").strip(),
-        "telco_label": telco_label,
-        "sentiment": sentiment,
-        "issue_primary": issue,
-        "thread_title": thread_title,
-        "post_text": post_text,
-    }
-
-
-def is_telco_relevant(row: dict) -> bool:
-    label = row["telco_label"].lower()
-    combined = f"{label} {row['post_text'].lower()} {row['thread_title'].lower()}"
-    if label:
-        return True
-    non_eight_keywords = [keyword for keyword in TELCO_KEYWORDS if keyword != "eight"]
-    return any(k in combined for k in non_eight_keywords) or is_eight_telco_reference(combined)
+def rel(path: Path) -> str:
+    return str(path.relative_to(ROOT)) if path.is_relative_to(ROOT) else str(path)
 
 
 def norm_sentiment(s: str) -> str:
-    s = (s or "").lower().strip()
+    s = (s or "").lower().strip().replace(" ", "_")
     if s in ("happy", "positive"):
         return "happy"
-    if s in ("not_happy", "negative", "not happy"):
+    if s in ("not_happy", "negative"):
         return "not_happy"
     if s == "neutral":
         return "neutral"
     return ""
 
 
-def infer_sentiment(text: str) -> str:
-    s = (text or "").lower()
-    neg = len(re.findall(
-        r"\b(bad|poor|terrible|awful|frustrat|hate|suck|shit|scam|issue|problem|no thanks|cancel|worst|disappoint|unable|greedy)\b",
-        s,
-    ))
-    pos = len(re.findall(
-        r"\b(good|great|awesome|fine|no problem|no issue|happy|love|recommend|promising|lucky|excellent|smooth|works|reliable)\b",
-        s,
-    ))
-    if neg > pos:
-        return "not_happy"
-    if pos > neg:
-        return "happy"
-    return "neutral"
-
-
-def infer_issue(text: str, title: str = "") -> str:
-    combined = f"{text} {title}".lower()
-    scores = {k: len(re.findall(v, combined, re.I)) for k, v in ISSUE_KW.items()}
-    best = max(scores, key=scores.get)
-    return best if scores[best] > 0 else "general_discussion"
-
-
-def split_brands(label: str, text: str = "", title: str = "") -> list[str]:
+def split_brands(label: str) -> list[str]:
     found: list[str] = []
-    if label:
-        for part in re.split(r"[,;/|&]+", label):
-            pl = part.strip().lower().replace(" ", "")
-            for key, name in BRAND_MAP:
-                if key in pl:
-                    found.append(name)
-                    break
-    if not found:
-        combined = f"{text} {title}".lower()
-        for key, name in BRAND_MAP:
-            if key == "eight":
-                if is_eight_telco_reference(combined):
-                    found.append(name)
-            elif key in combined:
+    for part in re.split(r"[,;/|&]+", label or ""):
+        key = part.strip().lower().replace(" ", "")
+        for token, name in BRAND_MAP:
+            if key == token and name not in found:
                 found.append(name)
-    seen: set[str] = set()
-    out: list[str] = []
-    for b in found:
-        if b not in seen:
-            seen.add(b)
-            out.append(b)
-    return out
+    return found
 
 
-def pct(n: int, total: int) -> int:
+def parse_time(row: dict) -> datetime | None:
+    for value in (row.get("comment_time"), row.get("timestamp")):
+        value = (value or "").strip()
+        if not value:
+            continue
+        for fmt in ("%Y-%m-%d %H:%M:%S UTC", "%Y-%m-%dT%H:%M:%S%z"):
+            try:
+                parsed = datetime.strptime(value, fmt)
+                return parsed if parsed.tzinfo else parsed.replace(tzinfo=timezone.utc)
+            except ValueError:
+                continue
+    return None
+
+
+def pct(n: float, total: float) -> int:
     return round(100 * n / total) if total else 0
 
 
+def shares(rows: list[dict], key: str, labels: list[str], thread_equal: bool) -> dict[str, float]:
+    """Share of each label; thread_equal gives every thread the same total weight."""
+    size = Counter(r["thread_key"] for r in rows)
+    totals: dict[str, float] = defaultdict(float)
+    for r in rows:
+        totals[r[key]] += 1 / size[r["thread_key"]] if thread_equal else 1
+    grand = sum(totals.values()) or 1
+    return {k: round(100 * totals.get(k, 0) / grand, 1) for k in labels}
+
+
+def sentiment_pct(rows: list[dict]) -> dict[str, int]:
+    c = Counter(r["sentiment_final"] for r in rows)
+    out = {k: pct(c[k], len(rows)) for k in ("happy", "not_happy", "neutral")}
+    out["n"] = len(rows)
+    return out
+
+
+def load_gold_pct(path: Path | None) -> dict[str, dict[str, int]]:
+    """Human sentiment shares from the representative gold set, overall and by source."""
+    if not path or not path.exists():
+        return {}
+    by_source: dict[str, Counter] = defaultdict(Counter)
+    for row in read_csv(path):
+        if (row.get("telco_relevance_manual") or "").strip().lower() != "yes":
+            continue
+        label = norm_sentiment(row.get("sentiment_manual") or "")
+        if label:
+            by_source[(row.get("source") or "").strip().lower()][label] += 1
+            by_source["all"][label] += 1
+    out = {}
+    for src, counts in by_source.items():
+        n = sum(counts.values())
+        out[src] = {k: pct(counts[k], n) for k in ("happy", "not_happy", "neutral")}
+        out[src]["n"] = n
+    return out
+
+
 def short_quote(text: str, max_words: int = 22) -> str:
-    text = re.sub(r"\s+", " ", html.unescape(text or "")).strip()
-    words = text.split()
-    if len(words) <= max_words:
-        return text
-    return " ".join(words[:max_words]) + "…"
+    words = re.sub(r"\s+", " ", html.unescape(text or "")).strip().split()
+    return " ".join(words) if len(words) <= max_words else " ".join(words[:max_words]) + "…"
 
 
-def pick_quotes(rows: list[dict], n: int = 4) -> list[dict]:
-    """Pick short, thematic quotes — prefer not_happy for pain, happy for roaming."""
-    candidates: list[tuple[int, dict]] = []
-    for row in rows:
-        text = row["post_text"]
-        if len(text) < 25 or len(text) > 400:
-            continue
-        if re.search(r"please log in|last edited:", text.lower()):
-            continue
-        score = 0
-        if row["sentiment_final"] == "not_happy":
-            score += 2
-        if row["issue_final"] in (
-            "network_quality",
-            "pricing_promotions",
-            "billing_payment",
-            "customer_service",
-            "porting",
-        ):
-            score += 1
-        if 40 <= len(text) <= 180:
-            score += 1
-        candidates.append((score, row))
-    candidates.sort(key=lambda x: (-x[0], len(x[1]["post_text"])))
-    seen: set[str] = set()
+def pick_quotes(rows: list[dict], issue_order: list[str], n: int = 4) -> list[dict]:
+    """One short not-happy quote per leading issue, from different threads."""
     quotes: list[dict] = []
-    for _, row in candidates:
-        q = short_quote(row["post_text"])
-        if q in seen:
+    used_threads: set[str] = set()
+    for issue in issue_order:
+        candidates = [
+            r for r in rows
+            if r["issue_final"] == issue and r["sentiment_final"] == "not_happy"
+            and 40 <= len(r["post_text"]) <= 220 and r["thread_key"] not in used_threads
+            and not re.search(r"please log in|last edited:|https?://", r["post_text"].lower())
+        ]
+        if not candidates:
             continue
-        seen.add(q)
-        brands = ", ".join(split_brands(row["telco_label"], row["post_text"], row["thread_title"])[:3])
+        pick = min(candidates, key=lambda r: (abs(len(r["post_text"]) - 120), r["sample_key"]))
+        used_threads.add(pick["thread_key"])
         quotes.append({
-            "text": q,
-            "source": row["source"].upper(),
-            "context": brands or row["issue_final"],
+            "text": short_quote(pick["post_text"]),
+            "source": pick["source"].upper(),
+            "context": f"{ISSUE_DISPLAY[issue]} · {', '.join(pick['brands'][:2]) or 'no brand named'}",
         })
         if len(quotes) >= n:
             break
     return quotes
 
 
-def build_executive_summary(stats: dict) -> str:
-    s = stats["sentiment_pct"]
-    src = stats["source_pct"]
-    ic = stats["issue_pct"]
-    ranked = [b for b in stats["neg_brands"] if b["mentions"] >= 10][:2]
-    neg_names = " and ".join(b["brand"] for b in ranked) if ranked else "larger brands"
-    app_pct = ic.get("app_account", 0)
-    net_pct = ic.get("network_quality", 0)
-    return (
-        f"This dashboard is an <strong>early-warning screen</strong>, not a CSAT or NPS score. "
-        f"About {s['happy']}% of {stats['n']} telco-relevant posts look happy, but VADER under-detects "
-        f"complaints, so the true negative share is likely higher. "
-        f"<strong>Start complaint review on Reddit</strong> ({src.get('reddit', {}).get('not_happy', 0)}% not-happy vs "
-        f"{src.get('hwz', {}).get('not_happy', 0)}% on HWZ); HWZ is launch-thread heavy, not happier customers. "
-        f"<strong>Route App &amp; Account ({app_pct}%) and Network Quality ({net_pct}%) first</strong>. "
-        f"Among brands with at least 10 mentions, <strong>{neg_names}</strong> warrant deeper review. "
-        f"Do not rank Giga, SIMBA or Zym from tiny samples. "
-        f"The operating use is a <strong>weekly 30-minute huddle</strong>: "
-        f"this sample has {stats['huddle_n']} not-happy Network/App/Porting posts "
-        f"(act only if n ≥ {HUDDLE_THRESHOLD}). Never publish a brand league table from n=6."
-    )
+def load_corpus(path: Path) -> tuple[list[dict], str]:
+    raw = read_csv(path)
+    use_llm = "llm_sentiment" in (raw[0] if raw else {}) and any(r.get("llm_sentiment") for r in raw)
+    rows = []
+    for i, r in enumerate(raw):
+        llm = norm_sentiment(r.get("llm_sentiment", "")) if use_llm else ""
+        vader = norm_sentiment(r.get("sentiment_label", ""))
+        issue = (r.get("issue_primary") or "").strip()
+        rows.append({
+            "sample_key": i,
+            "source": (r.get("source") or "").strip().lower(),
+            "thread_key": r.get("thread_key") or r.get("thread_title", ""),
+            "thread_title": r.get("thread_title", ""),
+            "post_text": r.get("post_text", ""),
+            "brands": split_brands(r.get("telco_label", "")),
+            "sentiment_final": llm or vader or "neutral",
+            "sentiment_vader": vader or "neutral",
+            "issue_final": issue if issue in ISSUE_DISPLAY else "general_discussion",
+            "time": parse_time(r),
+        })
+    return rows, ("gpt-4o-mini" if use_llm else "vader")
 
 
-def analyse(reddit_path: Path, hwz_path: Path, issues_path: Path) -> tuple[list[dict], dict]:
-    hybrid_lookup = load_hybrid_issue_lookup(issues_path)
-    rows: list[dict] = []
-    for path, source in [(reddit_path, "reddit"), (hwz_path, "hwz")]:
-        if not path.exists():
-            raise FileNotFoundError(f"Missing input: {path}")
-        for raw in read_csv(path):
-            rows.append(normalize_row(raw, source))
+def load_run_meta(corpus_path: Path) -> dict:
+    summary = corpus_path.parent / "clean_posts_mini_sentiment_summary.json"
+    if not summary.exists():
+        return {}
+    data = json.loads(summary.read_text(encoding="utf-8"))
+    return {
+        "models": ", ".join(data.get("returned_models", {})) or data.get("requested_model", ""),
+        "cost": data.get("cost", {}).get("estimated_total_cost", 0.0),
+        "labelled": data.get("labelled", 0),
+        "failed": len(data.get("failed_sample_ids", [])),
+    }
 
-    telco_rows: list[dict] = []
-    hybrid_hits = 0
-    for row in rows:
-        if not is_telco_relevant(row):
-            continue
-        row = dict(row)
-        row["sentiment_final"] = norm_sentiment(row["sentiment"]) or infer_sentiment(row["post_text"])
-        hybrid_issue = lookup_hybrid_issue(row, hybrid_lookup)
-        if hybrid_issue:
-            row["issue_final"] = hybrid_issue
-            hybrid_hits += 1
-        elif row["issue_primary"] in ISSUE_DISPLAY:
-            row["issue_final"] = row["issue_primary"]
-        else:
-            row["issue_final"] = infer_issue(row["post_text"], row["thread_title"])
-        telco_rows.append(row)
 
-    n = len(telco_rows)
-    sent_counts = Counter(r["sentiment_final"] for r in telco_rows)
-    issue_counts = Counter(r["issue_final"] for r in telco_rows)
-    huddle_n = sum(
-        1
-        for r in telco_rows
-        if r["sentiment_final"] == "not_happy" and r["issue_final"] in HUDDLE_ISSUES
-    )
-    unhappy_issue_counts = Counter(
-        r["issue_final"] for r in telco_rows if r["sentiment_final"] == "not_happy"
-    )
+def weekly_queue(rows: list[dict]) -> list[tuple[str, int]]:
+    weeks: Counter = Counter()
+    for r in rows:
+        if r["time"] and r["sentiment_final"] == "not_happy" and r["issue_final"] in HUDDLE_ISSUES:
+            monday = (r["time"] - timedelta(days=r["time"].weekday())).date()
+            weeks[monday.isoformat()] += 1
+    return sorted(weeks.items())
 
-    source_rows = defaultdict(list)
-    for r in telco_rows:
-        source_rows[r["source"]].append(r)
 
-    source_pct: dict[str, dict[str, int]] = {}
-    for src, sub in source_rows.items():
-        sc = Counter(r["sentiment_final"] for r in sub)
-        ln = len(sub)
-        source_pct[src] = {k: pct(sc[k], ln) for k in ("happy", "not_happy", "neutral")}
-        source_pct[src]["n"] = ln
+def analyse(corpus_path: Path, gold_path: Path | None = None) -> tuple[list[dict], dict]:
+    rows, labeller = load_corpus(corpus_path)
+    n = len(rows)
+    threads = Counter(r["thread_key"] for r in rows)
+    times = sorted(r["time"] for r in rows if r["time"])
+    top3 = sum(c for _, c in threads.most_common(3))
+    titles = {r["thread_key"]: r["thread_title"] for r in rows}
+    top_thread = titles[threads.most_common(1)[0][0]] if threads else ""
+
+    issue_post = shares(rows, "issue_final", ISSUE_LABELS, thread_equal=False)
+    issue_thread = shares(rows, "issue_final", ISSUE_LABELS, thread_equal=True)
+    unhappy = [r for r in rows if r["sentiment_final"] == "not_happy"]
+    unhappy_counts = Counter(r["issue_final"] for r in unhappy)
+    unhappy_thread = shares(unhappy, "issue_final", ISSUE_LABELS, thread_equal=True) if unhappy else {}
+    actionable = [k for k in ISSUE_LABELS if k != "general_discussion"]
+    action_order = sorted(actionable, key=lambda k: (-unhappy_thread.get(k, 0), -issue_thread[k]))
+    volume_order = sorted(actionable, key=lambda k: -issue_thread[k])
+
+    by_source = defaultdict(list)
+    for r in rows:
+        by_source[r["source"]].append(r)
+    source_pct = {src: sentiment_pct(sub) for src, sub in by_source.items()}
 
     brand_rows: dict[str, list[dict]] = defaultdict(list)
-    for r in telco_rows:
-        for b in split_brands(r["telco_label"], r["post_text"], r["thread_title"]):
+    for r in rows:
+        for b in r["brands"]:
             brand_rows[b].append(r)
-
-    brand_mentions = sorted(brand_rows.items(), key=lambda x: -len(x[1]))
-    neg_brands: list[dict] = []
-    brand_table: list[dict] = []
-    for brand, sub in brand_mentions:
-        ln = len(sub)
-        sc = Counter(r["sentiment_final"] for r in sub)
-        neg = pct(sc["not_happy"], ln)
-        ic = Counter(r["issue_final"] for r in sub)
-        top_issues = ", ".join(
-            ISSUE_DISPLAY.get(k, k)
-            for k, _ in ic.most_common(2)
-            if k != "general_discussion"
-        )
+    brand_table = []
+    for brand, sub in sorted(brand_rows.items(), key=lambda x: -len(x[1])):
+        ic = Counter(r["issue_final"] for r in sub if r["issue_final"] != "general_discussion")
         brand_table.append({
             "brand": brand,
-            "mentions": ln,
-            "neg_pct": neg,
-            "top_issues": BRAND_TOP_ISSUE_HINTS.get(brand, top_issues or "General discussion"),
+            "mentions": len(sub),
+            "threads": len({r["thread_key"] for r in sub}),
+            "neg_pct": pct(sum(r["sentiment_final"] == "not_happy" for r in sub), len(sub)),
+            "top_issues": ", ".join(ISSUE_DISPLAY[k] for k, _ in ic.most_common(2)) or "General Discussion",
         })
-        if ln >= 5:
-            neg_brands.append({"brand": brand, "neg_pct": neg, "mentions": ln})
+    ranked = sorted((b for b in brand_table if b["mentions"] >= MIN_BRAND_MENTIONS), key=lambda b: -b["neg_pct"])
 
-    neg_brands.sort(key=lambda x: -x["neg_pct"])
-    neg_brands_ranked = [b for b in neg_brands if b["mentions"] >= 10]
-
+    weeks = weekly_queue(rows)
     stats = {
         "n": n,
-        "huddle_n": huddle_n,
-        "huddle_threshold": HUDDLE_THRESHOLD,
-        "reddit_path": str(reddit_path.relative_to(ROOT)) if reddit_path.is_relative_to(ROOT) else str(reddit_path),
-        "hwz_path": str(hwz_path.relative_to(ROOT)) if hwz_path.is_relative_to(ROOT) else str(hwz_path),
+        "n_threads": len(threads),
+        "top3_threads_pct": pct(top3, n),
+        "top_thread": top_thread,
+        "date_from": times[0].date().isoformat() if times else "",
+        "date_to": times[-1].date().isoformat() if times else "",
+        "share_2026_pct": pct(sum(t.year == 2026 for t in times), len(times)),
+        "labeller": labeller,
+        "run_meta": load_run_meta(corpus_path) if labeller == "gpt-4o-mini" else {},
+        "corpus_path": rel(corpus_path),
         "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
-        "sentiment_counts": {k: sent_counts[k] for k in ("happy", "not_happy", "neutral")},
-        "sentiment_pct": {k: pct(sent_counts[k], n) for k in ("happy", "not_happy", "neutral")},
-        "issue_counts": {k: issue_counts.get(k, 0) for k in ISSUE_LABELS},
-        "issue_pct": {k: pct(issue_counts.get(k, 0), n) for k in ISSUE_LABELS},
-        "unhappy_issue_counts": {k: unhappy_issue_counts.get(k, 0) for k in ISSUE_LABELS},
-        "neg_brands_ranked": neg_brands_ranked,
+        "sentiment_counts": dict(Counter(r["sentiment_final"] for r in rows)),
+        "sentiment_pct": sentiment_pct(rows),
+        "vader_pct": {k: pct(sum(r["sentiment_vader"] == k for r in rows), n) for k in ("happy", "not_happy", "neutral")},
+        "gold_pct": load_gold_pct(gold_path),
+        "issue_post": issue_post,
+        "issue_thread": issue_thread,
+        "unhappy_counts": {k: unhappy_counts.get(k, 0) for k in ISSUE_LABELS},
+        "unhappy_thread": unhappy_thread,
+        "action_order": action_order,
+        "volume_order": volume_order,
         "source_pct": source_pct,
-        "brand_mentions": [(b, len(sub)) for b, sub in brand_mentions[:10]],
-        "neg_brands": neg_brands,
-        "brand_table": [b for b in brand_table if b["mentions"] >= 5][:8],
-        "n_brands": len(brand_rows),
-        "n_sources": len(source_rows),
-        "quotes": pick_quotes(telco_rows),
-        "issues_inferred": hybrid_hits == 0 and not any(r["issue_primary"] for r in rows),
-        "hybrid_hits": hybrid_hits,
-        "issues_path": (
-            str(issues_path.relative_to(ROOT)) if issues_path.is_relative_to(ROOT) else str(issues_path)
-        ),
+        "brand_mentions": [(b["brand"], b["mentions"]) for b in brand_table],
+        "brand_table": [b for b in brand_table if b["mentions"] >= 5],
+        "brands_ranked": ranked,
+        "weeks": weeks,
+        "weeks_over": [w for w in weeks if w[1] >= HUDDLE_THRESHOLD],
+        "quotes": pick_quotes(rows, action_order),
     }
     stats["exec_summary"] = build_executive_summary(stats)
-    return telco_rows, stats
+    return rows, stats
+
+
+def labeller_name(stats: dict) -> str:
+    return "GPT-4o-mini" if stats["labeller"] == "gpt-4o-mini" else "VADER"
+
+
+def build_executive_summary(stats: dict) -> str:
+    s, v, gold = stats["sentiment_pct"], stats["vader_pct"], stats["gold_pct"].get("all", {})
+    src = stats["source_pct"]
+    it, ip = stats["issue_thread"], stats["issue_post"]
+    first, second = stats["volume_order"][:2]
+    hurt = stats["action_order"][0]
+    ranked = stats["brands_ranked"][:2]
+    who = labeller_name(stats)
+    tone = (
+        f"GPT-4o-mini, the labeller that best matched human labels (macro F1 0.631 vs VADER 0.360), reads "
+        f"<strong>{s['not_happy']}% of posts as not happy</strong> and {s['happy']}% as happy; VADER on the same posts "
+        f"says {v['not_happy']}% and {v['happy']}%. "
+        if stats["labeller"] == "gpt-4o-mini"
+        else f"<strong>Sentiment below is VADER</strong> ({s['happy']}% happy), which human labels show is far too "
+             f"positive (humans: {gold.get('happy', 0)}% happy). Run models/corpus_llm_sentiment.py and regenerate. "
+    )
+    brands = (
+        " and ".join(f"{b['brand']} ({b['neg_pct']}% not happy, n={b['mentions']})" for b in ranked)
+        if ranked else "no brand"
+    )
+    weeks_over = stats["weeks_over"]
+    huddle = (
+        f"{len(weeks_over)} week(s) crossed the n ≥ {HUDDLE_THRESHOLD} huddle threshold, the largest "
+        f"{max(weeks_over, key=lambda w: w[1])[1]} posts in the week of {max(weeks_over, key=lambda w: w[1])[0]}"
+        if weeks_over else f"no week crossed the n ≥ {HUDDLE_THRESHOLD} huddle threshold"
+    )
+    return (
+        f"An <strong>early-warning screen</strong>, not CSAT or NPS: {stats['n']:,} unique posts in {stats['n_threads']} "
+        f"telco threads ({stats['date_from']} to {stats['date_to']}; {stats['share_2026_pct']}% from 2026). The three "
+        f"largest threads hold {stats['top3_threads_pct']}% of posts; the biggest is “{html.escape(stats['top_thread'])}”. "
+        f"{tone}"
+        f"<strong>{ISSUE_DISPLAY[first]} leads</strong> ({it[first]}% with every thread weighted equally, {ip[first]}% per post), "
+        f"then {ISSUE_DISPLAY[second]} ({it[second]}%). {ISSUE_DISPLAY[hurt]} carries the most not-happy discussion. "
+        f"Using the same labeller on both sources, Reddit is {src.get('reddit', {}).get('not_happy', 0)}% not happy and "
+        f"HWZ {src.get('hwz', {}).get('not_happy', 0)}%. Among brands with at least {MIN_BRAND_MENTIONS} mentions, "
+        f"{brands} show the highest not-happy share. In the weekly huddle view, {huddle}. "
+        f"Sentiment by {who}; issues by keyword rules plus GPT-4o."
+    )
 
 
 def render_readme(stats: dict) -> str:
-    reddit_n = stats["source_pct"].get("reddit", {}).get("n", 0)
-    hwz_n = stats["source_pct"].get("hwz", {}).get("n", 0)
+    s = stats["sentiment_pct"]
+    rows = "\n".join(
+        f"| {ISSUE_DISPLAY[k]} | {stats['issue_post'][k]}% | {stats['issue_thread'][k]}% | {stats['unhappy_counts'][k]} |"
+        for k in ISSUE_LABELS
+    )
+    meta = stats["run_meta"]
+    run = (
+        f"Sentiment: `{meta.get('models', 'gpt-4o-mini')}` via `models/corpus_llm_sentiment.py` "
+        f"({meta.get('labelled', 0):,} labelled, {meta.get('failed', 0)} failed, ~${meta.get('cost', 0):.2f})."
+        if stats["labeller"] == "gpt-4o-mini"
+        else "Sentiment: **VADER fallback** — run `models/corpus_llm_sentiment.py`, then regenerate."
+    )
     return f"""# Telco Sentiment Dashboard
 
-Static HTML summary dashboard for Singapore telco forum sentiment analysis.
+Static HTML dashboard for Singapore telco forum discussion (Reddit + HWZ).
 
 **Auto-generated:** {stats["generated_at"]}
 
@@ -478,95 +407,90 @@ Static HTML summary dashboard for Singapore telco forum sentiment analysis.
 From project root:
 
 ```bash
+python processing/build_clean_corpus.py        # once: unique posts in telco threads
+python models/corpus_llm_sentiment.py          # once: GPT-4o-mini sentiment (~$0.05)
 python dashboard/generate_dashboard.py
-```
-
-Optional custom inputs:
-
-```bash
-python dashboard/generate_dashboard.py \\
-  --reddit data/processed/labeled_sample.csv \\
-  --hwz hwz_telco_posts_labeled.csv \\
-  --issues data/processed/issues_posts_labeled_2026-08-21_203752_gpt4o_hybrid.csv
-```
-
-Writes `dashboard/index.html` and this file.
-
-## View
-
-Open in any browser (no server required):
-
-```bash
 open dashboard/index.html
 ```
 
-Or from the project root:
+Without the GPT-4o-mini file the page falls back to VADER sentiment and says so.
 
-```bash
-python3 -m http.server 8080
-# then visit http://localhost:8080/dashboard/
-```
+## Data
+
+- Input: `{stats["corpus_path"]}`
+- {stats["n"]:,} unique posts in {stats["n_threads"]} telco threads, {stats["date_from"]} to {stats["date_to"]}
+- Reddit {stats["source_pct"].get("reddit", {}).get("n", 0):,} / HWZ {stats["source_pct"].get("hwz", {}).get("n", 0):,}
+- {run}
+- Issues: keyword rules, then GPT-4o on unresolved rows (hybrid file).
+
+Sentiment ({labeller_name(stats)}): {s["happy"]}% happy / {s["not_happy"]}% not happy / {s["neutral"]}% neutral.
+
+| Issue | Per post | Thread-weighted | Not-happy posts |
+|---|---|---|---|
+{rows}
 
 ## Contents
 
-- **Weekly huddle playbook** (queue → 10 posts → tickets → one owner → next week)
-- **Executive summary** and KPI cards
-- **Charts** with takeaway titles: tone vs CSAT, Reddit-first complaints, issue routing, not-happy themes, mention volume, large-n negative tone
-- **Per-telco table** (n<10 flagged), quotes, owner-action recommendations, limitations
-
-## Data source
-
-| File | Rows (telco-relevant) |
-|------|----------------------|
-| `{stats["reddit_path"]}` | {reddit_n} |
-| `{stats["hwz_path"]}` | {hwz_n} |
-| **Combined** | **{stats["n"]}** |
-
-Sentiment: {stats["sentiment_pct"]["happy"]}% happy / {stats["sentiment_pct"]["not_happy"]}% not_happy / {stats["sentiment_pct"]["neutral"]}% neutral.
-
-Issue labels: keyword rules, then GPT-4o on unresolved `general_discussion` rows (`{stats.get("issues_path", "")}`; {stats.get("hybrid_hits", 0)} of {stats["n"]} dashboard posts matched).
-
-## Streamlit version
-
-For an interactive filterable dashboard, run:
-
-```bash
-pip install streamlit plotly pandas
-streamlit run dashboard/app.py
-```
+- Executive summary and KPI cards
+- Weekly huddle queue over time against the n ≥ {HUDDLE_THRESHOLD} threshold
+- Sentiment (with the human-label check), Reddit vs HWZ on the same labeller
+- Issue shares per post and thread-weighted; not-happy posts by issue
+- Brand mentions and not-happy share for brands with at least {MIN_BRAND_MENTIONS} mentions
+- Per-telco table, quotes, recommendations ordered by not-happy share, limitations
 """
 
 
 def render_html(stats: dict) -> str:
-    sc = stats["sentiment_counts"]
     sp = stats["sentiment_pct"]
-    ic = stats["issue_counts"]
-    issue_labels_js = [ISSUE_DISPLAY[k] for k in ISSUE_LABELS]
-    issue_order = ISSUE_LABELS
-    issue_values = [ic[k] for k in issue_order]
-    issue_colors = [ISSUE_COLORS[k] for k in issue_order]
-    unhappy_values = [stats["unhappy_issue_counts"][k] for k in issue_order]
-
-    brand_labels = [b for b, _ in stats["brand_mentions"]]
-    brand_values = [n for _, n in stats["brand_mentions"]]
-
-    ranked = stats.get("neg_brands_ranked") or [b for b in stats["neg_brands"] if b["mentions"] >= 10]
-    neg_labels = [b["brand"] for b in ranked]
-    neg_rates = [b["neg_pct"] for b in ranked]
-
+    sc = stats["sentiment_counts"]
+    gold = stats["gold_pct"]
+    who = labeller_name(stats)
     reddit = stats["source_pct"].get("reddit", {"happy": 0, "not_happy": 0, "neutral": 0, "n": 0})
     hwz = stats["source_pct"].get("hwz", {"happy": 0, "not_happy": 0, "neutral": 0, "n": 0})
+    first, second = stats["volume_order"][:2]
+    hurt = stats["action_order"][0]
+    ranked = stats["brands_ranked"]
+
+    issue_labels_js = json.dumps([ISSUE_DISPLAY[k] for k in ISSUE_LABELS])
+    issue_post = json.dumps([stats["issue_post"][k] for k in ISSUE_LABELS])
+    issue_thread = json.dumps([stats["issue_thread"][k] for k in ISSUE_LABELS])
+    unhappy_values = json.dumps([stats["unhappy_counts"][k] for k in ISSUE_LABELS])
+    top_brands = stats["brand_mentions"][:8]
+    week_labels = json.dumps([w for w, _ in stats["weeks"]])
+    week_values = json.dumps([c for _, c in stats["weeks"]])
+
+    if stats["labeller"] == "gpt-4o-mini":
+        banner = ""
+        tone_sub = (
+            f"GPT-4o-mini on all {stats['n']:,} posts. VADER on the same posts: {stats['vader_pct']['happy']}% happy, "
+            f"{stats['vader_pct']['not_happy']}% not happy. Human gold labels ({gold.get('all', {}).get('n', 0)} posts): "
+            f"{gold.get('all', {}).get('happy', 0)}% happy, {gold.get('all', {}).get('not_happy', 0)}% not happy."
+        )
+    else:
+        banner = (
+            '<p class="banner">Sentiment on this page is VADER, which human labels show is far too positive. '
+            "Run <code>models/corpus_llm_sentiment.py</code> and regenerate.</p>"
+        )
+        tone_sub = (
+            f"VADER fallback. Human gold labels put the happy share at {gold.get('all', {}).get('happy', 0)}%, "
+            "so read this as an upper bound on positivity."
+        )
+    if stats["labeller"] != "gpt-4o-mini":
+        source_title = "Do not read a platform gap from VADER"
+    elif abs(reddit["not_happy"] - hwz["not_happy"]) < 10:
+        source_title = "Reddit and HWZ read similarly on the same labeller"
+    else:
+        louder, quieter = ("Reddit", "HWZ") if reddit["not_happy"] > hwz["not_happy"] else ("HWZ", "Reddit")
+        source_title = f"{louder} reads more negative than {quieter}"
 
     def brand_cell(row: dict) -> str:
-        note = ' <span class="small-n">n&lt;10</span>' if row["mentions"] < 10 else ""
+        note = f' <span class="small-n">n&lt;{MIN_BRAND_MENTIONS}</span>' if row["mentions"] < MIN_BRAND_MENTIONS else ""
         return (
-            f'            <tr><td>{html.escape(row["brand"])}{note}</td>'
-            f'<td>{row["mentions"]}</td>'
-            f'<td>{row["neg_pct"]}%</td><td>{html.escape(row["top_issues"])}</td></tr>'
+            f'            <tr><td>{html.escape(row["brand"])}{note}</td><td>{row["mentions"]}</td>'
+            f'<td>{row["threads"]}</td><td>{row["neg_pct"]}%</td><td>{html.escape(row["top_issues"])}</td></tr>'
         )
 
     table_rows = "\n".join(brand_cell(r) for r in stats["brand_table"])
-
     quote_blocks = "\n".join(
         f"""        <blockquote>
           "{html.escape(q["text"])}"
@@ -574,17 +498,22 @@ def render_html(stats: dict) -> str:
         </blockquote>"""
         for q in stats["quotes"]
     )
-
-    issue_note = (
-        f"Issue labels: keyword rules then GPT-4o on unresolved general_discussion "
-        f"({stats.get('hybrid_hits', 0)} of {stats['n']} posts matched to "
-        f"{stats.get('issues_path', 'hybrid issues file')})"
-        if stats.get("hybrid_hits")
-        else (
-            "Inferred from post_text (issue_primary not in Reddit export)"
-            if stats["issues_inferred"]
-            else "From issue_primary / issue_manual columns"
-        )
+    rec_items = "\n".join(
+        f'          <li><strong>{html.escape(ISSUE_ACTIONS[k][0])}</strong> '
+        f'<span class="small-n">{ISSUE_DISPLAY[k]}: {stats["unhappy_thread"].get(k, 0)}% of not-happy, '
+        f'{stats["issue_thread"][k]}% of all (thread-weighted)</span><br>'
+        f'{html.escape(ISSUE_ACTIONS[k][1])} <em>Check: {html.escape(ISSUE_ACTIONS[k][2])}</em></li>'
+        for k in stats["action_order"][:6]
+    )
+    weeks_over = stats["weeks_over"]
+    queue_pill = (
+        f"{len(weeks_over)} week(s) at or above threshold; peak {max(c for _, c in weeks_over)} posts"
+        if weeks_over else "No week reached the threshold"
+    )
+    ranked_note = (
+        f"% not happy for brands with at least {MIN_BRAND_MENTIONS} mentions. A brand's share can be driven by one "
+        f"event thread, so check the Threads column before reading it as brand-wide."
+        if ranked else "No brand has at least 10 mentions."
     )
 
     return f"""<!DOCTYPE html>
@@ -607,6 +536,8 @@ def render_html(stats: dict) -> str:
     header {{ margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border); }}
     header h1 {{ font-size: 1.75rem; font-weight: 700; margin-bottom: 0.35rem; }}
     header .meta {{ color: var(--muted); font-size: 0.875rem; }}
+    .banner {{ background: #3b2a0a; border: 1px solid #f59e0b; color: #fcd34d; border-radius: var(--radius);
+      padding: 0.85rem 1.1rem; margin-bottom: 1.5rem; font-size: 0.9rem; }}
     .exec-summary {{ background: linear-gradient(135deg, var(--surface), var(--surface-2)); border: 1px solid var(--border);
       border-radius: var(--radius); padding: 1.25rem 1.5rem; margin-bottom: 1.75rem; box-shadow: var(--shadow); }}
     .exec-summary h2 {{ font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); margin-bottom: 0.75rem; }}
@@ -621,7 +552,7 @@ def render_html(stats: dict) -> str:
     .huddle-step {{ background: var(--surface-2); border-radius: 10px; padding: 0.85rem 0.9rem; }}
     .huddle-step .num {{ font-size: 0.7rem; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.06em; }}
     .huddle-step p {{ font-size: 0.8rem; color: #c5d0de; margin-top: 0.35rem; }}
-    .huddle-status {{ display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; }}
+    .huddle-status {{ display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; margin-bottom: 1rem; }}
     .huddle-pill {{ background: var(--bg); border-radius: 999px; padding: 0.35rem 0.8rem; font-size: 0.8rem; color: var(--text); }}
     .huddle-warn {{ color: #f59e0b; font-size: 0.85rem; margin-top: 0.85rem; }}
     .kpi-grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; margin-bottom: 1.75rem; }}
@@ -634,9 +565,9 @@ def render_html(stats: dict) -> str:
     .chart-card.full-width {{ grid-column: 1 / -1; }}
     .chart-card h3 {{ font-size: 0.9rem; font-weight: 600; }}
     .chart-card .subtitle {{ font-size: 0.78rem; color: var(--muted); margin: 0.35rem 0 1rem; line-height: 1.45; }}
-    .small-n {{ color: #f59e0b; font-size: 0.65rem; text-transform: none; letter-spacing: 0; }}
+    .small-n {{ color: #f59e0b; font-size: 0.7rem; text-transform: none; letter-spacing: 0; }}
     .chart-wrap {{ position: relative; height: 280px; }}
-    .chart-wrap.tall {{ height: 320px; }}
+    .chart-wrap.tall {{ height: 340px; }}
     .two-col {{ display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-bottom: 1.75rem; }}
     @media (max-width: 768px) {{ .two-col {{ grid-template-columns: 1fr; }} }}
     .panel {{ background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem 1.5rem; box-shadow: var(--shadow); }}
@@ -653,6 +584,7 @@ def render_html(stats: dict) -> str:
     .brand-table th {{ color: var(--muted); font-size: 0.7rem; text-transform: uppercase; }}
     footer {{ margin-top: 2rem; padding-top: 1.25rem; border-top: 1px solid var(--border); font-size: 0.75rem; color: var(--muted); }}
     footer h3 {{ font-size: 0.7rem; text-transform: uppercase; margin-bottom: 0.5rem; }}
+    code {{ background: var(--surface-2); padding: 0 0.3rem; border-radius: 4px; }}
   </style>
 </head>
 <body>
@@ -660,13 +592,13 @@ def render_html(stats: dict) -> str:
     <header>
       <h1>Singapore Telco Forum Sentiment Dashboard</h1>
       <p class="meta">
-        Scope: All telcos &middot; Sources: Reddit + HWZ &middot;
-        Sample: {stats["n"]} telco-relevant posts &middot;
-        Generated {stats["generated_at"]} &middot;
-        {html.escape(stats["reddit_path"])} + {html.escape(stats["hwz_path"])}
-        &middot; issues: {html.escape(stats.get("issues_path", "keyword fallback"))}
+        Reddit + HWZ &middot; {stats["n"]:,} unique posts in {stats["n_threads"]} telco threads &middot;
+        {stats["date_from"]} to {stats["date_to"]} &middot; sentiment: {who} &middot;
+        issues: keyword rules + GPT-4o &middot; generated {stats["generated_at"]} &middot; {html.escape(stats["corpus_path"])}
       </p>
     </header>
+
+    {banner}
 
     <section class="exec-summary">
       <h2>Executive Summary</h2>
@@ -675,94 +607,74 @@ def render_html(stats: dict) -> str:
 
     <section class="huddle">
       <h2>How to use this dashboard</h2>
-      <p class="lead">
-        Weekly 30-minute huddle. Charts triage; people decide. This is the operating purpose of the project.
-      </p>
+      <p class="lead">Weekly 30-minute huddle. Charts triage; people decide.</p>
       <div class="huddle-steps">
-        <div class="huddle-step">
-          <div class="num">A. Queue</div>
-          <p>Keep not-happy posts in Network Quality, App &amp; Account, or Porting. Act only if n ≥ {stats["huddle_threshold"]}.</p>
-        </div>
-        <div class="huddle-step">
-          <div class="num">B. Open 10</div>
-          <p>Read ten source posts. Drop sarcasm, mixed-brand, and off-target labels.</p>
-        </div>
-        <div class="huddle-step">
-          <div class="num">C. Match</div>
-          <p>Tie remaining posts to tickets, outages, or billing — not to a vibe.</p>
-        </div>
-        <div class="huddle-step">
-          <div class="num">D. One owner</div>
-          <p>Assign a squad and a response date. No public brand ranking.</p>
-        </div>
-        <div class="huddle-step">
-          <div class="num">E. Next week</div>
-          <p>Check whether that issue share fell. If not, escalate the same owner.</p>
-        </div>
+        <div class="huddle-step"><div class="num">A. Queue</div>
+          <p>Not-happy posts in Network Quality, App &amp; Account, or Porting that week. Act only if n ≥ {HUDDLE_THRESHOLD}.</p></div>
+        <div class="huddle-step"><div class="num">B. Open 10</div>
+          <p>Read ten source posts. Drop sarcasm, mixed-brand, and off-target labels.</p></div>
+        <div class="huddle-step"><div class="num">C. Match</div>
+          <p>Tie remaining posts to tickets, outages, or billing — not to a vibe.</p></div>
+        <div class="huddle-step"><div class="num">D. One owner</div>
+          <p>Assign a squad and a response date. No public brand ranking.</p></div>
+        <div class="huddle-step"><div class="num">E. Next week</div>
+          <p>Check whether that issue share fell. If not, escalate the same owner.</p></div>
       </div>
       <div class="huddle-status">
-        <span class="huddle-pill">Queue this sample: {stats["huddle_n"]} posts</span>
-        <span class="huddle-pill">Threshold: {stats["huddle_threshold"]}</span>
-        <span class="huddle-pill">
-          {"Hold huddle" if stats["huddle_n"] >= stats["huddle_threshold"] else "Below threshold — do not escalate"}
-        </span>
+        <span class="huddle-pill">{len(stats["weeks"])} weeks with queue posts</span>
+        <span class="huddle-pill">Threshold: {HUDDLE_THRESHOLD}</span>
+        <span class="huddle-pill">{queue_pill}</span>
       </div>
-      <p class="huddle-warn">Never publish a brand league table from n = 6. Rank only brands with at least 10 mentions.</p>
+      <div class="chart-wrap"><canvas id="weekChart"></canvas></div>
+      <p class="huddle-warn">Rank only brands with at least {MIN_BRAND_MENTIONS} mentions. Never publish a brand league table.</p>
     </section>
 
     <div class="kpi-grid">
-      <div class="kpi"><div class="value">{stats["n"]}</div><div class="label">Telco posts</div></div>
-      <div class="kpi"><div class="value">{sp["happy"]}%</div><div class="label">Happy</div></div>
+      <div class="kpi"><div class="value">{stats["n"]:,}</div><div class="label">Unique posts</div></div>
+      <div class="kpi"><div class="value">{stats["n_threads"]}</div><div class="label">Telco threads</div></div>
       <div class="kpi"><div class="value">{sp["not_happy"]}%</div><div class="label">Not happy</div></div>
+      <div class="kpi"><div class="value">{sp["happy"]}%</div><div class="label">Happy</div></div>
       <div class="kpi"><div class="value">{sp["neutral"]}%</div><div class="label">Neutral</div></div>
-      <div class="kpi"><div class="value">{stats["n_brands"]}</div><div class="label">Brands mentioned</div></div>
-      <div class="kpi"><div class="value">{stats["n_sources"]}</div><div class="label">Sources</div></div>
+      <div class="kpi"><div class="value">{stats["top3_threads_pct"]}%</div><div class="label">Posts in top 3 threads</div></div>
     </div>
 
     <div class="charts-grid">
       <div class="chart-card">
         <h3>Forum tone is a screen, not a CSAT score</h3>
-        <p class="subtitle">
-          {sp["happy"]}% happy on n={stats["n"]} (VADER). Independent labels show VADER misses many
-          complaints, so treat this mix as an upper bound on positivity.
-        </p>
+        <p class="subtitle">{tone_sub}</p>
         <div class="chart-wrap"><canvas id="sentimentChart"></canvas></div>
       </div>
       <div class="chart-card">
-        <h3>Start complaint review on Reddit</h3>
+        <h3>{source_title}</h3>
         <p class="subtitle">
-          Reddit {reddit["not_happy"]}% not-happy (n={reddit["n"]}) vs HWZ {hwz["not_happy"]}% (n={hwz["n"]}).
-          HWZ over-represents launch threads — not happier customers.
+          {who}: Reddit {reddit["not_happy"]}% not happy (n={reddit["n"]:,}) vs HWZ {hwz["not_happy"]}% (n={hwz["n"]:,}).
+          Human gold labels: Reddit {gold.get("reddit", {}).get("not_happy", 0)}% vs HWZ {gold.get("hwz", {}).get("not_happy", 0)}%.
         </p>
         <div class="chart-wrap"><canvas id="sourceChart"></canvas></div>
       </div>
       <div class="chart-card">
-        <h3>Route App &amp; Account and Network Quality first</h3>
+        <h3>{ISSUE_DISPLAY[first]} leads, then {ISSUE_DISPLAY[second]}</h3>
         <p class="subtitle">
-          Largest actionable volumes. Issues are keyword rules, then GPT-4o only where rules left
-          General Discussion. That residual is not a team.
+          Share of posts per issue, per post and with every thread weighted equally. A finding that holds in both
+          is not one big thread talking. General Discussion is a residual, not a team.
         </p>
         <div class="chart-wrap tall"><canvas id="issueChart"></canvas></div>
       </div>
       <div class="chart-card">
-        <h3>Volume of talk is not dissatisfaction</h3>
+        <h3>{ISSUE_DISPLAY[hurt]} carries the most not-happy discussion</h3>
         <p class="subtitle">
-          Mention counts are row-expanded and one post can name several brands. Do not read this as market share.
-        </p>
-        <div class="chart-wrap tall"><canvas id="brandChart"></canvas></div>
-      </div>
-      <div class="chart-card">
-        <h3>Which themes actually hurt?</h3>
-        <p class="subtitle">
-          Count of not-happy posts by primary issue. Porting can be small but high-severity (rejects, IMDA).
+          Count of not-happy posts by primary issue ({who}). Volume is not severity: porting is small but retention-critical.
         </p>
         <div class="chart-wrap tall"><canvas id="unhappyIssueChart"></canvas></div>
       </div>
       <div class="chart-card">
+        <h3>Volume of talk is not market share</h3>
+        <p class="subtitle">Posts naming each brand. One post can name several brands.</p>
+        <div class="chart-wrap tall"><canvas id="brandChart"></canvas></div>
+      </div>
+      <div class="chart-card">
         <h3>Investigate large-n brands first</h3>
-        <p class="subtitle">
-          % not-happy for brands with at least 10 mentions. Giga/SIMBA/Zym are in the table only — too small to rank.
-        </p>
+        <p class="subtitle">{ranked_note}</p>
         <div class="chart-wrap tall"><canvas id="negRateChart"></canvas></div>
       </div>
     </div>
@@ -771,44 +683,38 @@ def render_html(stats: dict) -> str:
       <section class="panel">
         <h2>Per-Telco Highlights</h2>
         <table class="brand-table">
-          <thead><tr><th>Telco</th><th>Mentions</th><th>Neg %</th><th>Top issues</th></tr></thead>
+          <thead><tr><th>Telco</th><th>Posts</th><th>Threads</th><th>Not happy</th><th>Top issues</th></tr></thead>
           <tbody>
 {table_rows}
           </tbody>
         </table>
       </section>
       <section class="panel">
-        <h2>Quotes that support the charts</h2>
+        <h2>Quotes behind the leading not-happy issues</h2>
 {quote_blocks}
       </section>
     </div>
 
     <div class="two-col">
       <section class="panel">
-        <h2>What operators should do</h2>
+        <h2>What operators should do, in order of not-happy share</h2>
         <ul>
-          <li><strong>CX / digital:</strong> Own App &amp; Account (login, OTP, chatbot dead-ends). Track time-to-human and login-failure posts after each app release.</li>
-          <li><strong>Network:</strong> Pair MRT/building complaints with tickets. Publish indoor/MRT guidance instead of national coverage claims.</li>
-          <li><strong>MVNO / product:</strong> Disclose host network, 5G SA and fair-use at checkout (GOMO/Singtel, Eight/StarHub, Zym).</li>
-          <li><strong>MNP ops:</strong> Show a specific port-reject reason and next step. Own avoidable-reject rate and median port time.</li>
-          <li><strong>Commercial:</strong> Publish intro vs recurring price and promo expiry. Monitor fulfilment complaints, not list price alone.</li>
-          <li><strong>Roaming:</strong> In-app “travelling to X” checklist (activation, 3G sunset, divert charges) before the bill.</li>
-          <li><strong>Insight huddle:</strong> Follow the five-step playbook at the top of this page. Do not skip to brand ranks.</li>
+{rec_items}
         </ul>
       </section>
       <section class="panel">
         <h2>How to read the themes</h2>
         <ul>
-          <li><strong>Network Quality:</strong> Hyper-local coverage, dead zones, outages and MVNO priority concerns.</li>
+          <li><strong>Network Quality:</strong> Coverage, dead zones, outages and speed.</li>
           <li><strong>Pricing &amp; Promotions:</strong> Price-value comparisons, discounts and promotion fulfilment.</li>
-          <li><strong>Mobile Plans:</strong> SIM-only allowances, contract terms and plan-feature comparisons.</li>
-          <li><strong>Roaming:</strong> Regional bundles, activation and Malaysia travel experiences.</li>
-          <li><strong>Porting:</strong> Eight port-in limits; brand missing from port dropdowns.</li>
+          <li><strong>Mobile Plans:</strong> SIM-only allowances, contract terms and plan comparisons.</li>
+          <li><strong>Roaming:</strong> Regional bundles, activation and overseas use.</li>
+          <li><strong>Porting:</strong> Port-in and port-out, rejects and switching.</li>
           <li><strong>Customer Service:</strong> Hotline, agent and escalation experiences.</li>
           <li><strong>Billing &amp; Payment:</strong> Unexpected charges, refunds and payment handling.</li>
           <li><strong>App &amp; Account:</strong> Login, verification and self-service app friction.</li>
           <li><strong>Devices:</strong> Phones, eSIM/SIM cards, routers and operator equipment.</li>
-          <li><strong>General Discussion:</strong> Telco news, opinions and records without a specific service issue.</li>
+          <li><strong>General Discussion:</strong> Telco news and opinions without a specific service issue.</li>
         </ul>
       </section>
     </div>
@@ -816,13 +722,12 @@ def render_html(stats: dict) -> str:
     <footer>
       <h3>Limitations</h3>
       <p>
-        n={stats["n"]} telco-relevant posts from Reddit + HWZ — not Singapore subscribers.
-        The 15,504-row corpus is ~97% Reddit, with heavy duplicate text and ~150 unique threads.
-        Dashboard mix (67 Reddit / 91 HWZ) is not the corpus mix. Sentiment is VADER and likely too positive;
-        independent labels show not-happy recall of 0.34. Issue tags are keyword rules plus GPT-4o on unresolved
-        rows; all-row GPT-4o still misses Devices, which is why rules are kept first. Brands with n&lt;10 are shown
-        in the table only. This is a triage queue, not NPS, churn or market share.
-        {html.escape(issue_note)}.
+        {stats["n"]:,} unique posts from self-selecting Reddit and HWZ users, not Singapore subscribers.
+        {stats["share_2026_pct"]}% are from 2026 and the largest thread is “{html.escape(stats["top_thread"])}”, so brand and
+        network shares describe those events as much as the market. Posts in a thread are not independent; compare
+        per-post and thread-weighted shares. Sentiment is {who}{", which scored macro F1 0.631 against human labels (VADER 0.360)" if stats["labeller"] == "gpt-4o-mini" else ", which scored macro F1 0.360 against human labels"}.
+        One sentiment is copied to every brand a post names. Issue tags are keyword rules plus GPT-4o on unresolved
+        rows; the corpus reassignments have no human check. This is a triage queue, not NPS, churn or market share.
       </p>
     </footer>
   </div>
@@ -832,15 +737,14 @@ def render_html(stats: dict) -> str:
     Chart.defaults.borderColor = "#2d3a4f";
     Chart.defaults.font.family = "'Segoe UI', system-ui, sans-serif";
 
-    const sentimentData = {{ labels: ["Happy", "Not happy", "Neutral"], values: [{sc["happy"]}, {sc["not_happy"]}, {sc["neutral"]}],
-      colors: ["#22c55e", "#ef4444", "#94a3b8"] }};
-
+    const sentimentValues = [{sc.get("happy", 0)}, {sc.get("not_happy", 0)}, {sc.get("neutral", 0)}];
     new Chart(document.getElementById("sentimentChart"), {{
       type: "doughnut",
-      data: {{ labels: sentimentData.labels, datasets: [{{ data: sentimentData.values, backgroundColor: sentimentData.colors, borderWidth: 0 }}] }},
+      data: {{ labels: ["Happy", "Not happy", "Neutral"], datasets: [{{ data: sentimentValues,
+        backgroundColor: ["#22c55e", "#ef4444", "#94a3b8"], borderWidth: 0 }}] }},
       options: {{ responsive: true, maintainAspectRatio: false, cutout: "58%",
         plugins: {{ legend: {{ position: "right" }}, tooltip: {{ callbacks: {{ label: (ctx) => {{
-          const t = sentimentData.values.reduce((a,b)=>a+b,0);
+          const t = sentimentValues.reduce((a,b)=>a+b,0);
           return ` ${{ctx.label}}: ${{ctx.raw}} (${{(100*ctx.raw/t).toFixed(1)}}%)`;
         }} }} }} }} }}
     }});
@@ -861,38 +765,48 @@ def render_html(stats: dict) -> str:
     }});
 
     const issueLabels = {issue_labels_js};
-    const issueValues = {issue_values};
-    const issueColors = {issue_colors};
-    const unhappyValues = {unhappy_values};
-
     new Chart(document.getElementById("issueChart"), {{
       type: "bar",
-      data: {{ labels: issueLabels, datasets: [{{ data: issueValues, backgroundColor: issueColors, borderRadius: 6 }}] }},
-      options: {{ indexAxis: "y", responsive: true, maintainAspectRatio: false, plugins: {{ legend: {{ display: false }} }} }}
+      data: {{ labels: issueLabels, datasets: [
+        {{ label: "Per post", data: {issue_post}, backgroundColor: "#3b82f6", borderRadius: 4 }},
+        {{ label: "Each thread weighted equally", data: {issue_thread}, backgroundColor: "#f59e0b", borderRadius: 4 }}
+      ] }},
+      options: {{ indexAxis: "y", responsive: true, maintainAspectRatio: false,
+        scales: {{ x: {{ ticks: {{ callback: v => v+"%" }} }} }}, plugins: {{ legend: {{ position: "bottom" }} }} }}
     }});
 
     new Chart(document.getElementById("unhappyIssueChart"), {{
       type: "bar",
-      data: {{ labels: issueLabels, datasets: [{{ data: unhappyValues, backgroundColor: "#ef4444", borderRadius: 6 }}] }},
+      data: {{ labels: issueLabels, datasets: [{{ data: {unhappy_values}, backgroundColor: "#ef4444", borderRadius: 6 }}] }},
       options: {{ indexAxis: "y", responsive: true, maintainAspectRatio: false, plugins: {{ legend: {{ display: false }} }} }}
     }});
 
     new Chart(document.getElementById("brandChart"), {{
       type: "bar",
-      data: {{ labels: {brand_labels}, datasets: [{{ data: {brand_values}, backgroundColor: "#3b82f6", borderRadius: 6 }}] }},
+      data: {{ labels: {json.dumps([b for b, _ in top_brands])}, datasets: [{{ data: {json.dumps([c for _, c in top_brands])},
+        backgroundColor: "#3b82f6", borderRadius: 6 }}] }},
       options: {{ indexAxis: "y", responsive: true, maintainAspectRatio: false, plugins: {{ legend: {{ display: false }} }} }}
     }});
 
-    const negRates = {neg_rates};
+    const negRates = {json.dumps([b["neg_pct"] for b in ranked])};
     new Chart(document.getElementById("negRateChart"), {{
       type: "bar",
-      data: {{
-        labels: {neg_labels},
-        datasets: [{{ data: negRates, backgroundColor: negRates.map(v => v>=50?"#ef4444":v>=25?"#f59e0b":"#22c55e"), borderRadius: 6 }}]
-      }},
+      data: {{ labels: {json.dumps([f"{b['brand']} (n={b['mentions']})" for b in ranked])},
+        datasets: [{{ data: negRates, backgroundColor: negRates.map(v => v>=50?"#ef4444":v>=35?"#f59e0b":"#22c55e"), borderRadius: 6 }}] }},
       options: {{ responsive: true, maintainAspectRatio: false,
-        scales: {{ y: {{ max: 80, ticks: {{ callback: v => v+"%" }} }} }},
-        plugins: {{ legend: {{ display: false }} }} }}
+        scales: {{ y: {{ max: 100, ticks: {{ callback: v => v+"%" }} }} }}, plugins: {{ legend: {{ display: false }} }} }}
+    }});
+
+    const weekValues = {week_values};
+    new Chart(document.getElementById("weekChart"), {{
+      type: "bar",
+      data: {{ labels: {week_labels}, datasets: [
+        {{ type: "bar", label: "Queue posts (week starting)", data: weekValues,
+          backgroundColor: weekValues.map(v => v >= {HUDDLE_THRESHOLD} ? "#ef4444" : "#3b82f6") }},
+        {{ type: "line", label: "Threshold", data: weekValues.map(() => {HUDDLE_THRESHOLD}),
+          borderColor: "#f59e0b", borderDash: [6, 4], pointRadius: 0, borderWidth: 2 }}
+      ] }},
+      options: {{ responsive: true, maintainAspectRatio: false, plugins: {{ legend: {{ position: "bottom" }} }} }}
     }});
   </script>
 </body>
@@ -902,32 +816,38 @@ def render_html(stats: dict) -> str:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Generate static telco sentiment dashboard HTML + README")
-    parser.add_argument("--reddit", type=Path, default=ROOT / "data/processed/labeled_sample.csv")
-    parser.add_argument("--hwz", type=Path, default=ROOT / "hwz_telco_posts_labeled.csv")
     parser.add_argument(
-        "--issues",
+        "--corpus",
         type=Path,
-        default=ROOT / "data/processed/issues_posts_labeled_2026-08-21_203752_gpt4o_hybrid.csv",
-        help="Hybrid issue file: keyword rules plus GPT-4o on unresolved rows.",
+        default=None,
+        help="Clean corpus CSV. Default: the GPT-4o-mini sentiment file if it exists, else the VADER clean corpus.",
+    )
+    parser.add_argument(
+        "--gold",
+        type=Path,
+        default=ROOT / "data/evaluation/representative_annotator_a.csv",
+        help="Human-labelled gold set shown next to the corpus sentiment.",
     )
     parser.add_argument("--out-html", type=Path, default=DASHBOARD_DIR / "index.html")
     parser.add_argument("--out-readme", type=Path, default=DASHBOARD_DIR / "Dash_README.md")
     args = parser.parse_args()
 
-    _, stats = analyse(args.reddit, args.hwz, args.issues)
+    corpus = args.corpus or (MINI_CORPUS if MINI_CORPUS.exists() else VADER_CORPUS)
+    if not corpus.exists():
+        raise SystemExit(f"Missing {corpus}. Run: python processing/build_clean_corpus.py")
+    _, stats = analyse(corpus, args.gold)
 
     args.out_html.write_text(render_html(stats), encoding="utf-8")
     args.out_readme.write_text(render_readme(stats), encoding="utf-8")
 
-    print(f"Wrote {args.out_html} ({stats['n']} telco-relevant posts)")
+    s = stats["sentiment_pct"]
+    print(f"Wrote {args.out_html} ({stats['n']:,} posts, {stats['n_threads']} threads, sentiment: {labeller_name(stats)})")
     print(f"Wrote {args.out_readme}")
-    print(
-        f"Sentiment: {stats['sentiment_pct']['happy']}% happy / "
-        f"{stats['sentiment_pct']['not_happy']}% not_happy / "
-        f"{stats['sentiment_pct']['neutral']}% neutral"
-    )
-    print(f"Hybrid issue matches: {stats.get('hybrid_hits', 0)}/{stats['n']}")
-    print("Issue counts:", stats["issue_counts"])
+    print(f"Sentiment: {s['happy']}% happy / {s['not_happy']}% not_happy / {s['neutral']}% neutral")
+    print("Issue share, thread-weighted:", {k: v for k, v in stats["issue_thread"].items() if v})
+    print("Action order (not-happy share):", [ISSUE_DISPLAY[k] for k in stats["action_order"]])
+    if stats["labeller"] == "vader":
+        print("WARNING: VADER fallback. Run models/corpus_llm_sentiment.py, then regenerate.")
 
 
 if __name__ == "__main__":

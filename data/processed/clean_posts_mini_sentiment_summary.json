@@ -1,0 +1,28 @@
+{
+  "input": "data/processed/clean_posts_2026-08-21_203752.csv",
+  "output": "data/processed/clean_posts_2026-08-21_203752_mini_sentiment.csv",
+  "requested_model": "gpt-4o-mini",
+  "returned_models": {
+    "gpt-4o-mini-2024-07-18": 1706
+  },
+  "posts": 1706,
+  "labelled": 1706,
+  "failed_sample_ids": [],
+  "elapsed_seconds_this_run": 381.9,
+  "input_tokens": 166258,
+  "output_tokens": 37279,
+  "cost": {
+    "currency": "USD",
+    "pricing_provided": true,
+    "input_cost_per_million": 0.15,
+    "output_cost_per_million": 0.6,
+    "estimated_input_cost": 0.024938699999999998,
+    "estimated_output_cost": 0.0223674,
+    "estimated_total_cost": 0.0473061
+  },
+  "sentiment_counts": {
+    "neutral": 468,
+    "happy": 299,
+    "not_happy": 939
+  }
+}

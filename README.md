@@ -1,6 +1,6 @@
 # Telco forum sentiment pipeline
 
-Scrape posts from different forums (HWZ, Reddit, Twitter) → clean and label → sentiment analysis and evaluation.
+Scrape posts from forums (HWZ, Reddit) → clean and label → sentiment analysis and evaluation.
 
 ---
 
@@ -13,8 +13,8 @@ End-to-end flow: **collect raw posts → clean → add telco + VADER sentiment �
   ─────────                    ───────────
   hwz_forum_scraper     ──┐
   hwz_multi_forum_      ──┼──►  data/raw/*.csv
-  reddit_scraper        ──┤              │
-  twitter_scraper       ──┘              ▼
+  reddit_scraper        ──┘              │
+                                         ▼
                               preprocess.py  ──►  data/processed/cleaned_posts.csv
                                         │
                                         ▼
@@ -42,27 +42,25 @@ WIP/
 ├── scrapers/              # Fetch posts from each source
 │   ├── hwz_forum_scraper.py      # Single XenForo (e.g. HardwareZone)
 │   ├── hwz_multi_forum_scraper.py # Multiple XenForo forums
-│   ├── reddit_scraper.py          # Reddit (public API, no key)
-│   └── twitter_scraper.py        # Twitter API v2 recent search (Bearer token required)
+│   └── reddit_scraper.py          # Reddit listing or search mode (OAuth app recommended)
 ├── processing/            # Sentiment + telco labeling + preprocessing
 │   ├── telco_labeler.py   # Telco detection, VADER/LLM sentiment, per-telco summary
 │   ├── preprocess.py      # Raw → cleaned dataset (noise removal, optional English filter)
 │   ├── create_labeled_sample.py  # Sample N rows + template for manual sentiment/issue labels
-│   └── issue_extraction.py # Keyword taxonomy, then optional/batched GPT-4o on unresolved rows
+│   ├── issue_extraction.py # Keyword taxonomy, then optional/batched GPT-4o on unresolved rows
+│   └── build_clean_corpus.py # Deduplicate, drop off-topic threads, thread-weighted shares
 ├── models/
 │   ├── llm_evaluation.py      # VADER/rules vs GPT-4o-mini / GPT-4o on gold labels
 │   └── sentiment_benchmark.py # Compare VADER vs transformer with manual labels
 ├── dashboard/
 │   ├── generate_dashboard.py  # Regenerate index.html + Dash_README.md from CSVs
 │   ├── index.html             # Static HTML summary dashboard (Chart.js, capstone report)
-│   ├── app.py                 # Streamlit dashboard for interactive filters/trends
 │   └── Dash_README.md         # Auto-generated; how to view/regenerate dashboard
 ├── data/
 │   ├── raw/               # Scraper outputs (CSV + JSONL)
 │   ├── processed/         # Cleaned CSV, labeled outputs, summary JSON, labeled-sample template
 │   ├── README.md          # Data dictionary and reproducibility
 ├── Project_Progress.md    # Pipeline status, findings, reproduction steps
-├── cursor_cloud_agent.py  # Cursor Cloud Agents API (optional, for repo agents)
 ├── requirements_telco_labeler.txt
 └── README.md
 ```
@@ -75,7 +73,9 @@ WIP/
 4. **Evaluation**: `processing/create_labeled_sample.py` → template for manual labels; fill and use for model eval.
 5. **Benchmark**: `models/sentiment_benchmark.py` → compare VADER vs transformer (accuracy/F1).
 6. **Issue extraction**: `processing/issue_extraction.py` → keyword rules, then GPT-4o on `general_discussion` rows.
-7. **Dashboard**: `dashboard/generate_dashboard.py` overlays those hybrid issue labels; `dashboard/index.html` to view; `dashboard/app.py` for interactive filters.
+7. **Clean corpus**: `processing/build_clean_corpus.py` → one row per unique post, off-topic threads dropped, shares per post and per thread.
+8. **Corpus sentiment**: `models/corpus_llm_sentiment.py` → GPT-4o-mini sentiment on the clean corpus, same prompt and settings as the evaluation (~$0.05).
+9. **Dashboard**: `dashboard/generate_dashboard.py` reads the clean corpus; open `dashboard/index.html` to view.
 
 Run from project root (`WIP/`). See `data/README.md` for column definitions and [`Project_Progress.md`](Project_Progress.md) for current status and findings.
 
@@ -101,13 +101,14 @@ python scrapers/reddit_scraper.py --subreddits "singapore,askSingapore"
 # → data/raw/reddit_posts*.csv
 ```
 
-**Twitter (API v2, requires Bearer token):**
+**Reddit search mode (reaches months back; needs a Reddit "script" app):**
 ```bash
-export TWITTER_BEARER_TOKEN="your_bearer_token"
-python scrapers/twitter_scraper.py --keywords "singtel,starhub,m1" --max-tweets 500
-# → data/raw/twitter_posts_<keywords>_<timestamp>.csv
+export REDDIT_CLIENT_ID="..." REDDIT_CLIENT_SECRET="..."
+export REDDIT_USER_AGENT="script:sg-telco-capstone:v1.0 (by /u/yourname)"
+python scrapers/reddit_scraper.py --mode search --subreddits singapore,askSingapore \
+  --since 2026-04-10 --strict-match --out data/raw/reddit_wave2
 ```
-Get a token at [Twitter Developer Portal](https://developer.twitter.com/en/portal/dashboard). Free tier: last 7 days of tweets, rate limits apply.
+`--strict-match` keeps only whole-word brand mentions; ambiguous names (M1, Eight, Giga, SIMBA, Circles) need a telco word nearby.
 
 ### 2. Process (sentiment + telco)
 
@@ -152,8 +153,8 @@ python processing/coverage_checker.py --target 1000 --max-rounds 10
 Useful examples:
 
 ```bash
-# Reddit + HWZ only (skip Twitter)
-python processing/coverage_checker.py --disable-twitter --target 1000
+# Reddit + HWZ
+python processing/coverage_checker.py --target 1000
 
 # Track only main telcos
 python processing/coverage_checker.py \
@@ -263,14 +264,35 @@ python processing/issue_extraction.py \
 
 General discussion counts fell from 8,786 to 6,180. The dashboard reads this hybrid file; the keyword-only issues CSV is kept for comparison.
 
-### 7. Dashboard
+### 7. Clean analysis corpus
 
-**Regenerate static HTML** from labeled CSVs (writes `index.html` + `Dash_README.md`):
+The 15,504 rows hold only 2,686 unique posts (the scraper collected many posts several times), and 47 of 152 threads are off-topic (for example an insurance lawsuit thread). Build the clean corpus before quoting any share:
+
+```bash
+python processing/build_clean_corpus.py
+# → data/processed/clean_posts_2026-08-21_203752.csv   (1,706 unique posts, 105 telco threads)
+# → data/processed/clean_corpus_summary.json          (issue/sentiment/brand shares per post, per thread, capped at 5 per thread)
+```
+
+A thread is kept if at least 20% of its unique posts name a telco (`--min-telco-share`) or its title is about a telco. Report findings that hold under all three weightings.
+
+### 8. Corpus sentiment and dashboard
+
+GPT-4o-mini labels sentiment on the clean corpus with the exact prompt, batching and model settings that scored macro F1 0.631 on the gold set. It is resumable: rerun the same command to retry failed batches only.
+
+```bash
+export OPENAI_API_KEY="..."
+python models/corpus_llm_sentiment.py --dry-run   # 1,706 posts, 171 batches, ~$0.05
+python models/corpus_llm_sentiment.py
+# → data/processed/clean_posts_2026-08-21_203752_mini_sentiment.csv
+# → data/processed/clean_posts_mini_sentiment_summary.json
+```
+
+**Regenerate static HTML** (writes `index.html` + `Dash_README.md`):
 
 ```bash
 python dashboard/generate_dashboard.py
-# default overlay: data/processed/issues_posts_labeled_2026-08-21_203752_gpt4o_hybrid.csv
-# optional: --reddit ... --hwz ... --issues ...
+# default: the GPT-4o-mini file above; falls back to VADER on the clean corpus, with a warning on the page
 ```
 
 **View static summary** (no install; good for capstone report screenshots):
@@ -280,13 +302,7 @@ open dashboard/index.html
 # or: python3 -m http.server 8080  →  http://localhost:8080/dashboard/
 ```
 
-Charts: sentiment distribution, source comparison (Reddit vs HWZ), issue themes, brand mentions, negative tone by brand. See `dashboard/Dash_README.md`.
-
-**Interactive Streamlit** (filters by source, telco, sentiment, issue breakdown, date):
-
-```bash
-streamlit run dashboard/app.py
-```
+Charts: weekly huddle queue against the n ≥ 20 threshold, sentiment with the human-label check, Reddit vs HWZ, issue shares per post and thread-weighted, not-happy posts by issue, brand mentions, not-happy share for brands with 10+ mentions. Recommendations are ordered by each issue's share of not-happy discussion. See `dashboard/Dash_README.md`.
 
 ## Combining sources
 
@@ -298,9 +314,8 @@ streamlit run dashboard/app.py
 
 | Scraper | Login / keys |
 |---------|----------------|
-| **HWZ** (single + multi) | Forum username/password (set in script) |
-| **Reddit** | None (public API) |
-| **Twitter** | Bearer token (env or hardcoded in script) |
+| **HWZ** (single + multi) | Optional login via `HWZ_USERNAME` / `HWZ_PASSWORD` env vars |
+| **Reddit** | `REDDIT_CLIENT_ID` / `REDDIT_CLIENT_SECRET` / `REDDIT_USER_AGENT` (unauthenticated access is often blocked) |
 
 ## Dependencies
 
@@ -315,19 +330,19 @@ streamlit run dashboard/app.py
 
 | File | Description |
 |------|-------------|
-| **hwz_forum_scraper.py** | Scrapes a single XenForo-based forum (e.g. HardwareZone). Logs in, crawls forum listing by keyword, fetches thread pages, and extracts post text and timestamps. Writes CSV + JSONL to `data/raw/hwz_posts.*`. Requires forum username/password (set in script). |
+| **hwz_forum_scraper.py** | Scrapes a single XenForo-based forum (e.g. HardwareZone). Logs in, crawls forum listing by keyword, fetches thread pages, and extracts post text and timestamps. Writes CSV + JSONL to `data/raw/hwz_posts.*`. Optional login via `HWZ_USERNAME` / `HWZ_PASSWORD`. |
 | **hwz_multi_forum_scraper.py** | Same as above but for multiple forum URLs in one run. Each row is tagged with `source_forum`. Can also take seed thread URLs. Writes to `data/raw/hwz_multi_posts.*`. |
 | **reddit_scraper.py** | Fetches posts and optionally comments from subreddits via Reddit’s public JSON API (no API key). Filters by keywords, records telco mentions. Writes to `data/raw/reddit_posts_<keywords>_<timestamp>.*`. |
-| **twitter_scraper.py** | Fetches tweets via Twitter API v2 “search recent” (last 7 days). Uses Bearer token (env or hardcoded). Builds query from keywords, paginates, normalizes to same schema as other scrapers. Writes to `data/raw/twitter_posts_*.*`. |
 
 ### Processing (`processing/`)
 
 | File | Description |
 |------|-------------|
 | **telco_labeler.py** | Main analysis script: reads a posts CSV (raw or cleaned), detects which telco(s) each post refers to (regex on thread_title + post_text), runs sentiment (VADER and optionally LLM), and builds per-telco summary (keyword counts + optional LLM text summary). Writes timestamped labeled CSV and summary JSON to `data/processed/`. Auto-picks latest CSV in `data/raw/` if no `--in` is given. |
-| **preprocess.py** | Data cleaning only: reads from `data/raw/` (or `--in`), normalizes column names for HWZ/Reddit/Twitter, drops too-short and placeholder/noise rows, optionally keeps English-only (langdetect). Writes one cleaned CSV (default `data/processed/cleaned_posts.csv`) for use by the labeler, models, or dashboard. Does not compute sentiment. |
-| **coverage_checker.py** | Automation loop for data collection coverage. Repeatedly runs enabled scrapers (Reddit/HWZ/Twitter), rebuilds cleaned+labeled data, computes per-telco counts, and stops when each tracked telco reaches the target (default 1000) or max rounds is reached. |
+| **preprocess.py** | Data cleaning only: reads from `data/raw/` (or `--in`), normalizes column names for HWZ/Reddit, drops too-short and placeholder/noise rows, optionally keeps English-only (langdetect). Writes one cleaned CSV (default `data/processed/cleaned_posts.csv`) for use by the labeler, models, or dashboard. Does not compute sentiment. |
+| **coverage_checker.py** | Automation loop for data collection coverage. Repeatedly runs enabled scrapers (Reddit/HWZ), rebuilds cleaned+labeled data, computes per-telco counts, and stops when each tracked telco reaches the target (default 1000) or max rounds is reached. |
 | **create_labeled_sample.py** | Samples N rows from a cleaned or labeled CSV, adds empty columns `sentiment_label_manual`, `issue_manual`, `notes`, and writes a template CSV plus an INSTRUCTIONS file. You fill the manual labels (e.g. in Excel) and save as e.g. `labeled_sample.csv` for evaluating sentiment and issue-extraction models. |
+| **build_clean_corpus.py** | Deduplicates the hybrid issue file to one row per (thread, post text), drops threads where under 20% of posts name a telco unless the title is telco-related, and writes shares per post, per thread (each thread weighted equally) and capped at 5 posts per thread to `clean_corpus_summary.json`. |
 | **issue_extraction.py** | Keyword issue labels using the ten-topic taxonomy, plus a batched GPT-4o pass on unresolved `general_discussion` rows (`--use-llm --llm-unresolved-only`). Completed hybrid output: `data/processed/issues_posts_labeled_2026-08-21_203752_gpt4o_hybrid.csv`. |
 
 ### Models (`models/`)
@@ -341,16 +356,9 @@ streamlit run dashboard/app.py
 
 | File | Description |
 |------|-------------|
-| **generate_dashboard.py** | Reads Reddit + HWZ labeled CSVs, overlays hybrid issue labels, computes sentiment/issue/brand metrics, and regenerates `index.html` and `Dash_README.md`. Stdlib only; no pandas required. |
+| **generate_dashboard.py** | Reads the clean corpus (GPT-4o-mini sentiment if present, else VADER with a warning) and hybrid issue labels, computes per-post and thread-weighted shares, weekly huddle queue and brand metrics, and regenerates `index.html` and `Dash_README.md`. Stdlib only; no pandas required. |
 | **index.html** | Standalone HTML summary dashboard (Chart.js): executive summary, KPI cards, sentiment/issue/brand charts, per-telco table, quotes, recommendations. Open in a browser; no server required. |
-| **app.py** | Streamlit dashboard with filters (source/telco/sentiment/date), sentiment distribution, issue breakdown, time trends, and cross-brand comparison. |
 | **Dash_README.md** | Auto-generated by `generate_dashboard.py`; documents data sources, row counts, and how to view/regenerate. |
-
-### Root
-
-| File | Description |
-|------|-------------|
-| **cursor_cloud_agent.py** | Standalone helper for the Cursor Cloud Agents API (list/launch/status agents on GitHub repos). Uses Cursor API key (env or hardcoded). Not part of the sentiment pipeline; for repo automation only. |
 
 ---
 
@@ -379,7 +387,6 @@ Fill in **only on your machine**:
 | HWZ / forum password | |
 | GitHub username | |
 | GitHub token (PAT) | `ghp_...` |
-| Twitter Bearer (optional) | |
 | OpenAI API key (optional) | |
 
 Environment variables (same info, safer for scripts):
@@ -387,7 +394,8 @@ Environment variables (same info, safer for scripts):
 ```bash
 export HWZ_USERNAME=""
 export HWZ_PASSWORD=""
-export TWITTER_BEARER_TOKEN=""
+export REDDIT_CLIENT_ID=""
+export REDDIT_CLIENT_SECRET=""
 export OPENAI_API_KEY=""
 ```
 

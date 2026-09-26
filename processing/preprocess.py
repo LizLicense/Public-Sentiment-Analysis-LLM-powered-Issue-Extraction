@@ -2,7 +2,7 @@
 """
 Preprocessing script: raw scraped data → one cleaned dataset for modeling and dashboard.
 
-- Normalizes column names (post_text, thread_title/title) across HWZ, Reddit, Twitter.
+- Normalizes column names (post_text, thread_title/title) across HWZ and Reddit.
 - Drops noise: too-short text, placeholder messages (e.g. "Please log in to view").
 - Optional: filter to English-only (requires langdetect).
 - Writes a single CSV to data/processed/ for use by the labeler, models, and dashboard.
@@ -154,8 +154,6 @@ def main() -> None:
                     if "source" in part.columns:
                         if "reddit" in p.name.lower():
                             part.loc[part["source"].fillna("").astype(str).str.strip() == "", "source"] = "reddit"
-                        elif "twitter" in p.name.lower():
-                            part.loc[part["source"].fillna("").astype(str).str.strip() == "", "source"] = "twitter"
                         elif "hwz" in p.name.lower():
                             part.loc[part["source"].fillna("").astype(str).str.strip() == "", "source"] = "hwz"
                     frames.append(part)

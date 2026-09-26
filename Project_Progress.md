@@ -87,7 +87,7 @@ Based on **1,706 unique posts in 105 telco threads** (`data/processed/clean_post
 - **Held-out challenge set:** GPT-4o-mini sentiment 0.773 vs GPT-4o 0.712 vs VADER 0.491. Issues: GPT-4o all posts 0.596 beats rules 0.499 and hybrid 0.509. The hybrid's representative-set 0.680 is optimistic.
 - **Bootstrap 95% CIs (representative):** mini − VADER +0.271 (0.191 to 0.347); mini − GPT-4o tie; GPT-4o all posts − rules tie; hybrid − rules +0.041 (0.011 to 0.072).
 - **Stability:** a second GPT-4o-mini run reproduced 292/295 sentiment labels (κ 0.98).
-- **Annotator agreement:** sentiment κ 0.57 (representative, n=58), 0.76 (challenge, n=40; independence unconfirmed).
+- **Annotator agreement** (`double_annotation_annotator_b_filled_guide.csv`): sentiment κ 0.38 (representative, n=58), 0.63 (challenge, n=40; independence unconfirmed). Main disagreement: bare outage reports, `not_happy` (A) vs `neutral` (B).
 
 ---
 
@@ -221,7 +221,7 @@ Full CLI options: [`README.md`](README.md).
 ## Planned next steps
 
 - [x] **Fill human issue/sentiment labels** on representative and challenge sheets; compare VADER/rules vs GPT-4o-mini and GPT-4o.
-- [~] **Second annotator / kappa** — κ computed per set; confirm challenge-overlap independence before reporting it.
+- [~] **Second annotator / kappa** — κ reported per set from the guide-applied B file; guide rule for failure reports added 26 Sep 2026; relabel the overlap under it and confirm challenge-overlap independence.
 - [ ] **Transformer benchmark** — install `transformers` + `torch`; compare against VADER on the representative labels.
 - [x] **LLM issue extraction** — hybrid `processing/issue_extraction.py --use-llm --llm-unresolved-only --llm-model gpt-4o` on 8,786 unresolved rows; dashboard overlay complete. Do not rerun all-row LLM issues.
 - [ ] **Scale coverage** — `processing/coverage_checker.py --target 1000` per telco.

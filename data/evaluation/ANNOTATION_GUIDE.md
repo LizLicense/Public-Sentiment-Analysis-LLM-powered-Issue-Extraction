@@ -60,10 +60,18 @@ Label sentiment toward the telco target, not the mood of the surrounding thread.
 - `neutral`: factual question or statement, balanced/mixed view with no dominant
   polarity, or insufficient evidence of positive or negative sentiment.
 
+A first-hand report that a service is failing is `not_happy`, even when it is
+phrased as a plain fact and has no emotional words. "Service failure" takes
+precedence over "factual statement". This rule was added on 26 Sep 2026, after
+the double-annotation overlap showed that annotators split on these posts; labels
+made before that date may not follow it.
+
 Examples:
 
 - "Giga no issue. Don't need to think about data." → `happy`
 - "Time to cancel and change telcos." → `not_happy`
+- "Ya Singtel is down." → `not_happy` (first-hand failure report)
+- "No signal since 10am and it's still not back." → `not_happy`
 - "Does this plan include roaming in Malaysia?" → `neutral`
 
 Do not infer sentiment from the thread title when the post itself clearly takes

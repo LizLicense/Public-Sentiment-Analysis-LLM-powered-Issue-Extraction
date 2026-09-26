@@ -36,7 +36,7 @@ Handoff from Cursor agent chats in this workspace (through 21 Sep 2026). Read th
 ## Still open
 
 - Title page in `final_report.tex`: surname, student ID, course, supervisor. Then compile and skim the PDF.
-- Kappa is computed (representative 0.57, challenge 0.76) and in the report; confirm annotator B labelled the challenge rows independently (21/40 identical on every field, 4 identical notes) before relying on 0.76. Adjudicate in a new file; never overwrite the two original annotation files. `representative_adjudicated.csv` is that adjudication slot, not a third blank sheet.
+- **Annotator B file (26 Sep 2026):** use `double_annotation_annotator_b_filled_guide.csv`, not `double_annotation_annotator_b.csv` (superseded: its sentiment labels contradicted B's own notes and matched A). Sentiment κ: representative **0.38** (n=58), challenge **0.63** (n=40). Most disagreements are A `not_happy` vs B `neutral` on bare outage reports; `ANNOTATION_GUIDE.md` now says a first-hand failure report is `not_happy` (added 26 Sep 2026; the overlap labels predate it). Confirm B labelled the challenge rows independently (18/40 identical on every field, 4 identical notes) before relying on 0.63. Adjudicate in a new file; never overwrite the two original annotation files. `representative_adjudicated.csv` is that adjudication slot, not a third blank sheet.
 - Spot-check the 2,606 rows GPT-4o moved out of `general_discussion` before treating huddle spikes as incidents.
 - Optional, not required by the professor: Twitter-RoBERTa / `transformers` benchmark; more scraping via `coverage_checker.py --target 1000`.
 - **Leaked credentials (found 25 Sep 2026):** the first commit contains a HardwareZone login password (both HWZ scrapers) and a Twitter/X bearer token (in the since-deleted `scrapers/twitter_scraper.py`; Twitter/X was dropped as a source on 25 Sep 2026). The code now reads `HWZ_USERNAME`/`HWZ_PASSWORD` and `REDDIT_CLIENT_ID`/`REDDIT_CLIENT_SECRET`/`REDDIT_USER_AGENT` from the environment. Change the HWZ password and revoke the X token; git history still holds the old values. Never hardcode credentials again.
@@ -48,7 +48,8 @@ Handoff from Cursor agent chats in this workspace (through 21 Sep 2026). Read th
 |------|------|
 | `data/evaluation/representative_annotator_a.csv` | Primary gold set (295 used) |
 | `data/evaluation/challenge_annotator_a.csv` | Hard cases; report separately |
-| `data/evaluation/double_annotation_annotator_b.csv` | Second annotator; filled (60 representative + 40 challenge overlap) |
+| `data/evaluation/double_annotation_annotator_b_filled_guide.csv` | Second annotator, guide-applied labels (60 representative + 40 challenge overlap); **use this** |
+| `data/evaluation/double_annotation_annotator_b.csv` | Superseded earlier version of annotator B; kept as evidence, not used |
 | `data/evaluation/representative_adjudicated.csv` | Post-discussion adjudication copy |
 | `data/evaluation/ANNOTATION_GUIDE.md` | Label rules |
 | `data/evaluation/sampling_metadata.json` | Seed and source weights |

@@ -42,6 +42,9 @@ from models.llm_evaluation import (
 
 EVAL = PROJECT_ROOT / "data/evaluation"
 OUT = EVAL / "robustness_summary.json"
+# Annotator B's guide-applied labels. The earlier double_annotation_annotator_b.csv is superseded:
+# its sentiment labels often contradicted B's own notes and matched Annotator A instead.
+ANNOTATOR_B = EVAL / "double_annotation_annotator_b_filled_guide.csv"
 BOOTSTRAPS = 2000
 SEED = 7
 OUTAGE_TITLE = re.compile(r"outage|down\b|disruption|no (?:signal|internet)|still having issues", re.IGNORECASE)
@@ -185,7 +188,7 @@ def annotator_agreement() -> dict:
     a = {r["sample_id"]: r for r in read(EVAL / "representative_annotator_a.csv") + read(EVAL / "challenge_annotator_a.csv")}
     out = {}
     for name in ("representative", "challenge"):
-        rows = [(a[b["sample_id"]], b) for b in read(EVAL / "double_annotation_annotator_b.csv")
+        rows = [(a[b["sample_id"]], b) for b in read(ANNOTATOR_B)
                 if b["evaluation_set"] == name and b["sample_id"] in a]
         pairs = [(normalize_sentiment(x["sentiment_manual"]), normalize_sentiment(y["sentiment_manual"])) for x, y in rows]
         pairs = [p for p in pairs if all(p)]
@@ -203,8 +206,12 @@ def annotator_agreement() -> dict:
                 for x, y in rows
             ),
             "identical_notes": sum(x["notes_manual"].strip() == y["notes_manual"].strip() != "" for x, y in rows),
+            "sentiment_confusion_a_rows_b_cols": {
+                a_label: dict(Counter(b_label for x, b_label in pairs if x == a_label)) for a_label in SENTIMENT_LABELS
+            },
         }
-    out["caveat"] = "Challenge-set agreement is higher than representative and many rows match exactly; confirm independence before reporting."
+    out["annotator_b_file"] = str(ANNOTATOR_B.relative_to(PROJECT_ROOT))
+    out["caveat"] = "Challenge-set rows often match Annotator A on every non-sentiment field; confirm independence before relying on the challenge kappa."
     return out
 
 

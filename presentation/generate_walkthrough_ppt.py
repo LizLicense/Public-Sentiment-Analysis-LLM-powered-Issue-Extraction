@@ -934,7 +934,7 @@ def build(template_path: Path | None = None) -> Path:
         "Singapore subscribers at large; replies cluster by thread; 39% of the clean posts sit in outage "
         "threads, and every Reddit post is from 2026, so the findings describe one incident period as much "
         "as the market; and I have no tickets or NPS to validate against.\n\nOn the method side: mini matches "
-        "my labels on about two-thirds of posts, and two humans only agree at kappa 0.57; the hybrid's 0.680 "
+        "my labels on about two-thirds of posts, and two humans only agree at kappa 0.38; the hybrid's 0.680 "
         "is optimistic; the 2,606 corpus reassignments aren't human-checked; and a multi-brand post gives its "
         "one sentiment to every brand it names.",
     )
@@ -943,7 +943,7 @@ def build(template_path: Path | None = None) -> Path:
                         "39% of posts in outage threads; Reddit is all 2026",
                         "Replies cluster by thread, so posts aren’t independent",
                         "No tickets, outages or NPS to validate against"]),
-        (6.8, "Method", ["Mini matches humans on ~2/3 of posts; humans agree at κ 0.57",
+        (6.8, "Method", ["Mini matches humans on ~2/3 of posts; humans agree at κ 0.38",
                          "Hybrid’s 0.680 is optimistic (0.509 held out)",
                          "2,606 corpus reassignments not human-checked",
                          "One sentiment is copied to every brand in a post"]),
@@ -1001,8 +1001,8 @@ def build(template_path: Path | None = None) -> Path:
          "On the set I tuned it on, yes: +0.041, 95% CI +0.011 to +0.072. On the held-out challenge set, no: "
          "+0.010, CI −0.04 to +0.07. So I report 0.680 as optimistic."),
         ("How reliable are your labels?",
-         "Headline metrics use one annotator. Two annotators agree at κ 0.57 on representative posts. "
-         "Challenge agreement (0.76) is unusually high, so I’m confirming it was independent."),
+         "Headline metrics use one annotator. Two annotators agree at κ 0.38 on typical posts, mostly on "
+         "whether “Singtel is down” is a complaint or a fact. I’ve added that rule to the guide."),
         ("How good is GPT-4o-mini on the corpus?",
          "It matches humans on ~2/3 of gold posts (F1 0.631), its corpus shares (18/55/27) sit near the gold "
          "shares (18/50/32), and a rerun reproduced 292 of 295 labels."),
@@ -1025,8 +1025,8 @@ def build(template_path: Path | None = None) -> Path:
         1: "Paired bootstrap, 2,000 resamples of posts. Challenge-set gain of GPT-4o over the hybrid: +0.087, "
            "CI +0.017 to +0.151.",
         2: "Per-label issue κ on the representative overlap is low for Devices (0.14) and Customer Service "
-           "(0.18). On the challenge overlap 21 of 40 rows are identical on every field, and four notes match "
-           "word for word.",
+           "(0.18). On the challenge overlap 18 of 40 rows are identical on every field, and four notes match "
+           "word for word. An earlier version of B's sheet was superseded: its labels contradicted B's own notes.",
         3: "Mini's weakest class is happy (F1 0.54). Corpus shares are estimates, not measurements.",
     }
     for page in range(3):
@@ -1044,24 +1044,29 @@ def build(template_path: Path | None = None) -> Path:
 
     # 32 — Agreement backup
     s = deck.content(
-        "Backup: inter-annotator agreement (preliminary)",
-        "These are preliminary numbers from the 100 overlap posts, computed per set as the project rules "
-        "require. Representative sentiment kappa is 0.57, moderate; challenge is 0.76. The per-label issue "
-        "kappas show that humans also disagree on Devices and Customer Service, which caps how well any "
-        "model can score on them. The challenge set's near-perfect issue agreement is unusual for hard cases, "
-        "so I'm confirming the second annotator worked independently before I report it.",
+        "Backup: two humans disagree on outage reports",
+        "Inter-annotator agreement on the 100 overlap posts, per set. Representative sentiment kappa is 0.38, "
+        "fair at best; challenge is 0.63. Most disagreements are one pattern: posts I labelled not happy that "
+        "the second annotator labelled neutral, like 'Ya Singtel is down', questions about compensation, or "
+        "troubleshooting tips. My guide listed 'service failure' as not happy and 'factual statement' as "
+        "neutral, but never said which wins when a post is both. So it's a guide gap, and it matters: "
+        "GPT-4o-mini reads those posts the way I do, so part of its margin over VADER depends on that "
+        "rule. I've now added it to the guide.\n\n"
+        "Two cautions. An earlier version of the second annotator's sheet is superseded, because its labels "
+        "contradicted their own notes and matched mine. And on the challenge rows 18 of 40 still match me on "
+        "every field, so I don't rely on the 0.63 until I've confirmed they worked independently.",
     )
     add_table(s, LEFT, BODY_TOP + 0.05, RIGHT - LEFT, [2.6, 1.4, 2.6, 2.3, 3.23],
               ["Set", "Posts", "Sentiment agreement", "Sentiment κ", "Issue overlap (Jaccard)"], [
-                  ["Representative", "58", "74%", "0.57", "0.57"],
-                  ["Challenge", "40", "85%", "0.76", "0.93"],
+                  ["Representative", "58", "60%", "0.38", "0.57"],
+                  ["Challenge", "40", "75%", "0.63", "0.93"],
               ], size=16, row_h=0.6)
-    callout(s, LEFT, 4.05, 5.9, 1.9, "Low human ceiling",
-            "Issue κ on the representative overlap: Devices 0.14, Customer Service 0.18. Humans disagree on "
-            "these labels too.", size=15)
-    callout(s, 6.83, 4.05, 5.9, 1.9, "Check before reporting",
-            "Challenge agreement is higher than representative, unusual for hard cases. Confirm the second "
-            "annotator labelled independently.", size=15)
+    callout(s, LEFT, 4.05, 5.9, 2.2, "One rule explains most of it",
+            "12 of 23 representative disagreements (8 of 10 on challenge): I said not happy, B said neutral, "
+            "on bare outage reports and questions.", size=15)
+    callout(s, 6.83, 4.05, 5.9, 2.2, "Fixed, then check",
+            "Guide now says a first-hand failure report is not happy. Next: relabel the overlap and confirm "
+            "B's independence (18/40 identical).", size=15)
 
     # 33 — Per-class backup
     s = deck.content(

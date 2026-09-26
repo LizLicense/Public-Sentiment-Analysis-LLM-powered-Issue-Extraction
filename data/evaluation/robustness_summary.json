@@ -120,22 +120,51 @@
     "representative": {
       "overlap_rows": 60,
       "sentiment_pairs": 58,
-      "sentiment_agreement": 0.741,
-      "sentiment_kappa": 0.574,
+      "sentiment_agreement": 0.603,
+      "sentiment_kappa": 0.379,
       "issue_mean_jaccard": 0.574,
       "rows_identical_on_all_fields": 2,
-      "identical_notes": 0
+      "identical_notes": 0,
+      "sentiment_confusion_a_rows_b_cols": {
+        "happy": {
+          "happy": 6,
+          "not_happy": 3,
+          "neutral": 4
+        },
+        "not_happy": {
+          "not_happy": 16,
+          "neutral": 12
+        },
+        "neutral": {
+          "neutral": 13,
+          "not_happy": 4
+        }
+      }
     },
     "challenge": {
       "overlap_rows": 40,
       "sentiment_pairs": 40,
-      "sentiment_agreement": 0.85,
-      "sentiment_kappa": 0.756,
+      "sentiment_agreement": 0.75,
+      "sentiment_kappa": 0.628,
       "issue_mean_jaccard": 0.929,
-      "rows_identical_on_all_fields": 21,
-      "identical_notes": 4
+      "rows_identical_on_all_fields": 18,
+      "identical_notes": 4,
+      "sentiment_confusion_a_rows_b_cols": {
+        "happy": {
+          "happy": 9,
+          "neutral": 2
+        },
+        "not_happy": {
+          "not_happy": 14,
+          "neutral": 8
+        },
+        "neutral": {
+          "neutral": 7
+        }
+      }
     },
-    "caveat": "Challenge-set agreement is higher than representative and many rows match exactly; confirm independence before reporting."
+    "annotator_b_file": "data/evaluation/double_annotation_annotator_b_filled_guide.csv",
+    "caveat": "Challenge-set rows often match Annotator A on every non-sentiment field; confirm independence before relying on the challenge kappa."
   },
   "corpus": {
     "posts": 1706,

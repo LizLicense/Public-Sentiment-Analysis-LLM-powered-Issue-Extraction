@@ -172,7 +172,8 @@ python processing/create_evaluation_set.py
 # Outputs under data/evaluation/:
 # - representative_annotator_a.csv (300 rows)
 # - challenge_annotator_a.csv (100 rows; report separately)
-# - double_annotation_annotator_b.csv (100-row independent overlap)
+# - double_annotation_annotator_b.csv (100-row overlap template; the filled labels used for κ are
+#   double_annotation_annotator_b_filled_guide.csv — the earlier filled sheet is superseded)
 # - sampling_metadata.json and ANNOTATION_GUIDE.md
 ```
 
@@ -368,7 +369,7 @@ LLM issue extraction is **done** (hybrid: keyword rules, then `gpt-4o-2024-08-06
 
 Still open:
 
-- Second annotator and Cohen's κ on `double_annotation_annotator_b.csv`
+- Adjudicate annotator A vs B (`double_annotation_annotator_b_filled_guide.csv`; κ 0.38 / 0.63) under the new guide rule for first-hand failure reports
 - Twitter-RoBERTa on the same 295 gold labels (`transformers` + `torch`)
 - Fill title-page placeholders and compile `final_report.tex`
 - Optional: `processing/coverage_checker.py --target 1000` per telco

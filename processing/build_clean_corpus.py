@@ -3,8 +3,10 @@
 Build the clean analysis corpus from the hybrid issue file.
 
 Three steps, each reported in the summary JSON:
-1. Deduplicate: keep one row per (thread_title, post_text). The scraper collected
-   many posts several times across keyword rounds.
+1. Deduplicate: keep one row per post ID (Reddit comment_id, or post_id for the
+   opening post; HWZ thread URL + timestamp). The scraper appended the same threads
+   across repeated runs, so most posts appear 4-12 times. Identical text from
+   different users stays as separate posts.
 2. Drop off-topic threads: keep a thread only if at least --min-telco-share of its
    unique posts name a telco, or its title is about a telco.
 3. Weight by thread: report shares three ways (per post, each thread weighted
@@ -16,6 +18,7 @@ Usage (from project root):
 """
 
 import argparse
+import hashlib
 import html
 import json
 import random
@@ -60,15 +63,34 @@ def title_is_telco(title: str) -> bool:
     return bool(TITLE_TELCO_PATTERN.search(title or "")) or bool(detect_telcos(title or ""))
 
 
+def clean_id(value) -> str:
+    value = str(value if value is not None else "").strip()
+    return "" if value.lower() in {"", "nan", "none"} else value
+
+
+def post_key(row) -> str:
+    """Stable ID for one post, used for deduplication and as the LLM checkpoint key."""
+    source = str(row.get("source") or "").strip().lower()
+    comment_id, post_id = clean_id(row.get("comment_id")), clean_id(row.get("post_id"))
+    if source == "reddit" and comment_id:
+        return f"reddit:c:{comment_id}"
+    if source == "reddit" and post_id:
+        return f"reddit:p:{post_id}"
+    url, stamp = clean_id(row.get("thread_url")), clean_id(row.get("timestamp"))
+    if url and stamp:
+        return f"{source}:{hashlib.sha1(f'{url}|{stamp}'.encode()).hexdigest()[:16]}"
+    text = f"{text_key(row.get('thread_title'))}|{text_key(row.get('post_text'))}"
+    return f"{source}:t:{hashlib.sha1(text.encode()).hexdigest()[:16]}"
+
+
 def deduplicate(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
     df["thread_key"] = df["thread_title"].map(text_key)
-    df["_text_key"] = df["post_text"].map(text_key)
-    df = df[df["_text_key"] != ""]
-    copies = df.groupby(["thread_key", "_text_key"])["_text_key"].transform("size")
-    df["n_copies"] = copies
-    df = df.drop_duplicates(subset=["thread_key", "_text_key"], keep="first")
-    return df.drop(columns=["_text_key"]).reset_index(drop=True)
+    df = df[df["post_text"].map(text_key) != ""]
+    df["post_key"] = [post_key(row) for row in df.to_dict("records")]
+    df["n_copies"] = df.groupby("post_key")["post_key"].transform("size")
+    df = df.drop_duplicates(subset=["post_key"], keep="first")
+    return df.reset_index(drop=True)
 
 
 def thread_table(df: pd.DataFrame, min_share: float) -> pd.DataFrame:

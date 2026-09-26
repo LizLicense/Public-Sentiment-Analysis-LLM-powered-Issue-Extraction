@@ -325,10 +325,15 @@ def parse_thread_max_pages(soup: BeautifulSoup) -> int:
     XenForo uses a.pageNav-page (numbers).
     """
     page_numbers = []
-    for a in soup.select("a.pageNav-page"):
+    # HWZ puts pageNav-page on the <li>; older XenForo themes put it on the <a>.
+    for a in soup.select("li.pageNav-page a, a.pageNav-page"):
         txt = clean_text(a.get_text(" ", strip=True))
         if txt.isdigit():
             page_numbers.append(int(txt))
+    for a in soup.select("a[href*='/page-']"):
+        m = re.search(r"/page-(\d+)", a.get("href", ""))
+        if m:
+            page_numbers.append(int(m.group(1)))
     return max(page_numbers) if page_numbers else 1
 
 
@@ -390,6 +395,7 @@ def scrape_threads(
     max_thread_pages: int,
     debug: bool = False,
     session: Optional[requests.Session] = None,
+    latest_pages: bool = False,
 ) -> List[Dict]:
     if session is None:
         session = make_session()
@@ -401,10 +407,16 @@ def scrape_threads(
         soup = BeautifulSoup(html, "lxml")
 
         thread_title = parse_thread_title(soup) or t.title
-        max_pages = min(parse_thread_max_pages(soup), max_thread_pages)
+        total_pages = parse_thread_max_pages(soup)
+        if latest_pages:
+            # Newest end of the thread: the last max_thread_pages pages.
+            first_page = max(1, total_pages - max_thread_pages + 1)
+        else:
+            first_page = 1
+        last_page = min(total_pages, first_page + max_thread_pages - 1)
 
-        # page 1 posts
-        posts = parse_posts_from_thread_page(soup)
+        # page 1 posts (only when page 1 is inside the requested range)
+        posts = parse_posts_from_thread_page(soup) if first_page == 1 else []
         
         # Debug: save first thread's HTML for inspection
         if debug and debug_count == 0 and not posts:
@@ -437,7 +449,7 @@ def scrape_threads(
             )
 
         # subsequent pages
-        for page_num in range(2, max_pages + 1):
+        for page_num in range(max(2, first_page), last_page + 1):
             page_url = build_thread_page_url(t.url, page_num)
             page_html = fetch_html(session, page_url)
             page_soup = BeautifulSoup(page_html, "lxml")
@@ -466,6 +478,10 @@ def save_outputs(rows: List[Dict], out_prefix: str) -> None:
 
     csv_path = f"{out_prefix}.csv"
     jsonl_path = f"{out_prefix}.jsonl"
+    for path in (csv_path, jsonl_path):
+        if os.path.exists(path):
+            raise SystemExit(f"Refusing to overwrite existing file: {path}. Choose another --out.")
+    os.makedirs(os.path.dirname(csv_path) or ".", exist_ok=True)
 
     df.to_csv(csv_path, index=False, encoding="utf-8-sig")
 
@@ -497,6 +513,17 @@ def main():
         help="Comma-separated keywords for filtering thread titles.",
     )
     parser.add_argument("--max-thread-pages", type=int, default=3, help="Max pages per thread to scrape.")
+    parser.add_argument(
+        "--latest-pages",
+        action="store_true",
+        help="Scrape the last --max-thread-pages pages of each thread (newest posts) instead of the first.",
+    )
+    parser.add_argument("--since", type=str, default="", help="Keep posts with timestamp on/after YYYY-MM-DD.")
+    parser.add_argument(
+        "--no-timestamp-suffix",
+        action="store_true",
+        help="Write exactly --out (default appends _YYYYmmdd_HHMMSS so runs never collide).",
+    )
     parser.add_argument("--sleep-min", type=float, default=1.0, help="Min seconds between requests.")
     parser.add_argument("--sleep-max", type=float, default=2.0, help="Max seconds between requests.")
     parser.add_argument("--out", type=str, default="data/raw/hwz_posts", help="Output prefix (CSV + JSONL). Writes to data/raw/ by default.")
@@ -546,9 +573,16 @@ def main():
         max_thread_pages=args.max_thread_pages,
         debug=args.debug,
         session=session,
+        latest_pages=args.latest_pages,
     )
 
-    save_outputs(rows, args.out)
+    if args.since:
+        before = len(rows)
+        rows = [r for r in rows if str(r.get("timestamp") or "")[:10] >= args.since]
+        print(f"--since {args.since}: kept {len(rows)} of {before} posts")
+
+    out = args.out if args.no_timestamp_suffix else f"{args.out}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+    save_outputs(rows, out)
 
 
 if __name__ == "__main__":

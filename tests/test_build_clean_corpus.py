@@ -10,15 +10,23 @@ def frame(rows):
 
 
 class DeduplicateTests(unittest.TestCase):
-    def test_keeps_one_copy_per_thread_and_text(self) -> None:
+    def test_keeps_one_row_per_post_id(self) -> None:
         df = frame([
-            ("reddit", "Singtel down?", "No signal at all", "Singtel", "not_happy", "network_quality"),
-            ("reddit", "Singtel  down?", "no signal   at all", "Singtel", "not_happy", "network_quality"),
-            ("reddit", "Other thread", "No signal at all", "Singtel", "not_happy", "network_quality"),
+            ("reddit", "Singtel down?", "Still not working for me", "Singtel", "not_happy", "network_quality"),
+            ("reddit", "Singtel down?", "Still not working for me", "Singtel", "not_happy", "network_quality"),
+            ("reddit", "Singtel down?", "Still not working for me", "Singtel", "not_happy", "network_quality"),
         ])
+        df["comment_id"] = ["c1", "c1", "c2"]  # c1 scraped twice; c2 is another user, same words
         out = deduplicate(df)
         self.assertEqual(len(out), 2)
         self.assertEqual(sorted(out["n_copies"]), [1, 2])
+
+    def test_falls_back_to_text_without_ids(self) -> None:
+        df = frame([
+            ("hwz", "Plans", "No signal at all", "Singtel", "not_happy", "network_quality"),
+            ("hwz", "Plans", "no signal   at all", "Singtel", "not_happy", "network_quality"),
+        ])
+        self.assertEqual(len(deduplicate(df)), 1)
 
 
 class ThreadFilterTests(unittest.TestCase):

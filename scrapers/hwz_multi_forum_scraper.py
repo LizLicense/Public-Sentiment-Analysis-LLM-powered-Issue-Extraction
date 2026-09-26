@@ -190,10 +190,15 @@ def parse_thread_title(soup: BeautifulSoup) -> str:
 
 def parse_thread_max_pages(soup: BeautifulSoup) -> int:
     nums = []
-    for a in soup.select("a.pageNav-page"):
+    # HWZ puts pageNav-page on the <li>; older XenForo themes put it on the <a>.
+    for a in soup.select("li.pageNav-page a, a.pageNav-page"):
         txt = clean_text(a.get_text(" ", strip=True))
         if txt.isdigit():
             nums.append(int(txt))
+    for a in soup.select("a[href*='/page-']"):
+        m = re.search(r"/page-(\d+)", a.get("href", ""))
+        if m:
+            nums.append(int(m.group(1)))
     return max(nums) if nums else 1
 
 

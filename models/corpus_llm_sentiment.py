@@ -74,7 +74,8 @@ def read_posts(path: Path, limit: int) -> tuple[list[dict[str, str]], list[str]]
         fields = list(reader.fieldnames or [])
         rows = list(reader)
     for i, row in enumerate(rows):
-        row["sample_id"] = f"CP-{i:05d}"
+        # Stable per-post ID, so a rebuilt corpus reuses the checkpoint instead of re-billing.
+        row["sample_id"] = row.get("post_key") or f"CP-{i:05d}"
     return (rows[:limit] if limit else rows), fields
 
 

@@ -236,6 +236,7 @@ def load_corpus(path: Path) -> tuple[list[dict], str]:
             "post_text": r.get("post_text", ""),
             "brands": split_brands(r.get("telco_label", "")),
             "sentiment_final": llm or vader or "neutral",
+            "sentiment_source": "llm" if llm else "vader",
             "sentiment_vader": vader or "neutral",
             "issue_final": issue if issue in ISSUE_DISPLAY else "general_discussion",
             "time": parse_time(r),
@@ -265,7 +266,24 @@ def weekly_queue(rows: list[dict]) -> list[tuple[str, int]]:
     return sorted(weeks.items())
 
 
-def analyse(corpus_path: Path, gold_path: Path | None = None) -> tuple[list[dict], dict]:
+def resolve_threshold(weeks: list[tuple[str, int]], setting: str) -> tuple[int, str]:
+    """Fixed n, or 'auto' = twice the median weekly queue over the last 26 weeks with posts."""
+    if str(setting).lower() != "auto":
+        n = int(setting)
+        return n, f"n ≥ {n}"
+    recent = sorted(c for _, c in weeks[-26:]) or [0]
+    median = recent[len(recent) // 2] if len(recent) % 2 else (recent[len(recent) // 2 - 1] + recent[len(recent) // 2]) / 2
+    n = max(1, round(2 * median))
+    return n, f"n ≥ {n} (twice the median week of {median:g} over the last 26 weeks)"
+
+
+def analyse(
+    corpus_path: Path,
+    gold_path: Path | None = None,
+    threshold: str = str(HUDDLE_THRESHOLD),
+    title: str = "",
+    extra_limitation: str = "",
+) -> tuple[list[dict], dict]:
     rows, labeller = load_corpus(corpus_path)
     n = len(rows)
     threads = Counter(r["thread_key"] for r in rows)
@@ -305,7 +323,13 @@ def analyse(corpus_path: Path, gold_path: Path | None = None) -> tuple[list[dict
     ranked = sorted((b for b in brand_table if b["mentions"] >= MIN_BRAND_MENTIONS), key=lambda b: -b["neg_pct"])
 
     weeks = weekly_queue(rows)
+    huddle_n, huddle_rule = resolve_threshold(weeks, threshold)
     stats = {
+        "huddle_threshold": huddle_n,
+        "huddle_rule": huddle_rule,
+        "title_suffix": title,
+        "extra_limitation": extra_limitation,
+        "llm_missing": sum(r["sentiment_source"] == "vader" for r in rows) if labeller == "gpt-4o-mini" else 0,
         "n": n,
         "n_threads": len(threads),
         "top3_threads_pct": pct(top3, n),
@@ -332,7 +356,7 @@ def analyse(corpus_path: Path, gold_path: Path | None = None) -> tuple[list[dict
         "brand_table": [b for b in brand_table if b["mentions"] >= 5],
         "brands_ranked": ranked,
         "weeks": weeks,
-        "weeks_over": [w for w in weeks if w[1] >= HUDDLE_THRESHOLD],
+        "weeks_over": [w for w in weeks if w[1] >= huddle_n],
         "quotes": pick_quotes(rows, action_order),
     }
     stats["exec_summary"] = build_executive_summary(stats)
@@ -365,9 +389,9 @@ def build_executive_summary(stats: dict) -> str:
     )
     weeks_over = stats["weeks_over"]
     huddle = (
-        f"{len(weeks_over)} week(s) crossed the n ≥ {HUDDLE_THRESHOLD} huddle threshold, the largest "
+        f"{len(weeks_over)} week(s) crossed the huddle threshold ({stats['huddle_rule']}), the largest "
         f"{max(weeks_over, key=lambda w: w[1])[1]} posts in the week of {max(weeks_over, key=lambda w: w[1])[0]}"
-        if weeks_over else f"no week crossed the n ≥ {HUDDLE_THRESHOLD} huddle threshold"
+        if weeks_over else f"no week crossed the huddle threshold ({stats['huddle_rule']})"
     )
     return (
         f"An <strong>early-warning screen</strong>, not CSAT or NPS: {stats['n']:,} unique posts in {stats['n_threads']} "
@@ -432,7 +456,7 @@ Sentiment ({labeller_name(stats)}): {s["happy"]}% happy / {s["not_happy"]}% not 
 ## Contents
 
 - Executive summary and KPI cards
-- Weekly huddle queue over time against the n ≥ {HUDDLE_THRESHOLD} threshold
+- Weekly huddle queue over time against the threshold: {stats["huddle_rule"]}
 - Sentiment (with the human-label check), Reddit vs HWZ on the same labeller
 - Issue shares per post and thread-weighted; not-happy posts by issue
 - Brand mentions and not-happy share for brands with at least {MIN_BRAND_MENTIONS} mentions
@@ -521,7 +545,7 @@ def render_html(stats: dict) -> str:
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Singapore Telco Forum Sentiment Dashboard</title>
+  <title>Singapore Telco Forum Sentiment Dashboard{html.escape(stats["title_suffix"])}</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <style>
     :root {{
@@ -590,7 +614,7 @@ def render_html(stats: dict) -> str:
 <body>
   <div class="page">
     <header>
-      <h1>Singapore Telco Forum Sentiment Dashboard</h1>
+      <h1>Singapore Telco Forum Sentiment Dashboard{html.escape(stats["title_suffix"])}</h1>
       <p class="meta">
         Reddit + HWZ &middot; {stats["n"]:,} unique posts in {stats["n_threads"]} telco threads &middot;
         {stats["date_from"]} to {stats["date_to"]} &middot; sentiment: {who} &middot;
@@ -610,7 +634,7 @@ def render_html(stats: dict) -> str:
       <p class="lead">Weekly 30-minute huddle. Charts triage; people decide.</p>
       <div class="huddle-steps">
         <div class="huddle-step"><div class="num">A. Queue</div>
-          <p>Not-happy posts in Network Quality, App &amp; Account, or Porting that week. Act only if n ≥ {HUDDLE_THRESHOLD}.</p></div>
+          <p>Not-happy posts in Network Quality, App &amp; Account, or Porting that week. Act only if {html.escape(stats["huddle_rule"])}.</p></div>
         <div class="huddle-step"><div class="num">B. Open 10</div>
           <p>Read ten source posts. Drop sarcasm, mixed-brand, and off-target labels.</p></div>
         <div class="huddle-step"><div class="num">C. Match</div>
@@ -622,7 +646,7 @@ def render_html(stats: dict) -> str:
       </div>
       <div class="huddle-status">
         <span class="huddle-pill">{len(stats["weeks"])} weeks with queue posts</span>
-        <span class="huddle-pill">Threshold: {HUDDLE_THRESHOLD}</span>
+        <span class="huddle-pill">Threshold: {stats["huddle_threshold"]}</span>
         <span class="huddle-pill">{queue_pill}</span>
       </div>
       <div class="chart-wrap"><canvas id="weekChart"></canvas></div>
@@ -728,6 +752,8 @@ def render_html(stats: dict) -> str:
         per-post and thread-weighted shares. Sentiment is {who}{", which scored macro F1 0.631 against human labels (VADER 0.360)" if stats["labeller"] == "gpt-4o-mini" else ", which scored macro F1 0.360 against human labels"}.
         One sentiment is copied to every brand a post names. Issue tags are keyword rules plus GPT-4o on unresolved
         rows; the corpus reassignments have no human check. This is a triage queue, not NPS, churn or market share.
+        {f"{stats['llm_missing']} post(s) had no GPT-4o-mini label and use VADER." if stats["llm_missing"] else ""}
+        {html.escape(stats["extra_limitation"])}
       </p>
     </footer>
   </div>
@@ -802,8 +828,8 @@ def render_html(stats: dict) -> str:
       type: "bar",
       data: {{ labels: {week_labels}, datasets: [
         {{ type: "bar", label: "Queue posts (week starting)", data: weekValues,
-          backgroundColor: weekValues.map(v => v >= {HUDDLE_THRESHOLD} ? "#ef4444" : "#3b82f6") }},
-        {{ type: "line", label: "Threshold", data: weekValues.map(() => {HUDDLE_THRESHOLD}),
+          backgroundColor: weekValues.map(v => v >= {stats["huddle_threshold"]} ? "#ef4444" : "#3b82f6") }},
+        {{ type: "line", label: "Threshold", data: weekValues.map(() => {stats["huddle_threshold"]}),
           borderColor: "#f59e0b", borderDash: [6, 4], pointRadius: 0, borderWidth: 2 }}
       ] }},
       options: {{ responsive: true, maintainAspectRatio: false, plugins: {{ legend: {{ position: "bottom" }} }} }}
@@ -828,6 +854,10 @@ def main() -> None:
         default=ROOT / "data/evaluation/representative_annotator_a.csv",
         help="Human-labelled gold set shown next to the corpus sentiment.",
     )
+    parser.add_argument("--huddle-threshold", default=str(HUDDLE_THRESHOLD),
+                        help="Weekly queue size that triggers a huddle: a number, or 'auto' (2x the median week).")
+    parser.add_argument("--title-suffix", default="", help="Text appended to the page title, e.g. ' (v2)'.")
+    parser.add_argument("--extra-limitation", default="", help="Extra sentence for the Limitations footer.")
     parser.add_argument("--out-html", type=Path, default=DASHBOARD_DIR / "index.html")
     parser.add_argument("--out-readme", type=Path, default=DASHBOARD_DIR / "Dash_README.md")
     args = parser.parse_args()
@@ -835,7 +865,10 @@ def main() -> None:
     corpus = args.corpus or (MINI_CORPUS if MINI_CORPUS.exists() else VADER_CORPUS)
     if not corpus.exists():
         raise SystemExit(f"Missing {corpus}. Run: python processing/build_clean_corpus.py")
-    _, stats = analyse(corpus, args.gold)
+    for path in (args.out_html, args.out_readme):
+        if path.resolve() == corpus.resolve():
+            raise SystemExit("Output path equals the corpus path.")
+    _, stats = analyse(corpus, args.gold, args.huddle_threshold, args.title_suffix, args.extra_limitation)
 
     args.out_html.write_text(render_html(stats), encoding="utf-8")
     args.out_readme.write_text(render_readme(stats), encoding="utf-8")

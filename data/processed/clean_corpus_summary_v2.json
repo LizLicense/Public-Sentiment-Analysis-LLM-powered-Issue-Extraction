@@ -1,0 +1,209 @@
+{
+  "input": "/Users/zliao1/Library/CloudStorage/GoogleDrive-zixin.liao@starhub.com/My Drive/0 My AI Project/Capstone/Public-Sentiment-Analysis-LLM-powered-Issue-Extraction/data/processed/wave2/issues_posts_labeled_v1_plus_wave2_hybrid.csv",
+  "output": "/Users/zliao1/Library/CloudStorage/GoogleDrive-zixin.liao@starhub.com/My Drive/0 My AI Project/Capstone/Public-Sentiment-Analysis-LLM-powered-Issue-Extraction/data/processed/clean_posts_v2.csv",
+  "min_telco_share": 0.2,
+  "steps": {
+    "raw_rows": 24690,
+    "unique_posts": 11643,
+    "threads": 445,
+    "threads_kept": 349,
+    "threads_dropped_off_topic": 96,
+    "posts_in_dropped_threads": 2481,
+    "clean_posts": 9162,
+    "clean_posts_naming_telco": 7405
+  },
+  "clean_by_source": {
+    "reddit": 5711,
+    "hwz": 3451
+  },
+  "largest_kept_threads": [
+    {
+      "title": "zym.sg Mobile (Singtel MVNO)",
+      "posts": 307,
+      "share_of_clean_pct": 3.4
+    },
+    {
+      "title": "Singtel hi! Discussion Thread",
+      "posts": 296,
+      "share_of_clean_pct": 3.2
+    },
+    {
+      "title": "[Official] SingTel SIM Only Plans",
+      "posts": 295,
+      "share_of_clean_pct": 3.2
+    },
+    {
+      "title": "Eight Telecom discussion thread",
+      "posts": 284,
+      "share_of_clean_pct": 3.1
+    },
+    {
+      "title": "M1 Maxx (maxxonline.sg) Discussion",
+      "posts": 271,
+      "share_of_clean_pct": 3.0
+    }
+  ],
+  "largest_dropped_threads": [
+    {
+      "title": "What exactly feels cheaper in singapore when compared to other countries?",
+      "posts": 248,
+      "telco_share": 0.0
+    },
+    {
+      "title": "Scam alert. Do Not Pick up unknown calls.",
+      "posts": 174,
+      "telco_share": 0.1
+    },
+    {
+      "title": "The wealth gap is widening. The answer isn’t more handouts – it’s a stake",
+      "posts": 118,
+      "telco_share": 0.05
+    },
+    {
+      "title": "Woman sues Prudential saying insurer used 'buried clause' to deny S$100,000 brain surgery claim",
+      "posts": 99,
+      "telco_share": 0.0
+    },
+    {
+      "title": "Singapore's narrow definition of success is a cage we built ourselves",
+      "posts": 97,
+      "telco_share": 0.0
+    },
+    {
+      "title": "Strange experience at NLB, feeling stupid now",
+      "posts": 85,
+      "telco_share": 0.01
+    },
+    {
+      "title": "Singaporeans don't want a Nordic model. We want to keep winning.",
+      "posts": 69,
+      "telco_share": 0.0
+    },
+    {
+      "title": "The hottest new AI job: Forward deployed engineers are in demand in Singapore",
+      "posts": 69,
+      "telco_share": 0.01
+    },
+    {
+      "title": "Where to watch currently-airing anime in Singapore (legally) - Spring 2026 guide",
+      "posts": 60,
+      "telco_share": 0.02
+    },
+    {
+      "title": "Colonoscopy cost at private clinics?",
+      "posts": 59,
+      "telco_share": 0.0
+    }
+  ],
+  "raw_rows_view": {
+    "issue_primary": {
+      "network_quality": 35.1,
+      "general_discussion": 33.9,
+      "mobile_plans": 7.6,
+      "pricing_promotions": 6.8,
+      "devices": 4.0,
+      "customer_service": 3.5,
+      "billing_payment": 3.2,
+      "roaming": 2.4,
+      "app_account": 2.3,
+      "porting": 1.3
+    },
+    "sentiment_vader": {
+      "happy": 45.7,
+      "not_happy": 29.3,
+      "neutral": 25.0
+    }
+  },
+  "clean_views": {
+    "per_post": {
+      "posts": 9162,
+      "issue_primary": {
+        "network_quality": 40.7,
+        "general_discussion": 14.6,
+        "mobile_plans": 13.8,
+        "pricing_promotions": 8.1,
+        "devices": 5.9,
+        "customer_service": 3.7,
+        "roaming": 3.7,
+        "app_account": 3.7,
+        "billing_payment": 2.9,
+        "porting": 2.9
+      },
+      "sentiment_vader": {
+        "happy": 45.6,
+        "not_happy": 27.8,
+        "neutral": 26.6
+      },
+      "brand_share_of_mentions": {
+        "Singtel": 44.2,
+        "Starhub": 16.1,
+        "SIMBA": 13.8,
+        "M1": 12.2,
+        "Eight": 6.4,
+        "Zym": 3.9,
+        "Giga": 2.8,
+        "redONE": 0.5
+      }
+    },
+    "thread_equal": {
+      "posts": 9162,
+      "issue_primary": {
+        "network_quality": 36.9,
+        "general_discussion": 13.0,
+        "mobile_plans": 12.6,
+        "app_account": 9.2,
+        "pricing_promotions": 6.6,
+        "devices": 6.5,
+        "roaming": 4.9,
+        "customer_service": 3.9,
+        "billing_payment": 3.5,
+        "porting": 2.8
+      },
+      "sentiment_vader": {
+        "happy": 49.7,
+        "not_happy": 26.8,
+        "neutral": 23.5
+      },
+      "brand_share_of_mentions": {
+        "Singtel": 41.0,
+        "Starhub": 21.3,
+        "SIMBA": 13.9,
+        "M1": 11.0,
+        "Eight": 5.0,
+        "Giga": 3.8,
+        "Zym": 3.2,
+        "redONE": 0.9
+      }
+    },
+    "cap_5_per_thread": {
+      "posts": 1493,
+      "issue_primary": {
+        "network_quality": 39.0,
+        "general_discussion": 14.4,
+        "mobile_plans": 12.8,
+        "pricing_promotions": 7.2,
+        "devices": 6.5,
+        "app_account": 4.8,
+        "roaming": 4.7,
+        "customer_service": 4.0,
+        "billing_payment": 3.6,
+        "porting": 3.1
+      },
+      "sentiment_vader": {
+        "happy": 48.3,
+        "not_happy": 26.7,
+        "neutral": 25.0
+      },
+      "brand_share_of_mentions": {
+        "Singtel": 42.1,
+        "Starhub": 19.3,
+        "SIMBA": 13.0,
+        "M1": 12.3,
+        "Eight": 4.7,
+        "Giga": 4.3,
+        "Zym": 3.3,
+        "redONE": 0.9
+      }
+    }
+  }
+}

@@ -3,32 +3,26 @@
   "output": "data/processed/clean_posts_2026-08-21_203752_mini_sentiment.csv",
   "requested_model": "gpt-4o-mini",
   "returned_models": {
-    "gpt-4o-mini-2024-07-18": 1706
+    "gpt-4o-mini-2024-07-18": 1711
   },
   "posts": 1711,
-  "labelled": 1706,
-  "failed_sample_ids": [
-    "reddit:c:oap9q08",
-    "reddit:c:oap048y",
-    "reddit:c:oaoy40e",
-    "reddit:c:o2ywab6",
-    "hwz:3867ee8eed987628"
-  ],
-  "elapsed_seconds_this_run": 7.2,
-  "input_tokens": 166258,
-  "output_tokens": 37279,
+  "labelled": 1711,
+  "failed_sample_ids": [],
+  "elapsed_seconds_this_run": 0.0,
+  "input_tokens": 167071,
+  "output_tokens": 37552,
   "cost": {
     "currency": "USD",
     "pricing_provided": true,
     "input_cost_per_million": 0.15,
     "output_cost_per_million": 0.6,
-    "estimated_input_cost": 0.024938699999999998,
-    "estimated_output_cost": 0.0223674,
-    "estimated_total_cost": 0.0473061
+    "estimated_input_cost": 0.02506065,
+    "estimated_output_cost": 0.0225312,
+    "estimated_total_cost": 0.047591850000000005
   },
   "sentiment_counts": {
-    "neutral": 468,
+    "neutral": 470,
     "happy": 299,
-    "not_happy": 939
+    "not_happy": 942
   }
 }

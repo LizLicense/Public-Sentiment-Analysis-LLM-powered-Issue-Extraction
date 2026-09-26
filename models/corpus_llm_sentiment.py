@@ -94,12 +94,14 @@ def main() -> None:
         print("Dry run: no API calls made.")
         return
 
-    api_key = os.getenv("OPENAI_API_KEY", "").strip()
-    if not api_key:
-        raise SystemExit("OPENAI_API_KEY is not set.")
-    if OpenAI is None:
-        raise SystemExit("The openai package is not installed. Run: venv/bin/python -m pip install openai")
-    client = OpenAI(api_key=api_key, base_url=args.base_url or None)
+    started = time.perf_counter()
+    if pending:
+        api_key = os.getenv("OPENAI_API_KEY", "").strip()
+        if not api_key:
+            raise SystemExit("OPENAI_API_KEY is not set.")
+        if OpenAI is None:
+            raise SystemExit("The openai package is not installed. Run: venv/bin/python -m pip install openai")
+        client = OpenAI(api_key=api_key, base_url=args.base_url or None)
     call_args = SimpleNamespace(
         model=args.model,
         max_text_chars=args.max_text_chars,
@@ -108,7 +110,6 @@ def main() -> None:
         retry_delay=args.retry_delay,
     )
 
-    started = time.perf_counter()
     total = (len(pending) + args.batch_size - 1) // args.batch_size
     for number, batch in enumerate(batches(pending, args.batch_size), start=1):
         output, meta = call_batch(client, batch, call_args)
@@ -136,9 +137,11 @@ def main() -> None:
         writer.writerows(rows)
 
     # Token counts are stored per batch on every row of that batch; count each batch once.
+    # The checkpoint is shared across corpus versions, so count only this corpus's posts.
+    wanted = {r["sample_id"] for r in rows}
     batch_usage = {}
     for item in done.values():
-        if not item.get("error"):
+        if not item.get("error") and item.get("sample_id") in wanted:
             batch_usage[item.get("request_id")] = (item.get("input_tokens", 0), item.get("output_tokens", 0))
     input_tokens = sum(i for i, _ in batch_usage.values())
     output_tokens = sum(o for _, o in batch_usage.values())

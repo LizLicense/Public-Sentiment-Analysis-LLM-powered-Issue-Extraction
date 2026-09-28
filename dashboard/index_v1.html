@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Singapore Telco Forum Sentiment Dashboard</title>
+  <title>Singapore Telco Forum Sentiment Dashboard — v1 (outage case study)</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <style>
     :root {
@@ -72,11 +72,11 @@
 <body>
   <div class="page">
     <header>
-      <h1>Singapore Telco Forum Sentiment Dashboard</h1>
+      <h1>Singapore Telco Forum Sentiment Dashboard — v1 (outage case study)</h1>
       <p class="meta">
-        Reddit + HWZ &middot; 1,706 unique posts in 105 telco threads &middot;
+        Reddit + HWZ &middot; 1,711 unique posts in 105 telco threads &middot;
         2019-03-26 to 2026-04-09 &middot; sentiment: GPT-4o-mini &middot;
-        issues: keyword rules + GPT-4o &middot; generated 2026-09-26 01:37 UTC &middot; data/processed/clean_posts_2026-08-21_203752_mini_sentiment.csv
+        issues: keyword rules + GPT-4o &middot; generated 2026-09-26 15:00 UTC &middot; data/processed/clean_posts_2026-08-21_203752_mini_sentiment.csv
       </p>
     </header>
 
@@ -84,7 +84,7 @@
 
     <section class="exec-summary">
       <h2>Executive Summary</h2>
-      <p>An <strong>early-warning screen</strong>, not CSAT or NPS: 1,706 unique posts in 105 telco threads (2019-03-26 to 2026-04-09; 74% from 2026). The three largest threads hold 19% of posts; the biggest is “16 March 26: Singtel mobile service outage”. GPT-4o-mini, the labeller that best matched human labels (macro F1 0.631 vs VADER 0.360), reads <strong>55% of posts as not happy</strong> and 18% as happy; VADER on the same posts says 32% and 40%. <strong>Network Quality leads</strong> (45.3% with every thread weighted equally, 52.8% per post), then Mobile Plans (13.4%). Network Quality carries the most not-happy discussion. Using the same labeller on both sources, Reddit is 60% not happy and HWZ 40%. Among brands with at least 10 mentions, Singtel (63% not happy, n=1135) and StarHub (48% not happy, n=360) show the highest not-happy share. In the weekly huddle view, 3 week(s) crossed the n ≥ 20 huddle threshold, the largest 349 posts in the week of 2026-03-16. Sentiment by GPT-4o-mini; issues by keyword rules plus GPT-4o.</p>
+      <p>An <strong>early-warning screen</strong>, not CSAT or NPS: 1,711 unique posts in 105 telco threads (2019-03-26 to 2026-04-09; 74% from 2026). The three largest threads hold 20% of posts; the biggest is “16 March 26: Singtel mobile service outage”. GPT-4o-mini, the labeller that best matched human labels (macro F1 0.631 vs VADER 0.360), reads <strong>55% of posts as not happy</strong> and 17% as happy; VADER on the same posts says 32% and 40%. <strong>Network Quality leads</strong> (45.3% with every thread weighted equally, 52.8% per post), then Mobile Plans (13.4%). Network Quality carries the most not-happy discussion. Using the same labeller on both sources, Reddit is 60% not happy and HWZ 40% (the platforms also discuss different topics). Among brands with at least 17 posts and 10 threads, Singtel (63% not happy, n=1139) and StarHub (48% not happy, n=361) show the highest not-happy share. In the weekly huddle view, 3 week(s) crossed the huddle threshold (n ≥ 20), the largest 352 posts in the week of 2026-03-16. Sentiment by GPT-4o-mini; issues by keyword rules plus GPT-4o.</p>
     </section>
 
     <section class="huddle">
@@ -105,32 +105,33 @@
       <div class="huddle-status">
         <span class="huddle-pill">41 weeks with queue posts</span>
         <span class="huddle-pill">Threshold: 20</span>
-        <span class="huddle-pill">3 week(s) at or above threshold; peak 349 posts</span>
+        <span class="huddle-pill">3 week(s) at or above threshold; peak 352 posts</span>
       </div>
       <div class="chart-wrap"><canvas id="weekChart"></canvas></div>
-      <p class="huddle-warn">Rank only brands with at least 10 mentions. Never publish a brand league table.</p>
+      <p class="huddle-warn">Rank only brands with at least 17 posts and 10 threads. Never publish a brand league table.</p>
     </section>
 
     <div class="kpi-grid">
-      <div class="kpi"><div class="value">1,706</div><div class="label">Unique posts</div></div>
+      <div class="kpi"><div class="value">1,711</div><div class="label">Unique posts</div></div>
       <div class="kpi"><div class="value">105</div><div class="label">Telco threads</div></div>
       <div class="kpi"><div class="value">55%</div><div class="label">Not happy</div></div>
-      <div class="kpi"><div class="value">18%</div><div class="label">Happy</div></div>
+      <div class="kpi"><div class="value">17%</div><div class="label">Happy</div></div>
       <div class="kpi"><div class="value">27%</div><div class="label">Neutral</div></div>
-      <div class="kpi"><div class="value">19%</div><div class="label">Posts in top 3 threads</div></div>
+      <div class="kpi"><div class="value">20%</div><div class="label">Posts in top 3 threads</div></div>
     </div>
 
     <div class="charts-grid">
       <div class="chart-card">
         <h3>Forum tone is a screen, not a CSAT score</h3>
-        <p class="subtitle">GPT-4o-mini on all 1,706 posts. VADER on the same posts: 40% happy, 32% not happy. Human gold labels (295 posts): 18% happy, 50% not happy.</p>
+        <p class="subtitle">GPT-4o-mini on all 1,711 posts. VADER on the same posts: 40% happy, 32% not happy. Human gold labels (295 posts): 18% happy, 50% not happy.</p>
         <div class="chart-wrap"><canvas id="sentimentChart"></canvas></div>
       </div>
       <div class="chart-card">
-        <h3>Reddit reads more negative than HWZ</h3>
+        <h3>Reddit–HWZ gap of 20 points: check topic mix first</h3>
         <p class="subtitle">
-          GPT-4o-mini: Reddit 60% not happy (n=1,253) vs HWZ 40% (n=453).
+          GPT-4o-mini: Reddit 60% not happy (n=1,257) vs HWZ 40% (n=454).
           Human gold labels: Reddit 51% vs HWZ 47%.
+          The platforms discuss different topics and periods, so a gap is not a platform effect on its own.
         </p>
         <div class="chart-wrap"><canvas id="sourceChart"></canvas></div>
       </div>
@@ -156,7 +157,7 @@
       </div>
       <div class="chart-card">
         <h3>Investigate large-n brands first</h3>
-        <p class="subtitle">% not happy for brands with at least 10 mentions. A brand's share can be driven by one event thread, so check the Threads column before reading it as brand-wide.</p>
+        <p class="subtitle">% not happy for brands with at least 17 posts and 10 threads. A brand's share can be driven by one event thread, so check the Threads column before reading it as brand-wide.</p>
         <div class="chart-wrap tall"><canvas id="negRateChart"></canvas></div>
       </div>
     </div>
@@ -167,8 +168,8 @@
         <table class="brand-table">
           <thead><tr><th>Telco</th><th>Posts</th><th>Threads</th><th>Not happy</th><th>Top issues</th></tr></thead>
           <tbody>
-            <tr><td>Singtel</td><td>1135</td><td>82</td><td>63%</td><td>Network Quality, Mobile Plans</td></tr>
-            <tr><td>StarHub</td><td>360</td><td>51</td><td>48%</td><td>Network Quality, Mobile Plans</td></tr>
+            <tr><td>Singtel</td><td>1139</td><td>82</td><td>63%</td><td>Network Quality, Mobile Plans</td></tr>
+            <tr><td>StarHub</td><td>361</td><td>51</td><td>48%</td><td>Network Quality, Mobile Plans</td></tr>
             <tr><td>M1</td><td>254</td><td>45</td><td>35%</td><td>Network Quality, Mobile Plans</td></tr>
             <tr><td>SIMBA</td><td>157</td><td>39</td><td>35%</td><td>Network Quality, Mobile Plans</td></tr>
             <tr><td>Eight</td><td>72</td><td>23</td><td>28%</td><td>Network Quality, Mobile Plans</td></tr>
@@ -206,7 +207,7 @@
           <li><strong>Network</strong> <span class="small-n">Network Quality: 52.5% of not-happy, 45.3% of all (thread-weighted)</span><br>Join named-location and outage posts to tickets and cell data; publish status and ETA during incidents. <em>Check: Tickets fall at that location; fewer “is it down?” threads.</em></li>
           <li><strong>Product</strong> <span class="small-n">Mobile Plans: 12.1% of not-happy, 13.4% of all (thread-weighted)</span><br>Show fair-use limits, add-on charges (e.g. Caller ID), recurring price and host network at checkout. <em>Check: Fewer “which plan / which backend?” threads.</em></li>
           <li><strong>Service operations</strong> <span class="small-n">Customer Service: 4.9% of not-happy, 4.1% of all (thread-weighted)</span><br>Keep a self-service path and callback queue open during incidents; close escalations with a named owner. <em>Check: Fewer “cannot reach support” posts after the next incident.</em></li>
-          <li><strong>Commercial</strong> <span class="small-n">Pricing & Promotions: 4.8% of not-happy, 6.1% of all (thread-weighted)</span><br>Publish intro vs recurring price and promo expiry; audit promotion fulfilment. <em>Check: Fewer fulfilment complaints, not just a lower list price.</em></li>
+          <li><strong>Commercial</strong> <span class="small-n">Pricing & Promotions: 4.8% of not-happy, 6.0% of all (thread-weighted)</span><br>Publish intro vs recurring price and promo expiry; audit promotion fulfilment. <em>Check: Fewer fulfilment complaints, not just a lower list price.</em></li>
           <li><strong>Device support</strong> <span class="small-n">Devices: 4.7% of not-happy, 6.0% of all (thread-weighted)</span><br>Document router, ONR/ONT and eSIM requirements per plan. <em>Check: Fewer equipment and bridge-mode threads.</em></li>
           <li><strong>Billing</strong> <span class="small-n">Billing & Payment: 4.5% of not-happy, 4.7% of all (thread-weighted)</span><br>Publish the outage compensation rule with the incident notice; explain charges before the bill lands. <em>Check: Fewer compensation and surprise-charge posts.</em></li>
         </ul>
@@ -231,12 +232,14 @@
     <footer>
       <h3>Limitations</h3>
       <p>
-        1,706 unique posts from self-selecting Reddit and HWZ users, not Singapore subscribers.
+        1,711 unique posts from self-selecting Reddit and HWZ users, not Singapore subscribers.
         74% are from 2026 and the largest thread is “16 March 26: Singtel mobile service outage”, so brand and
         network shares describe those events as much as the market. Posts in a thread are not independent; compare
         per-post and thread-weighted shares. Sentiment is GPT-4o-mini, which scored macro F1 0.631 against human labels (VADER 0.360).
         One sentiment is copied to every brand a post names. Issue tags are keyword rules plus GPT-4o on unresolved
         rows; the corpus reassignments have no human check. This is a triage queue, not NPS, churn or market share.
+        
+        This is the original corpus (posts to 9 Apr 2026), kept as a case study of the March 2026 Singtel outage; the main findings use the larger v2 corpus (index_v2.html).
       </p>
     </footer>
   </div>
@@ -246,7 +249,7 @@
     Chart.defaults.borderColor = "#2d3a4f";
     Chart.defaults.font.family = "'Segoe UI', system-ui, sans-serif";
 
-    const sentimentValues = [299, 939, 468];
+    const sentimentValues = [299, 942, 470];
     new Chart(document.getElementById("sentimentChart"), {
       type: "doughnut",
       data: { labels: ["Happy", "Not happy", "Neutral"], datasets: [{ data: sentimentValues,
@@ -277,8 +280,8 @@
     new Chart(document.getElementById("issueChart"), {
       type: "bar",
       data: { labels: issueLabels, datasets: [
-        { label: "Per post", data: [52.8, 6.8, 12.2, 2.2, 2.8, 3.0, 3.6, 1.2, 6.2, 9.1], backgroundColor: "#3b82f6", borderRadius: 4 },
-        { label: "Each thread weighted equally", data: [45.3, 6.1, 13.4, 3.7, 2.7, 4.1, 4.7, 3.3, 6.0, 10.7], backgroundColor: "#f59e0b", borderRadius: 4 }
+        { label: "Per post", data: [52.8, 6.8, 12.2, 2.2, 2.7, 3.0, 3.6, 1.2, 6.2, 9.2], backgroundColor: "#3b82f6", borderRadius: 4 },
+        { label: "Each thread weighted equally", data: [45.3, 6.0, 13.4, 3.7, 2.7, 4.1, 4.7, 3.3, 6.0, 10.8], backgroundColor: "#f59e0b", borderRadius: 4 }
       ] },
       options: { indexAxis: "y", responsive: true, maintainAspectRatio: false,
         scales: { x: { ticks: { callback: v => v+"%" } } }, plugins: { legend: { position: "bottom" } } }
@@ -286,13 +289,13 @@
 
     new Chart(document.getElementById("unhappyIssueChart"), {
       type: "bar",
-      data: { labels: issueLabels, datasets: [{ data: [599, 58, 80, 14, 11, 31, 40, 11, 45, 50], backgroundColor: "#ef4444", borderRadius: 6 }] },
+      data: { labels: issueLabels, datasets: [{ data: [602, 58, 80, 14, 11, 31, 40, 11, 45, 50], backgroundColor: "#ef4444", borderRadius: 6 }] },
       options: { indexAxis: "y", responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
     });
 
     new Chart(document.getElementById("brandChart"), {
       type: "bar",
-      data: { labels: ["Singtel", "StarHub", "M1", "SIMBA", "Eight", "Giga", "Zym", "redONE"], datasets: [{ data: [1135, 360, 254, 157, 72, 64, 48, 5],
+      data: { labels: ["Singtel", "StarHub", "M1", "SIMBA", "Eight", "Giga", "Zym", "redONE"], datasets: [{ data: [1139, 361, 254, 157, 72, 64, 48, 5],
         backgroundColor: "#3b82f6", borderRadius: 6 }] },
       options: { indexAxis: "y", responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
     });
@@ -300,13 +303,13 @@
     const negRates = [63, 48, 38, 35, 35, 34, 28];
     new Chart(document.getElementById("negRateChart"), {
       type: "bar",
-      data: { labels: ["Singtel (n=1135)", "StarHub (n=360)", "Zym (n=48)", "M1 (n=254)", "SIMBA (n=157)", "Giga (n=64)", "Eight (n=72)"],
+      data: { labels: ["Singtel (n=1139)", "StarHub (n=361)", "Zym (n=48)", "M1 (n=254)", "SIMBA (n=157)", "Giga (n=64)", "Eight (n=72)"],
         datasets: [{ data: negRates, backgroundColor: negRates.map(v => v>=50?"#ef4444":v>=35?"#f59e0b":"#22c55e"), borderRadius: 6 }] },
       options: { responsive: true, maintainAspectRatio: false,
         scales: { y: { max: 100, ticks: { callback: v => v+"%" } } }, plugins: { legend: { display: false } } }
     });
 
-    const weekValues = [2, 2, 3, 5, 5, 1, 7, 1, 1, 1, 1, 2, 1, 2, 1, 7, 2, 1, 11, 3, 1, 2, 8, 2, 1, 10, 1, 2, 3, 2, 8, 11, 6, 6, 9, 5, 10, 349, 70, 42, 14];
+    const weekValues = [2, 2, 3, 5, 5, 1, 7, 1, 1, 1, 1, 2, 1, 2, 1, 7, 2, 1, 11, 3, 1, 2, 8, 2, 1, 10, 1, 2, 3, 2, 8, 11, 6, 6, 9, 5, 10, 352, 70, 42, 14];
     new Chart(document.getElementById("weekChart"), {
       type: "bar",
       data: { labels: ["2019-03-25", "2019-09-09", "2019-12-09", "2020-08-31", "2020-09-21", "2020-11-30", "2020-12-07", "2021-05-03", "2021-05-10", "2021-06-28", "2021-09-13", "2021-11-22", "2023-10-02", "2023-10-23", "2023-10-30", "2023-12-25", "2024-01-01", "2024-01-08", "2024-04-08", "2024-04-22", "2024-09-02", "2025-02-03", "2025-02-17", "2025-02-24", "2025-03-03", "2025-04-21", "2025-09-22", "2025-11-03", "2025-11-10", "2025-12-15", "2026-01-19", "2026-01-26", "2026-02-02", "2026-02-09", "2026-02-16", "2026-02-23", "2026-03-02", "2026-03-16", "2026-03-23", "2026-03-30", "2026-04-06"], datasets: [

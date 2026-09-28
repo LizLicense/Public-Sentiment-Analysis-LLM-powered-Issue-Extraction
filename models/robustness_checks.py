@@ -42,9 +42,10 @@ from models.llm_evaluation import (
 
 EVAL = PROJECT_ROOT / "data/evaluation"
 OUT = EVAL / "robustness_summary.json"
-# Annotator B's guide-applied labels. The earlier double_annotation_annotator_b.csv is superseded:
-# its sentiment labels often contradicted B's own notes and matched Annotator A instead.
-ANNOTATOR_B = EVAL / "double_annotation_annotator_b_filled_guide.csv"
+# Annotator B's independent relabelling (own notes throughout, new failure-report rule applied).
+# Superseded: double_annotation_annotator_b.csv (labels contradicted B's notes and matched A) and
+# double_annotation_annotator_b_filled_guide.csv (sentiment revised, other fields still copied).
+ANNOTATOR_B = EVAL / "double_annotation_annotator_b_filled2.csv"
 BOOTSTRAPS = 2000
 SEED = 7
 OUTAGE_TITLE = re.compile(r"outage|down\b|disruption|no (?:signal|internet)|still having issues", re.IGNORECASE)
@@ -211,7 +212,7 @@ def annotator_agreement() -> dict:
             },
         }
     out["annotator_b_file"] = str(ANNOTATOR_B.relative_to(PROJECT_ROOT))
-    out["caveat"] = "Challenge-set rows often match Annotator A on every non-sentiment field; confirm independence before relying on the challenge kappa."
+    out["caveat"] = "B relabelled with its own notes; remaining disagreements are mostly A not_happy vs B neutral."
     return out
 
 

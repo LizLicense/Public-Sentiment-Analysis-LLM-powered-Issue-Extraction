@@ -1,0 +1,176 @@
+{
+  "gold_file": "data/evaluation/wave2_annotator_a.csv",
+  "matched": 100,
+  "unmatched_sample_ids": [],
+  "relevant": 97,
+  "typo_fixes_applied": {
+    "sentiment 'netural' -> 'neutral'": 29,
+    "issue 'evices' -> 'Devices'": 1,
+    "issue 'pring & promotions' -> 'Pricing & Promotions'": 1
+  },
+  "sentiment": {
+    "n": 97,
+    "gold_shares": {
+      "happy": 30,
+      "not_happy": 40,
+      "neutral": 30
+    },
+    "gpt4o_mini_shares": {
+      "happy": 26,
+      "not_happy": 33,
+      "neutral": 41
+    },
+    "gpt4o_mini": {
+      "accuracy": 0.6288659793814433,
+      "macro_f1": 0.6367890650397284,
+      "per_class": {
+        "happy": {
+          "precision": 0.8,
+          "recall": 0.6896551724137931,
+          "f1": 0.7407407407407408,
+          "support": 29
+        },
+        "not_happy": {
+          "precision": 0.71875,
+          "recall": 0.5897435897435898,
+          "f1": 0.6478873239436619,
+          "support": 39
+        },
+        "neutral": {
+          "precision": 0.45,
+          "recall": 0.6206896551724138,
+          "f1": 0.5217391304347826,
+          "support": 29
+        }
+      },
+      "confusion_matrix": [
+        [
+          20,
+          2,
+          7
+        ],
+        [
+          1,
+          23,
+          15
+        ],
+        [
+          4,
+          7,
+          18
+        ]
+      ]
+    },
+    "vader": {
+      "accuracy": 0.44329896907216493,
+      "macro_f1": 0.4275182906761854,
+      "per_class": {
+        "happy": {
+          "precision": 0.46808510638297873,
+          "recall": 0.7586206896551724,
+          "f1": 0.5789473684210527,
+          "support": 29
+        },
+        "not_happy": {
+          "precision": 0.5416666666666666,
+          "recall": 0.3333333333333333,
+          "f1": 0.4126984126984126,
+          "support": 39
+        },
+        "neutral": {
+          "precision": 0.3076923076923077,
+          "recall": 0.27586206896551724,
+          "f1": 0.29090909090909095,
+          "support": 29
+        }
+      },
+      "confusion_matrix": [
+        [
+          22,
+          2,
+          5
+        ],
+        [
+          13,
+          13,
+          13
+        ],
+        [
+          12,
+          9,
+          8
+        ]
+      ]
+    },
+    "bootstrap_mini_minus_vader": {
+      "diff": 0.209,
+      "ci_low": 0.086,
+      "ci_high": 0.328
+    },
+    "by_source": {
+      "reddit": {
+        "n": 54,
+        "mini_macro_f1": 0.651,
+        "vader_macro_f1": 0.427,
+        "gold_shares": {
+          "happy": 31,
+          "not_happy": 41,
+          "neutral": 28
+        }
+      },
+      "hwz": {
+        "n": 43,
+        "mini_macro_f1": 0.614,
+        "vader_macro_f1": 0.43,
+        "gold_shares": {
+          "happy": 28,
+          "not_happy": 40,
+          "neutral": 33
+        }
+      }
+    }
+  },
+  "issues": {
+    "n": 93,
+    "excluded_relevant_without_issue_label": [
+      "W2-0025",
+      "W2-0044",
+      "W2-0054",
+      "W2-0064"
+    ],
+    "rules_macro_f1": 0.413,
+    "hybrid_macro_f1": 0.477,
+    "gpt4o_mini_all_posts_macro_f1": 0.44,
+    "hybrid_micro_f1": 0.541,
+    "hybrid_per_class_f1": {
+      "network_quality": 0.683,
+      "pricing_promotions": 0.595,
+      "mobile_plans": 0.585,
+      "roaming": 0.759,
+      "porting": 0.429,
+      "customer_service": 0.24,
+      "billing_payment": 0.706,
+      "app_account": 0.308,
+      "devices": 0.16,
+      "general_discussion": 0.308
+    },
+    "support": {
+      "network_quality": 38,
+      "pricing_promotions": 23,
+      "mobile_plans": 15,
+      "roaming": 11,
+      "porting": 5,
+      "customer_service": 18,
+      "billing_payment": 7,
+      "app_account": 4,
+      "devices": 2,
+      "general_discussion": 4
+    },
+    "bootstrap_hybrid_minus_rules": {
+      "diff": 0.064,
+      "ci_low": 0.023,
+      "ci_high": 0.107
+    }
+  },
+  "note": "Scores the production corpus labels (no new API calls). Small n: read per-class values with care."
+}

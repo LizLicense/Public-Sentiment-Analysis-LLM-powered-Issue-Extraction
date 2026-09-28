@@ -120,10 +120,10 @@
     "representative": {
       "overlap_rows": 60,
       "sentiment_pairs": 58,
-      "sentiment_agreement": 0.603,
-      "sentiment_kappa": 0.379,
-      "issue_mean_jaccard": 0.574,
-      "rows_identical_on_all_fields": 2,
+      "sentiment_agreement": 0.621,
+      "sentiment_kappa": 0.391,
+      "issue_mean_jaccard": 0.556,
+      "rows_identical_on_all_fields": 1,
       "identical_notes": 0,
       "sentiment_confusion_a_rows_b_cols": {
         "happy": {
@@ -132,27 +132,27 @@
           "neutral": 4
         },
         "not_happy": {
-          "not_happy": 16,
-          "neutral": 12
+          "not_happy": 19,
+          "neutral": 9
         },
         "neutral": {
-          "neutral": 13,
-          "not_happy": 4
+          "not_happy": 6,
+          "neutral": 11
         }
       }
     },
     "challenge": {
       "overlap_rows": 40,
       "sentiment_pairs": 40,
-      "sentiment_agreement": 0.75,
-      "sentiment_kappa": 0.628,
-      "issue_mean_jaccard": 0.929,
-      "rows_identical_on_all_fields": 18,
-      "identical_notes": 4,
+      "sentiment_agreement": 0.725,
+      "sentiment_kappa": 0.592,
+      "issue_mean_jaccard": 0.767,
+      "rows_identical_on_all_fields": 9,
+      "identical_notes": 0,
       "sentiment_confusion_a_rows_b_cols": {
         "happy": {
-          "happy": 9,
-          "neutral": 2
+          "happy": 8,
+          "neutral": 3
         },
         "not_happy": {
           "not_happy": 14,
@@ -163,8 +163,8 @@
         }
       }
     },
-    "annotator_b_file": "data/evaluation/double_annotation_annotator_b_filled_guide.csv",
-    "caveat": "Challenge-set rows often match Annotator A on every non-sentiment field; confirm independence before relying on the challenge kappa."
+    "annotator_b_file": "data/evaluation/double_annotation_annotator_b_filled2.csv",
+    "caveat": "B relabelled with its own notes; remaining disagreements are mostly A not_happy vs B neutral."
   },
   "corpus": {
     "posts": 1711,

@@ -2,7 +2,7 @@
 
 Static HTML dashboard for Singapore telco forum discussion (Reddit + HWZ).
 
-**Auto-generated:** 2026-09-26 12:38 UTC
+**Auto-generated:** 2026-09-27 10:52 UTC
 
 ## Generate / refresh
 

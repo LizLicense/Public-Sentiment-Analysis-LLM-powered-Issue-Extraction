@@ -53,8 +53,8 @@ v2 = original corpus + wave 2 (10 Apr–26 Sep 2026): **9,162 unique posts in 34
 - **Held-out challenge set:** GPT-4o-mini sentiment 0.773 vs GPT-4o 0.712 vs VADER 0.491. Issues: GPT-4o all posts 0.596 beats rules 0.499 and hybrid 0.509. The hybrid's representative-set 0.680 is optimistic.
 - **Bootstrap 95% CIs (representative):** mini − VADER +0.271 (0.191 to 0.347); mini − GPT-4o tie; GPT-4o all posts − rules tie; hybrid − rules +0.041 (0.011 to 0.072).
 - **Stability:** a second GPT-4o-mini run reproduced 292/295 sentiment labels (κ 0.98).
-- **Annotator agreement** (`double_annotation_annotator_b_filled_guide.csv`): sentiment κ 0.38 (representative), 0.63 (challenge; independence unconfirmed).
-- **Pending:** label `data/evaluation/wave2_annotator_a.csv` (100 blind wave-2 posts) and score GPT-4o-mini on it.
+- **Annotator agreement** (`double_annotation_annotator_b_filled2.csv`): sentiment κ 0.39 (representative, n=58), 0.59 (challenge, n=40). Main disagreement: A `not_happy` vs B `neutral`.
+- **Wave-2 gold check** (97 posts, `wave2_gold_scores.json`): GPT-4o-mini sentiment 0.637 vs VADER 0.428; mini under-calls not happy (recall 0.59), so v2 not-happy is likely understated. Issues: hybrid 0.477 vs rules 0.413.
 
 ---
 

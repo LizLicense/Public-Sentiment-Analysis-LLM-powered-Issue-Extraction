@@ -681,6 +681,28 @@ def build(template_path: Path | None = None) -> Path:
             "Keep the hybrid for typical posts, but report 0.680 as optimistic. On hard posts, GPT-4o on "
             "every post is worth its cost.", size=14)
 
+    # 13c — Wave-2 gold check
+    s = deck.content(
+        "The sentiment result holds on the newer posts",
+        "My findings use the combined corpus, but my original gold labels were all wave-1 posts. So I labelled "
+        "a blind sample of 100 wave-2 posts, 97 of them telco-relevant, and scored the labels already in the "
+        "corpus against it. No new API calls.\n\n"
+        "Sentiment carries over: GPT-4o-mini 0.637 against VADER 0.428, the same as on wave 1, on both Reddit "
+        "and HWZ. But the error has a direction: of 39 posts I called not happy, mini called 15 neutral. So the "
+        "corpus not-happy share is probably an underestimate. Issues are harder on wave 2 for every method; the "
+        "hybrid still beats rules, but only reaches 0.477.",
+    )
+    bar_chart(s, LEFT, BODY_TOP, 7.4, 4.8,
+              ["Sentiment\nVADER", "Sentiment\nGPT-4o-mini", "Issues\nrules", "Issues\nGPT-4o-mini", "Issues\nhybrid"],
+              [0.428, 0.637, 0.413, 0.440, 0.477], [GRAY_BAR, GOLD, GRAY_BAR, GRAY_BAR, NAVY], maximum=0.8)
+    add_text(s, LEFT, 6.62, 7.4, 0.35, "Macro F1 on 97 wave-2 gold posts, production labels", size=12, color=MUTED)
+    add_table(s, 8.3, BODY_TOP + 0.05, 4.43, [2.63, 0.9, 0.9], ["Share of posts", "Human", "Mini"], [
+        ["Happy", "30%", "26%"], ["Not happy", "40%", "33%"], ["Neutral", "30%", "41%"],
+    ], size=14, row_h=0.5, highlight_rows=(1, 2))
+    callout(s, 8.3, 4.2, 4.43, 2.35, "What it means",
+            "Mini reads complaints as neutral, so the corpus not-happy share is likely understated, not "
+            "inflated.", size=14)
+
     # 14 — Devices
     s = deck.content(
         "LLMs miss the equipment jargon that rules catch",
@@ -784,9 +806,8 @@ def build(template_path: Path | None = None) -> Path:
         "weighted equally it's 42%, and outside outage threads 40%, so this holds across weightings. VADER "
         "on the same posts says the opposite: 46% happy. Of the 4,180 posts VADER calls happy, mini reads "
         "1,480 as not happy.\n\n"
-        "Neutral is higher than in my gold set, 37% against 32%, probably because wave 2 adds long HWZ "
-        "plan-comparison threads. My gold labels come from wave 1 only, so I've drawn a 100-post wave-2 "
-        "gold sample to check that.",
+        "Neutral is higher than in my gold set, 37% against 32%. The wave-2 gold check explains it: on newer "
+        "posts mini reads some complaints as neutral, so if anything the true not-happy share is higher.",
     )
     grouped_chart(s, LEFT, BODY_TOP - 0.05, 7.6, 4.8, ["Happy", "Not happy", "Neutral"],
                   [("VADER, all posts", [46, 28, 27], GRAY_BAR),
@@ -961,8 +982,8 @@ def build(template_path: Path | None = None) -> Path:
         "On the data side: forum users choose to post, so they aren't Singapore subscribers at large; replies "
         "cluster by thread; 95% of posts are from 2026; wave-2 Reddit comes from a research archive, which "
         "can miss deleted posts; and I have no tickets or NPS to validate against.\n\nOn the method side: "
-        "mini matches my labels on about two-thirds of posts, and two humans only agree at kappa 0.38; all my "
-        "gold labels are wave-1 posts, so accuracy on wave 2 is assumed until the new gold sample is labelled; "
+        "mini matches my labels on about two-thirds of posts, and two humans only agree at kappa 0.39; on the "
+        "wave-2 gold sample sentiment holds but mini under-calls complaints and issue tagging is weaker; "
         "the hybrid's 0.680 is optimistic; and a multi-brand post gives its one sentiment to every brand.",
     )
     for x, head, items in [
@@ -970,8 +991,8 @@ def build(template_path: Path | None = None) -> Path:
                         "95% of posts from 2026; replies cluster by thread",
                         "Wave-2 Reddit via a research archive",
                         "No tickets, outages or NPS to validate against"]),
-        (6.8, "Method", ["Mini matches humans on ~2/3 of posts; humans agree at κ 0.38",
-                         "Gold labels are wave 1 only; wave-2 check pending",
+        (6.8, "Method", ["Mini matches humans on ~2/3 of posts; humans agree at κ 0.39",
+                         "Wave 2: sentiment holds; issues weaker (0.477)",
                          "Hybrid’s 0.680 is optimistic (0.509 held out)",
                          "One sentiment is copied to every brand in a post"]),
     ]:
@@ -982,15 +1003,15 @@ def build(template_path: Path | None = None) -> Path:
     # 26 — Next steps
     s = deck.content(
         "Next steps, in order",
-        "Four next steps. One: label the 100-post wave-2 gold sample, which is already drawn, and score mini "
-        "on it, so the combined findings rest on measured accuracy. Two: relabel the double-annotation overlap "
-        "under the new guide rule and adjudicate. Three: settle hybrid versus GPT-4o on every post with a "
-        "fresh held-out sample, since my two gold sets disagree. Four: brand-level sentiment, so a post "
+        "Four next steps. One: improve wave-2 issue tagging, which scores well below wave 1, starting with "
+        "customer service, and have a second annotator label part of the wave-2 sample. Two: adjudicate the "
+        "remaining disagreements between the two annotators. Three: settle hybrid versus GPT-4o on every post "
+        "with a fresh held-out sample, since my gold sets disagree. Four: brand-level sentiment, so a post "
         "praising StarHub and criticising Singtel gets two labels, and validation against real tickets.",
     )
     steps = [
-        ("1", "Wave-2 gold check", "Label the 100-post sample; score GPT-4o-mini on it"),
-        ("2", "Agreement", "Relabel the overlap under the new rule; adjudicate"),
+        ("1", "Wave-2 issues", "Lift issue F1 (0.477), starting with Customer Service"),
+        ("2", "Adjudicate", "Resolve A–B disagreements in a separate file"),
         ("3", "Fresh held-out test", "Hybrid vs GPT-4o on every post, on new posts"),
         ("4", "Brand-level sentiment", "One label per brand per post; validate against tickets"),
     ]
@@ -1028,11 +1049,11 @@ def build(template_path: Path | None = None) -> Path:
          "On the set I tuned it on, yes: +0.041, 95% CI +0.011 to +0.072. On the held-out challenge set, no: "
          "+0.010, CI −0.04 to +0.07. So I report 0.680 as optimistic."),
         ("How reliable are your labels?",
-         "Headline metrics use one annotator. Two annotators agree at κ 0.38 on typical posts, mostly on "
-         "whether “Singtel is down” is a complaint or a fact. I’ve added that rule to the guide."),
+         "Two annotators agree at κ 0.39 on typical posts and 0.59 on hard ones, mostly split on complaint vs "
+         "neutral. The guide now has an explicit rule for failure reports."),
         ("How good is GPT-4o-mini on the corpus?",
-         "It matches humans on ~2/3 of gold posts (F1 0.631), its corpus shares (18/55/27) sit near the gold "
-         "shares (18/50/32), and a rerun reproduced 292 of 295 labels."),
+         "F1 0.631 on wave-1 gold and 0.637 on a separate wave-2 gold sample; a rerun reproduced 292 of 295 "
+         "labels. On wave 2 it under-calls complaints, so not-happy is likely understated."),
         ("How do you handle sarcasm and Singlish?",
          "VADER can’t; the challenge set targets these cases. There GPT-4o-mini reaches 0.773 macro F1 vs "
          "VADER 0.491 and GPT-4o 0.712."),
@@ -1052,9 +1073,9 @@ def build(template_path: Path | None = None) -> Path:
         0: "If pushed on cost: the whole clean corpus with GPT-4o on every post would be about $0.85.",
         1: "Paired bootstrap, 2,000 resamples of posts. Challenge-set gain of GPT-4o over the hybrid: +0.087, "
            "CI +0.017 to +0.151.",
-        2: "Per-label issue κ on the representative overlap is low for Devices (0.14) and Customer Service "
-           "(0.18). On the challenge overlap 18 of 40 rows are identical on every field, and four notes match "
-           "word for word. An earlier version of B's sheet was superseded: its labels contradicted B's own notes.",
+        2: "Per-label issue κ on the representative overlap: Network Quality 0.79, but Devices 0.16, App & "
+           "Account 0.17 and Customer Service 0.28. Two earlier versions of B's sheet were superseded because "
+           "they copied my labels; the one used was relabelled with B's own notes.",
         3: "Mini's weakest class is happy (F1 0.54). Corpus shares are estimates, not measurements.",
     }
     for page in range(3):
@@ -1072,29 +1093,27 @@ def build(template_path: Path | None = None) -> Path:
 
     # 32 — Agreement backup
     s = deck.content(
-        "Backup: two humans disagree on outage reports",
-        "Inter-annotator agreement on the 100 overlap posts, per set. Representative sentiment kappa is 0.38, "
-        "fair at best; challenge is 0.63. Most disagreements are one pattern: posts I labelled not happy that "
-        "the second annotator labelled neutral, like 'Ya Singtel is down', questions about compensation, or "
-        "troubleshooting tips. My guide listed 'service failure' as not happy and 'factual statement' as "
-        "neutral, but never said which wins when a post is both. So it's a guide gap, and it matters: "
-        "GPT-4o-mini reads those posts the way I do, so part of its margin over VADER depends on that "
-        "rule. I've now added it to the guide.\n\n"
-        "Two cautions. An earlier version of the second annotator's sheet is superseded, because its labels "
-        "contradicted their own notes and matched mine. And on the challenge rows 18 of 40 still match me on "
-        "every field, so I don't rely on the 0.63 until I've confirmed they worked independently.",
+        "Backup: two humans split on complaint vs neutral",
+        "Inter-annotator agreement on the 100 overlap posts, per set. Representative sentiment kappa is 0.39, "
+        "fair; challenge is 0.59. Most disagreements are one pattern: posts I labelled not happy that the "
+        "second annotator labelled neutral, typically questions about compensation, troubleshooting tips or "
+        "second-hand reports. My guide never said whether a failure report is a complaint or a fact; it now "
+        "does, and the second annotator's final pass applied that rule.\n\n"
+        "Two earlier versions of the second annotator's sheet are superseded: the first contradicted their own "
+        "notes and matched mine, the second only revised sentiment. The version used was relabelled with their "
+        "own notes throughout; no notes match mine and 9 of 40 challenge rows match on every field. Issue "
+        "agreement is high for network quality, 0.79, but low for devices, app and customer service.",
     )
     add_table(s, LEFT, BODY_TOP + 0.05, RIGHT - LEFT, [2.6, 1.4, 2.6, 2.3, 3.23],
               ["Set", "Posts", "Sentiment agreement", "Sentiment κ", "Issue overlap (Jaccard)"], [
-                  ["Representative", "58", "60%", "0.38", "0.57"],
-                  ["Challenge", "40", "75%", "0.63", "0.93"],
+                  ["Representative", "58", "62%", "0.39", "0.56"],
+                  ["Challenge", "40", "73%", "0.59", "0.77"],
               ], size=16, row_h=0.6)
-    callout(s, LEFT, 4.05, 5.9, 2.2, "One rule explains most of it",
-            "12 of 23 representative disagreements (8 of 10 on challenge): I said not happy, B said neutral, "
-            "on bare outage reports and questions.", size=15)
-    callout(s, 6.83, 4.05, 5.9, 2.2, "Fixed, then check",
-            "Guide now says a first-hand failure report is not happy. Next: relabel the overlap and confirm "
-            "B's independence (18/40 identical).", size=15)
+    callout(s, LEFT, 4.05, 5.9, 2.2, "One pattern explains most of it",
+            "9 of 22 representative disagreements (8 of 11 on challenge): I said not happy, B said neutral.",
+            size=15)
+    callout(s, 6.83, 4.05, 5.9, 2.2, "Low human ceiling on small themes",
+            "Issue κ: Network 0.79, but Devices 0.16, App 0.17, Customer Service 0.28.", size=15)
 
     # 33 — Per-class backup
     s = deck.content(

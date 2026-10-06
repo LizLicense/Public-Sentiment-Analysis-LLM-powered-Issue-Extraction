@@ -3,9 +3,9 @@
 Regenerate dashboard/index.html and dashboard/Dash_README.md from the clean corpus.
 
 Default inputs:
-  - data/processed/clean_posts_2026-08-21_203752_mini_sentiment.csv
+  - data/processed/corpus_posts_mini_sentiment.csv
       (clean corpus + GPT-4o-mini sentiment; written by models/corpus_llm_sentiment.py)
-  - falls back to data/processed/clean_posts_2026-08-21_203752.csv with VADER sentiment,
+  - falls back to data/processed/corpus_posts.csv with VADER sentiment,
     and says so on the page, if the GPT-4o-mini file does not exist yet
   - data/evaluation/representative_annotator_a.csv (human sentiment check)
 
@@ -14,7 +14,7 @@ Issue labels are the hybrid (keyword rules, then GPT-4o on unresolved rows).
 
 Usage (from project root):
   python dashboard/generate_dashboard.py
-  python dashboard/generate_dashboard.py --corpus data/processed/clean_posts_2026-08-21_203752.csv
+  python dashboard/generate_dashboard.py --corpus data/processed/corpus_posts.csv
 """
 
 from __future__ import annotations
@@ -31,8 +31,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 DASHBOARD_DIR = Path(__file__).resolve().parent
 
-MINI_CORPUS = ROOT / "data/processed/clean_posts_2026-08-21_203752_mini_sentiment.csv"
-VADER_CORPUS = ROOT / "data/processed/clean_posts_2026-08-21_203752.csv"
+MINI_CORPUS = ROOT / "data/processed/corpus_posts_mini_sentiment.csv"
+VADER_CORPUS = ROOT / "data/processed/corpus_posts.csv"
 
 BRAND_MAP = [
     ("singtel", "Singtel"), ("starhub", "StarHub"), ("m1", "M1"), ("simba", "SIMBA"),
@@ -248,7 +248,9 @@ def load_corpus(path: Path) -> tuple[list[dict], str]:
 
 
 def load_run_meta(corpus_path: Path) -> dict:
-    summary = corpus_path.parent / "clean_posts_mini_sentiment_summary.json"
+    summary = corpus_path.with_name(corpus_path.stem + "_summary.json")
+    if not summary.exists():
+        summary = corpus_path.parent / "clean_posts_mini_sentiment_summary.json"
     if not summary.exists():
         return {}
     data = json.loads(summary.read_text(encoding="utf-8"))
@@ -862,9 +864,9 @@ def main() -> None:
         default=ROOT / "data/evaluation/representative_annotator_a.csv",
         help="Human-labelled gold set shown next to the corpus sentiment.",
     )
-    parser.add_argument("--huddle-threshold", default=str(HUDDLE_THRESHOLD),
+    parser.add_argument("--huddle-threshold", default="auto",
                         help="Weekly queue size that triggers a huddle: a number, or 'auto' (2x the median week).")
-    parser.add_argument("--title-suffix", default="", help="Text appended to the page title, e.g. ' (v2)'.")
+    parser.add_argument("--title-suffix", default="", help="Text appended to the page title.")
     parser.add_argument("--extra-limitation", default="", help="Extra sentence for the Limitations footer.")
     parser.add_argument("--out-html", type=Path, default=DASHBOARD_DIR / "index.html")
     parser.add_argument("--out-readme", type=Path, default=DASHBOARD_DIR / "Dash_README.md")

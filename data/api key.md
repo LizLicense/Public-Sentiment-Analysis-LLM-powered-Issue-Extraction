@@ -6,3 +6,5 @@ venv/bin/python processing/telco_labeler.py \
 
 venv/bin/python processing/issue_extraction.py \
   --use-llm --llm-unresolved-only --llm-model gpt-4o-mini
+
+skills:  /forum-sentiment-pipeline

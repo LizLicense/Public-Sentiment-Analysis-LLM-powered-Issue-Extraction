@@ -53,6 +53,8 @@ FONT = "Calibri"
 LEFT = 0.6
 RIGHT = 12.73
 BODY_TOP = 1.8
+# Content-slide title box: inside the gold part of the banner (14.2 cm, 1.32 cm; banner ends at 3.78 cm)
+TITLE_X, TITLE_Y, TITLE_W, TITLE_H = 14.2 / 2.54, 1.32 / 2.54, 19.0 / 2.54, 2.3 / 2.54
 
 
 def rgb(hex_code: str) -> RGBColor:
@@ -330,7 +332,9 @@ class Deck:
 
     def content(self, title: str, notes: str):
         slide = self._new(LAYOUT_BANNER)
-        add_text(slide, 3.05, 0.14, 9.9, 1.2, title, size=26, bold=True, color=NAVY, anchor=MSO_ANCHOR.MIDDLE)
+        size = 24 if len(title) <= 66 else 20  # 24 pt fits two lines of ~45 characters in the box
+        add_text(slide, TITLE_X, TITLE_Y, TITLE_W, TITLE_H, title, size=size, bold=True, color=NAVY,
+                 anchor=MSO_ANCHOR.MIDDLE, space_after=0, line_spacing=0.95)
         page_number(slide, self.count)
         add_notes(slide, notes)
         return slide
@@ -502,27 +506,27 @@ def build(template_path: Path | None = None) -> Path:
 
     # 7 — Data at a glance
     s = deck.content(
-        "Two collection waves, 9,162 posts worth analysing",
-        "The first wave, up to 9 April, looked large: 15,504 rows. But it held only 2,693 unique posts, "
-        "because the scraper saved the same comments on repeated runs, and 47 of its 152 threads were "
-        "off-topic. Worse, 39% of what remained sat in threads about one Singtel outage.\n\n"
-        "So I collected a second wave, April to September: the newest HWZ thread pages, and Reddit posts and "
-        "replies from the Arctic Shift research archive, because Reddit now blocks unauthenticated access. "
-        "After removing duplicates by post ID and dropping off-topic threads, the combined corpus has 9,162 "
-        "posts in 349 threads, and only 12% are in outage threads.",
+        "9,162 unique posts in 349 telco threads",
+        "The raw scrapes looked large: 24,690 rows. But they held only 11,643 unique posts, because the "
+        "scrapers saved the same comments again on repeated runs. I removed duplicates by post ID, then "
+        "dropped 96 off-topic threads, such as cost-of-living threads where nobody names a telco. That "
+        "leaves 9,162 posts in 349 threads: 5,711 from Reddit and 3,451 from HardwareZone.\n\n"
+        "Recent Reddit posts and replies come from the Arctic Shift research archive, because Reddit now "
+        "blocks unauthenticated access. Only 12% of posts sit in outage threads, so the corpus is mostly "
+        "ordinary discussion of plans, coverage and prices.",
     )
     for i, (big, label) in enumerate([
-        ("1,711", "wave 1 posts (to 9 Apr 2026)"),
-        ("+7,451", "wave 2 posts (Apr–Sep 2026)"),
+        ("24,690", "raw rows scraped"),
+        ("11,643", "unique posts after removing repeat copies"),
         ("9,162", "posts in 349 telco threads"),
-        ("12%", "in outage threads (was 39%)"),
+        ("12%", "in outage threads"),
     ]):
         x = LEFT + i * 3.1
         add_box(s, x, BODY_TOP + 0.2, 2.85, 2.2, fill=GOLD_TINT if i == 2 else TINT)
         stat(s, x + 0.25, BODY_TOP + 0.45, 2.4, big, label, big_size=38, label_size=15)
     callout(s, LEFT, 4.55, RIGHT - LEFT, 1.85, "Why it matters",
-            "The first wave mostly measured one outage. Wave 2 adds six months of ordinary discussion, and "
-            "HWZ grows from 454 to 3,451 posts. Every share is shown per post and per thread.", size=16)
+            "Raw row counts overstate the data more than twofold. Every share in this deck is per unique "
+            "post, and checked again with every thread weighted equally.", size=16)
 
     # 8 — Eight problem
     s = deck.content(
@@ -550,30 +554,97 @@ def build(template_path: Path | None = None) -> Path:
           "sentiment or issue label.", {})],
     ], size=16)
 
-    # 9 — Taxonomy
+    # 9 — Taxonomy, with a real example per label
     s = deck.content(
         "Ten issue labels, each mapped to an owner",
         "I designed the taxonomy around who would act on it. Each label maps to a team, so a spike becomes "
-        "a routed task rather than a chart. Issues are multi-label, because one post can complain about "
-        "roaming and billing at once. Sentiment is one label per post. General Discussion is the residual: "
-        "used only when no specific label fits, never alongside one.",
+        "a routed task rather than a chart. Every quote here is a real post that I labelled in the blind gold "
+        "sets, trimmed only where marked. The percentage is the share of the 9,162 posts with that label as "
+        "their main issue, so the ten add to 100; a post can still carry several labels. Network is two in "
+        "five posts; the next slide explains why I kept labels as small as Porting at 3%.",
     )
     labels = [
-        ("Network Quality", "Network team"), ("Pricing & Promotions", "Commercial"),
-        ("Mobile Plans", "Product"), ("Roaming", "Roaming product"), ("Porting", "MNP operations"),
-        ("Customer Service", "Service operations"), ("Billing & Payment", "Billing"),
-        ("App & Account", "Digital CX"), ("Devices", "Device support"), ("General Discussion", "Analyst review"),
+        ("Network Quality", "Network team", "41%",
+         "“Connection go from 5G to zero then back up multiple times a day.”"),
+        ("Pricing & Promotions", "Commercial", "8%",
+         "“$60 is yours even if you use $7? I’ll go zero1.”"),
+        ("Mobile Plans", "Product", "14%",
+         "“My Star Plan got renewed on Nov 3 and I got only 50GB for local data.”"),
+        ("Roaming", "Roaming product", "4%",
+         "“Tried it in KL to Ipoh no problem. Tested in Hokkaido lately, very nice.”"),
+        ("Porting", "MNP operations", "3%",
+         "“Probably too many people porting out of m1.”"),
+        ("Customer Service", "Service operations", "4%",
+         "“Tried. U know that they say? Backend team will update u”"),
+        ("Billing & Payment", "Billing", "3%",
+         "“…you cannot have any outstanding bill in M1 or they will reject the letter.”"),
+        ("App & Account", "Digital CX", "4%",
+         "“pretty sure you can only use the ai in the giga app which kinda sucks”"),
+        ("Devices", "Device support", "6%",
+         "“Anything but Singtel. Singtel are the only one known to use ONR.”"),
+        ("General Discussion", "Analyst review", "15%",
+         "“…KKR and Singtel will own stakes of 75 per cent and 25 per cent, respectively”"),
     ]
-    card_w, card_h = (RIGHT - LEFT - 0.2 * 4) / 5, 1.55
-    for i, (label, owner) in enumerate(labels):
+    card_w, card_h = (RIGHT - LEFT - 0.2 * 4) / 5, 2.05
+    for i, (label, owner, share, quote) in enumerate(labels):
         col, row = i % 5, i // 5
-        x, y = LEFT + col * (card_w + 0.2), BODY_TOP + 0.15 + row * (card_h + 0.2)
+        x, y = LEFT + col * (card_w + 0.2), BODY_TOP + 0.1 + row * (card_h + 0.2)
         add_box(s, x, y, card_w, card_h, fill=GOLD_TINT if label == "General Discussion" else TINT)
-        add_text(s, x + 0.2, y + 0.22, card_w - 0.4, 0.75, label, size=16, bold=True, color=NAVY)
-        add_text(s, x + 0.2, y + 0.98, card_w - 0.4, 0.45, owner, size=14, color=MUTED)
-    add_text(s, LEFT, 5.5, RIGHT - LEFT, 0.9,
-             "Issues are multi-label; sentiment is one label per post. General Discussion is the residual, "
-             "used only when nothing specific fits.", size=16, color=INK)
+        add_text(s, x + 0.18, y + 0.15, card_w - 0.85, 0.5, label, size=15, bold=True, color=NAVY,
+                 space_after=0, line_spacing=0.9)
+        add_text(s, x + card_w - 0.68, y + 0.15, 0.5, 0.3, share, size=15, bold=True, color=GOLD,
+                 align=PP_ALIGN.RIGHT)
+        add_text(s, x + 0.18, y + 0.72, card_w - 0.36, 0.25, owner, size=12, color=MUTED)
+        add_text(s, x + 0.18, y + 1.05, card_w - 0.36, 0.9, quote, size=12, italic=True, color=INK, space_after=0)
+    add_text(s, LEFT, 6.42, RIGHT - LEFT, 0.5,
+             "Gold figure = share of the 9,162 posts with this as the main issue. Quotes are real posts from my blind gold sets. "
+             "Issues are multi-label; sentiment is one label per post.", size=12, color=MUTED)
+
+    # 10 — Why these labels
+    s = deck.content(
+        "I split labels wherever a different team fixes it",
+        "The rule behind the taxonomy: if two problems are fixed by different teams, they get different "
+        "labels. My first draft used coarser labels, and you can still see them in the representative gold "
+        "set: Mobile Plans & Pricing, Customer Service & Account, Network Outage & Connectivity. The scorer "
+        "maps those old names onto the new ones. I split them because a price rise goes to Commercial while "
+        "a plan allowance goes to Product, and a hotline complaint goes to service operations while a login "
+        "failure goes to the digital team. Small labels stay when they are sharp: Customer Service is only "
+        "4% of posts but the angriest label at 59% not happy. General Discussion is deliberately a residual, "
+        "which is what made the hybrid possible: GPT-4o re-reads only those posts. The honest cost is the "
+        "bottom line: finer labels are harder for humans to agree on.",
+    )
+    add_text(s, LEFT, BODY_TOP + 0.1, 6.0, 0.4, "How my draft labels changed", size=18, bold=True, color=NAVY)
+    splits = [
+        ("Mobile Plans & Pricing", "Mobile Plans  +  Pricing & Promotions\nProduct  /  Commercial"),
+        ("Customer Service & Account", "Customer Service  +  App & Account\nService operations  /  Digital CX"),
+        ("Network Outage & Connectivity", "Network Quality\nAlso slow speeds and dead spots, not only outages"),
+    ]
+    for i, (draft, final) in enumerate(splits):
+        y = BODY_TOP + 0.7 + i * 1.2
+        shape_label(add_box(s, LEFT, y, 2.3, 1.0, fill=GOLD_TINT), draft, size=14, color=NAVY)
+        add_text(s, LEFT + 2.3, y, 0.5, 1.0, "→", size=24, bold=True, color=GOLD,
+                 align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+        shape_label(add_box(s, LEFT + 2.8, y, 3.4, 1.0, fill=TINT), final, size=14, color=NAVY)
+    reasons = [
+        ("Small labels stay when the pain is sharp",
+         "Customer Service is 4% of posts but the most negative label (59% not happy). Roaming and "
+         "Porting each have their own team; merging them would bury their spikes."),
+        ("General Discussion is the residual",
+         "Used only when nothing specific fits, never beside a label (15% of posts). That makes it the "
+         "queue the hybrid sends to GPT-4o."),
+        ("Many issues per post, one sentiment",
+         "One post can raise roaming and billing at once, so issues are multi-label; sentiment stays one "
+         "label per post."),
+    ]
+    for i, (heading, body) in enumerate(reasons):
+        y = BODY_TOP + 0.1 + i * 1.4
+        add_text(s, 7.1, y, RIGHT - 7.1, 0.35, heading, size=16, bold=True, color=NAVY)
+        add_text(s, 7.1, y + 0.4, RIGHT - 7.1, 0.9, body, size=14, color=INK)
+    add_text(s, LEFT, 6.3, RIGHT - LEFT, 0.6, [
+        [("The cost of finer labels: ", {"bold": True, "color": NAVY}),
+         ("two humans agreed on Network (κ 0.79) but not on Devices (0.16), App & Account (0.17) or "
+          "Customer Service (0.28).", {})],
+    ], size=14, color=INK)
 
     # 10 — Section C
     deck.section("C", "Evaluation", "Which method should label what?", "About 7 minutes",
@@ -582,11 +653,8 @@ def build(template_path: Path | None = None) -> Path:
 
     # 11 — Evaluation design
     s = deck.content(
-        "A blind gold set, built after I threw out a perfect score",
-        "Early on I had a 150-post file showing VADER at 100% accuracy. That was too good, and when I "
-        "checked, every 'manual' label matched VADER exactly: the sheet had been prefilled by the model. "
-        "So I discarded it and rebuilt the evaluation properly.\n\n"
-        "The new package hides every model column. Threads are split so the representative and challenge "
+        "Blind gold sets: I labelled without seeing any model",
+        "The annotation package hides every model column, so my labels can't lean on VADER or the LLMs. Threads are split so the representative and challenge "
         "sets never share a thread, with at most five comments per thread. I labelled 300 representative "
         "posts (295 telco-relevant, used for headline metrics) and 100 challenge posts chosen for sarcasm, "
         "Singlish, mixed brands and long text. Challenge results are reported separately, never pooled. A "
@@ -601,10 +669,11 @@ def build(template_path: Path | None = None) -> Path:
         add_box(s, LEFT, y, 6.1, 1.42, fill=TINT)
         add_text(s, LEFT + 0.25, y, 1.4, 1.42, big, size=34, bold=True, color=NAVY, anchor=MSO_ANCHOR.MIDDLE)
         add_text(s, LEFT + 1.75, y, 4.15, 1.42, label, size=15, color=INK, anchor=MSO_ANCHOR.MIDDLE)
-    callout(s, 7.0, BODY_TOP + 0.05, 5.73, 4.62, "Why I discarded 100% accuracy",
-            ["An earlier 150-post file showed VADER at 100% accuracy.",
-             "Every “manual” label matched VADER exactly: the sheet had been prefilled by the model.",
-             "The rebuilt set hides all model columns, splits by thread, and caps each thread at five comments."],
+    callout(s, 7.0, BODY_TOP + 0.05, 5.73, 4.62, "What keeps it blind and fair",
+            ["The sheets hide every model label and score, so no answer can be copied.",
+             "Representative and challenge sets never share a thread, and each thread gives at most five "
+             "comments.",
+             "Challenge results are reported separately, never pooled with the headline set."],
             size=16)
 
     # 12 — Sentiment results
@@ -681,21 +750,21 @@ def build(template_path: Path | None = None) -> Path:
             "Keep the hybrid for typical posts, but report 0.680 as optimistic. On hard posts, GPT-4o on "
             "every post is worth its cost.", size=14)
 
-    # 13c — Wave-2 gold check
+    # 13c — Recent-posts gold check
     s = deck.content(
-        "The sentiment result holds on the newer posts",
-        "My findings use the combined corpus, but my original gold labels were all wave-1 posts. So I labelled "
-        "a blind sample of 100 wave-2 posts, 97 of them telco-relevant, and scored the labels already in the "
-        "corpus against it. No new API calls.\n\n"
-        "Sentiment carries over: GPT-4o-mini 0.637 against VADER 0.428, the same as on wave 1, on both Reddit "
-        "and HWZ. But the error has a direction: of 39 posts I called not happy, mini called 15 neutral. So the "
-        "corpus not-happy share is probably an underestimate. Issues are harder on wave 2 for every method; the "
+        "The sentiment result holds on recent posts",
+        "My representative and challenge gold sets were drawn from posts up to early April. So I labelled a "
+        "third blind set of 100 posts from April to September, 97 of them telco-relevant, and scored the "
+        "labels already in the corpus against it. No new API calls.\n\n"
+        "Sentiment carries over: GPT-4o-mini 0.637 against VADER 0.428, the same as on the representative "
+        "set, on both Reddit and HWZ. But the error has a direction: of 39 posts I called not happy, mini called 15 neutral. So the "
+        "corpus not-happy share is probably an underestimate. Issues are harder on recent posts for every method; the "
         "hybrid still beats rules, but only reaches 0.477.",
     )
     bar_chart(s, LEFT, BODY_TOP, 7.4, 4.8,
               ["Sentiment\nVADER", "Sentiment\nGPT-4o-mini", "Issues\nrules", "Issues\nGPT-4o-mini", "Issues\nhybrid"],
               [0.428, 0.637, 0.413, 0.440, 0.477], [GRAY_BAR, GOLD, GRAY_BAR, GRAY_BAR, NAVY], maximum=0.8)
-    add_text(s, LEFT, 6.62, 7.4, 0.35, "Macro F1 on 97 wave-2 gold posts, production labels", size=12, color=MUTED)
+    add_text(s, LEFT, 6.62, 7.4, 0.35, "Macro F1 on 97 recent gold posts (Apr–Sep 2026), production labels", size=12, color=MUTED)
     add_table(s, 8.3, BODY_TOP + 0.05, 4.43, [2.63, 0.9, 0.9], ["Share of posts", "Human", "Mini"], [
         ["Happy", "30%", "26%"], ["Not happy", "40%", "33%"], ["Neutral", "30%", "41%"],
     ], size=14, row_h=0.5, highlight_rows=(1, 2))
@@ -753,10 +822,10 @@ def build(template_path: Path | None = None) -> Path:
     s = deck.content(
         "All the LLM work cost about $6.50",
         "Cost was a design constraint. Evaluating mini on 295 posts cost under one cent; GPT-4o on the same "
-        "posts cost 15 cents. The biggest job sent 8,786 unresolved wave-1 posts to GPT-4o: about 30 minutes, "
-        "zero failed batches, $3.45. The same pass on wave 2 cost $1.35, and sentiment on all 9,162 combined "
-        "posts cost 28 cents. The finished jobs total about $5.30; a wave-2 first pass I discarded, because "
-        "it sent Reddit posts without their thread titles, added about $1.15. VADER and the rules label the "
+        "posts cost 15 cents. The biggest job sent 12,497 unresolved rows to GPT-4o: about 41 minutes, zero "
+        "failed batches, $4.80. Sentiment on all 9,162 posts cost 28 cents. The finished jobs total about "
+        "$5.30; a first pass I discarded, because it sent Reddit posts without their thread titles, added "
+        "about $1.15. VADER and the rules label the "
         "same posts in a fraction of a second for free.",
     )
     stat(s, LEFT, BODY_TOP + 0.1, 3.6, "$0.28", "GPT-4o-mini sentiment on all 9,162 posts", big_size=50,
@@ -767,10 +836,9 @@ def build(template_path: Path | None = None) -> Path:
                   ["Representative eval", "GPT-4o", "295", "73", "0.145"],
                   ["Challenge eval", "GPT-4o-mini", "100", "28", "0.0030"],
                   ["Challenge eval", "GPT-4o", "100", "20", "0.050"],
-                  ["Wave-1 residual issues", "GPT-4o", "8,786", "1,785", "3.45"],
-                  ["Wave-2 residual issues", "GPT-4o", "3,711", "660", "1.35"],
+                  ["Unresolved issue rows", "GPT-4o", "12,497", "2,445", "4.80"],
                   ["All-post sentiment", "GPT-4o-mini", "9,162", "—", "0.28"],
-              ], size=13, row_h=0.44, highlight_rows=(4, 5, 6))
+              ], size=13, row_h=0.44, highlight_rows=(4, 5))
     add_text(s, 4.6, 5.75, 8.13, 0.8,
              "Per post: GPT-4o ≈ $0.0005, GPT-4o-mini ≈ $0.00003. VADER and rules: free, under 0.3 s.",
              size=15, color=INK)
@@ -778,43 +846,43 @@ def build(template_path: Path | None = None) -> Path:
     # 17 — Section D
     deck.section("D", "Findings", "What the labelled data says", "About 5 minutes",
                  "Part D: what GPT-4o-mini sentiment and the hybrid issue labels show on the 9,162-post "
-                 "combined corpus, the March outage as a case study, then a short dashboard demo.")
+                 "corpus, the March outage as a case study, then a short dashboard demo.")
 
     # 18 — Corpus shift
     s = deck.content(
-        "GPT-4o moved 2,606 posts out of General Discussion",
-        "This slide is the first-wave corpus, where I ran the hybrid first. Rules alone left 8,786 posts, 57%, in General Discussion. After GPT-4o "
-        "relabelled them, that dropped to 6,180. Most of the reassigned posts became Network Quality, which "
-        "gained 2,080. Devices barely moved, which matches the gold result: rules already catch device posts.\n\n"
+        "GPT-4o moved 1,887 posts out of General Discussion",
+        "Rules alone left 3,229 of the 9,162 posts, 35%, in General Discussion. After GPT-4o relabelled them, "
+        "that dropped to 1,342, or 15%. Most of the reassigned posts became Network Quality, which gained "
+        "995. Devices barely moved, which matches the gold result: rules already catch device posts.\n\n"
         "These corpus reassignments have no human check yet. Before they drive an alert, I'd sample them.",
     )
     grouped_chart(s, LEFT, BODY_TOP - 0.05, 8.2, 5.05,
                   ["General\nDiscussion", "Network\nQuality", "Devices", "Mobile\nPlans", "Pricing &\nPromotions",
                    "Customer\nService"],
-                  [("Keyword rules", [8786, 3607, 1574, 1348, 1028, 811], GRAY_BAR),
-                   ("Rules + GPT-4o hybrid", [6180, 5687, 1610, 1524, 1300, 1016], GOLD)],
-                  number_format="#,##0", maximum=10000)
+                  [("Keyword rules", [3229, 2769, 1611, 2079, 901, 579], GRAY_BAR),
+                   ("Rules + GPT-4o hybrid", [1342, 3764, 1691, 2376, 1144, 748], GOLD)],
+                  number_format="#,##0", maximum=4000)
     callout(s, 9.1, BODY_TOP + 0.2, 3.63, 4.6, "Read with care",
-            ["57% of corpus rows had no rule match.",
-             "Most reassigned posts became Network Quality (+2,080).",
-             "No human has checked these 2,606 moves yet."], size=15)
+            ["35% of posts had no rule match.",
+             "Most reassigned posts became Network Quality (+995).",
+             "No human has checked these 1,887 moves yet."], size=15)
 
     # 19 — Sentiment on the corpus
     s = deck.content(
         "Two in five posts are not happy, and VADER hides it",
-        "On the combined corpus, GPT-4o-mini labels 44% of posts not happy and 19% happy. With every thread "
+        "On the full corpus, GPT-4o-mini labels 44% of posts not happy and 19% happy. With every thread "
         "weighted equally it's 42%, and outside outage threads 40%, so this holds across weightings. VADER "
         "on the same posts says the opposite: 46% happy. Of the 4,180 posts VADER calls happy, mini reads "
         "1,480 as not happy.\n\n"
-        "Neutral is higher than in my gold set, 37% against 32%. The wave-2 gold check explains it: on newer "
-        "posts mini reads some complaints as neutral, so if anything the true not-happy share is higher.",
+        "Neutral is higher than in my gold set, 37% against 32%. The recent-posts gold set explains it: on "
+        "April–September posts mini reads some complaints as neutral, so if anything the true not-happy share is higher.",
     )
     grouped_chart(s, LEFT, BODY_TOP - 0.05, 7.6, 4.8, ["Happy", "Not happy", "Neutral"],
                   [("VADER, all posts", [46, 28, 27], GRAY_BAR),
                    ("GPT-4o-mini, all posts", [19, 44, 37], GOLD),
                    ("Human labels, gold set", [18, 50, 32], NAVY)],
                   number_format='0"%"', maximum=70)
-    add_text(s, LEFT, 6.62, 7.6, 0.35, "Shares in %; corpus n = 9,162, gold n = 295 (wave 1)", size=12, color=MUTED)
+    add_text(s, LEFT, 6.62, 7.6, 0.35, "Shares in %; corpus n = 9,162, gold n = 295 (representative set)", size=12, color=MUTED)
     stat(s, 8.6, BODY_TOP + 0.1, 4.1, "44% → 42% → 40%", "not happy: per post, per thread, outside outages",
          big_size=30, label_size=15)
     callout(s, 8.6, 4.0, 4.13, 2.55, "VADER reverses it",
@@ -851,24 +919,24 @@ def build(template_path: Path | None = None) -> Path:
     # 20b — Outage case study
     s = deck.content(
         "Case study: one outage distorted every number",
-        "Wave 1 is a natural experiment. 39% of it sat in threads about the 16 March Singtel outage. That "
-        "single event pushed not happy to 55%, made Singtel look uniquely negative at 63%, and made Reddit "
-        "look far more negative than HWZ, 60 against 40.\n\n"
-        "Remove the outage threads and all three collapse: 42% not happy, Singtel 44% level with StarHub 47%, "
-        "Reddit 43 against HWZ 40. That's why every finding in this deck is checked with and without them, "
-        "and why I didn't trust wave 1 alone.",
+        "Outage threads, led by the 16 March Singtel mobile outage, fill 45 threads and 1,102 posts, 12% of "
+        "the corpus. Inside them 71% of posts are not happy, against 40% everywhere else. And 1,099 of those "
+        "1,102 posts are on Reddit.\n\n"
+        "So one event creates most of the Reddit–HWZ gap and much of Singtel's lead. Remove the outage threads "
+        "and Reddit falls from 48% to 42% not happy, and Singtel from 48% to 42%, next to StarHub at 40%. "
+        "That's why every finding in this deck is checked with and without them.",
     )
-    add_table(s, LEFT, BODY_TOP + 0.05, 7.6, [3.0, 2.3, 2.3], ["Wave 1 (1,711 posts)", "All threads",
-                                                                "Outside outage threads"], [
-        ["Not happy overall", "55%", "42%"],
-        ["Singtel not happy", "63%", "44%"],
-        ["StarHub not happy", "48%", "47%"],
-        ["Reddit vs HWZ", "60% vs 40%", "43% vs 40%"],
-    ], size=15, row_h=0.62, highlight_rows=(1, 3))
+    add_table(s, LEFT, BODY_TOP + 0.05, 7.6, [3.0, 2.3, 2.3], ["", "Outage threads", "All other threads"], [
+        ["Posts", "1,102", "8,060"],
+        ["Not happy", "71%", "40%"],
+        ["Singtel not happy", "73%", "42%"],
+        ["StarHub not happy", "68%", "40%"],
+        ["Share on Reddit", "99.7%", "57%"],
+    ], size=15, row_h=0.62, highlight_rows=(1, 4))
     callout(s, 8.6, BODY_TOP + 0.05, 4.13, 4.5, "The lesson",
             ["A single incident can create a brand gap and a platform gap.",
-             "Check with the incident removed.",
-             "More, broader data (wave 2) is the fix."], size=15)
+             "1,099 of 1,102 outage posts are on Reddit.",
+             "Check every finding with the incident removed."], size=15)
 
     # 21 — Dashboard + huddle
     s = deck.content(
@@ -881,7 +949,7 @@ def build(template_path: Path | None = None) -> Path:
         "twice the median week, 115 posts. Only two weeks qualify: the March Singtel outage, 352 posts, and "
         "14 September, 149 posts, a multi-brand week with StarHub broadband down and SIMBA app OTP failures. "
         "That's the alert working.\n\n"
-        "[Demo] Open dashboard/index_v2.html. Walk through: executive summary, the weekly queue chart, the tone "
+        "[Demo] Open dashboard/index.html. Walk through: executive summary, the weekly queue chart, the tone "
         "chart next to VADER and human labels, issue shares per post and per thread, and the recommendations.",
     )
     flow(s, LEFT, 2.0, RIGHT - LEFT, 1.3, [
@@ -901,7 +969,7 @@ def build(template_path: Path | None = None) -> Path:
     add_text(s, LEFT + 0.3, 5.3, 4.3, 1.1, [[("2 weeks ", {"bold": True, "color": NAVY, "size": 22}),
                                             ("crossed n ≥ 115", {})]], size=16, color=INK, anchor=MSO_ANCHOR.MIDDLE)
     add_text(s, 5.4, 5.3, 7.1, 1.1, ["16 Mar: Singtel outage (352)  ·  14 Sep: multi-brand (149)",
-                                    "Demo: open dashboard/index_v2.html"],
+                                    "Demo: open dashboard/index.html"],
              size=16, color=INK, anchor=MSO_ANCHOR.MIDDLE, space_after=4)
 
     # 22 — Section E
@@ -912,7 +980,7 @@ def build(template_path: Path | None = None) -> Path:
     # 23 — Recommendations
     s = deck.content(
         "Recommendations, ordered by not-happy share",
-        "The order comes from the data: each issue's share of not-happy discussion on the combined corpus. "
+        "The order comes from the data: each issue's share of not-happy discussion in the corpus. "
         "Network is first by far, and the huddle flagged two incident weeks, so the first action is incident "
         "communication, then proving local fixes. Plans and pricing come next: terms people discover late, "
         "like fair-use limits and Caller ID charges. Devices and the app are small but steady.\n\n"
@@ -947,29 +1015,26 @@ def build(template_path: Path | None = None) -> Path:
     # 24 — Most interesting
     s = deck.content(
         "What I found most interesting",
-        "Five things surprised me.\n\n"
-        "First, the perfect score. A 100% result was the warning sign, not the achievement, and catching it "
-        "changed how I ran the whole evaluation.\n\n"
-        "Second, the bigger model didn't win on sentiment. GPT-4o ties mini at 17 times the cost, on typical "
+        "Four things surprised me.\n\n"
+        "First, the bigger model didn't win on sentiment. GPT-4o ties mini at 17 times the cost, on typical "
         "and hard posts.\n\n"
-        "Third, my best issue method didn't survive a held-out test. That's exactly why you keep a test set "
+        "Second, my best issue method didn't survive a held-out test. That's exactly why you keep a test set "
         "you don't tune on.\n\n"
-        "Fourth, two gaps that looked like insights, Reddit versus HWZ and Singtel versus everyone, were one "
+        "Third, two gaps that looked like insights, Reddit versus HWZ and Singtel versus everyone, were one "
         "outage.\n\n"
-        "Fifth, the data itself had bugs: 15,504 rows were 2,693 unique posts, and the HWZ scraper had only "
-        "ever read page one of each thread. Fixing that is what made wave 2 possible.",
+        "Fourth, the data itself had bugs: 24,690 scraped rows held only 11,643 unique posts, and the HWZ "
+        "scraper had only ever read page one of each thread until I fixed its page counter.",
     )
     insights = [
-        ("A perfect score was the warning sign", "100% VADER accuracy came from model-prefilled labels."),
         ("The bigger model didn’t win", "GPT-4o ties mini on sentiment at ~17× the cost, on both gold sets."),
         ("My best method failed the held-out test", "Hybrid: 0.680 on the set I tuned on, 0.509 on held-out "
                                                     "posts, where GPT-4o on every post won."),
         ("Two ‘insights’ were one outage", "Reddit vs HWZ and Singtel vs StarHub both close once the 22 outage "
                                            "threads are removed."),
-        ("The data had bugs too", "15,504 rows → 2,693 unique posts; HWZ scraper only read page 1 of threads."),
+        ("The data had bugs too", "24,690 rows → 11,643 unique posts; HWZ scraper read only page 1 until fixed."),
     ]
     for i, (head, body) in enumerate(insights):
-        y = BODY_TOP + i * 1.0
+        y = BODY_TOP + 0.1 + i * 1.2
         badge = add_box(s, LEFT, y + 0.12, 0.62, 0.62, fill=GOLD, shape=MSO_SHAPE.OVAL)
         shape_label(badge, str(i + 1), size=18)
         add_text(s, LEFT + 0.9, y + 0.05, 4.35, 0.8, head, size=18, bold=True, color=NAVY,
@@ -980,19 +1045,19 @@ def build(template_path: Path | None = None) -> Path:
     s = deck.content(
         "Limitations I’d flag to any reader",
         "On the data side: forum users choose to post, so they aren't Singapore subscribers at large; replies "
-        "cluster by thread; 95% of posts are from 2026; wave-2 Reddit comes from a research archive, which "
+        "cluster by thread; 95% of posts are from 2026; recent Reddit posts come from a research archive, which "
         "can miss deleted posts; and I have no tickets or NPS to validate against.\n\nOn the method side: "
         "mini matches my labels on about two-thirds of posts, and two humans only agree at kappa 0.39; on the "
-        "wave-2 gold sample sentiment holds but mini under-calls complaints and issue tagging is weaker; "
+        "recent-posts gold set sentiment holds but mini under-calls complaints and issue tagging is weaker; "
         "the hybrid's 0.680 is optimistic; and a multi-brand post gives its one sentiment to every brand.",
     )
     for x, head, items in [
         (LEFT, "Data", ["Forum posters self-select; they are not all subscribers",
                         "95% of posts from 2026; replies cluster by thread",
-                        "Wave-2 Reddit via a research archive",
+                        "Recent Reddit posts via a research archive",
                         "No tickets, outages or NPS to validate against"]),
         (6.8, "Method", ["Mini matches humans on ~2/3 of posts; humans agree at κ 0.39",
-                         "Wave 2: sentiment holds; issues weaker (0.477)",
+                         "Recent posts: sentiment holds; issues weaker (0.477)",
                          "Hybrid’s 0.680 is optimistic (0.509 held out)",
                          "One sentiment is copied to every brand in a post"]),
     ]:
@@ -1003,14 +1068,15 @@ def build(template_path: Path | None = None) -> Path:
     # 26 — Next steps
     s = deck.content(
         "Next steps, in order",
-        "Four next steps. One: improve wave-2 issue tagging, which scores well below wave 1, starting with "
-        "customer service, and have a second annotator label part of the wave-2 sample. Two: adjudicate the "
+        "Four next steps. One: improve issue tagging on recent posts, which scores well below the "
+        "representative set, starting with customer service, and have a second annotator label part of the "
+        "recent-posts gold set. Two: adjudicate the "
         "remaining disagreements between the two annotators. Three: settle hybrid versus GPT-4o on every post "
         "with a fresh held-out sample, since my gold sets disagree. Four: brand-level sentiment, so a post "
         "praising StarHub and criticising Singtel gets two labels, and validation against real tickets.",
     )
     steps = [
-        ("1", "Wave-2 issues", "Lift issue F1 (0.477), starting with Customer Service"),
+        ("1", "Issue tagging", "Lift recent-post issue F1 (0.477), starting with Customer Service"),
         ("2", "Adjudicate", "Resolve A–B disagreements in a separate file"),
         ("3", "Fresh held-out test", "Hybrid vs GPT-4o on every post, on new posts"),
         ("4", "Brand-level sentiment", "One label per brand per post; validate against tickets"),
@@ -1052,8 +1118,8 @@ def build(template_path: Path | None = None) -> Path:
          "Two annotators agree at κ 0.39 on typical posts and 0.59 on hard ones, mostly split on complaint vs "
          "neutral. The guide now has an explicit rule for failure reports."),
         ("How good is GPT-4o-mini on the corpus?",
-         "F1 0.631 on wave-1 gold and 0.637 on a separate wave-2 gold sample; a rerun reproduced 292 of 295 "
-         "labels. On wave 2 it under-calls complaints, so not-happy is likely understated."),
+         "F1 0.631 on the representative set and 0.637 on the recent-posts set; a rerun reproduced 292 of 295 "
+         "labels. On recent posts it under-calls complaints, so not-happy is likely understated."),
         ("How do you handle sarcasm and Singlish?",
          "VADER can’t; the challenge set targets these cases. There GPT-4o-mini reaches 0.773 macro F1 vs "
          "VADER 0.491 and GPT-4o 0.712."),

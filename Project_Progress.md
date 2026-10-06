@@ -37,16 +37,16 @@ Capstone telco forum sentiment pipeline — scrape, label, analyse, and visualis
 
 ---
 
-## Key findings (v2 corpus, 26 Sep 2026)
+## Key findings (full corpus, 26 Sep 2026)
 
-v2 = original corpus + wave 2 (10 Apr–26 Sep 2026): **9,162 unique posts in 349 telco threads** (5,711 Reddit, 3,451 HWZ; 12% in outage threads). Figures: `data/evaluation/robustness_summary.json` → `corpus_v2`. Dashboard: `dashboard/index_v2.html`.
+One corpus collected up to 26 Sep 2026: **9,162 unique posts in 349 telco threads** (5,711 Reddit, 3,451 HWZ; 12% in outage threads), in `data/processed/corpus_posts_mini_sentiment.csv`. Figures: `data/evaluation/robustness_summary.json` → `corpus_v2`. Dashboard: `dashboard/index.html`. The deck, report and dashboard don't mention collection waves.
 
 - **Sentiment (GPT-4o-mini):** 19% happy / 44% not happy / 37% neutral per post; 42% not happy thread-weighted; 40% outside outage threads. VADER on the same posts: 46% happy.
 - **Issues:** Network Quality 41% of posts (37% thread-weighted), Mobile Plans 14%, Pricing 8%, App & Account 4% per post but in 115 threads (9% thread-weighted).
 - **Platforms:** Reddit 48% vs HWZ 37% not happy per post; 42% vs 37% outside outages — mostly topic mix.
 - **Brands (outside outages):** Singtel 42%, StarHub 40%, SIMBA 43%, M1 40%, Giga 43%, Eight 35% (least negative under every weighting). No league table.
 - **Huddle (threshold 2× median week = 115):** only 16 Mar 2026 (Singtel outage, 352) and 14 Sep 2026 (multi-brand: StarHub broadband, SIMBA app OTP, 149).
-- **Case study (original 1,711 posts):** 39% in outage threads; not happy 55% → 42% without them; Singtel 63% → 44%; Reddit vs HWZ 60/40 → 43/40.
+- **Case study (outage threads):** 45 threads, 1,102 posts (12%); 71% not happy vs 40% elsewhere; Singtel 73% vs 42%; 1,099 of 1,102 on Reddit, which explains most of the Reddit–HWZ gap.
 
 ### Evaluation updates
 
@@ -54,7 +54,7 @@ v2 = original corpus + wave 2 (10 Apr–26 Sep 2026): **9,162 unique posts in 34
 - **Bootstrap 95% CIs (representative):** mini − VADER +0.271 (0.191 to 0.347); mini − GPT-4o tie; GPT-4o all posts − rules tie; hybrid − rules +0.041 (0.011 to 0.072).
 - **Stability:** a second GPT-4o-mini run reproduced 292/295 sentiment labels (κ 0.98).
 - **Annotator agreement** (`double_annotation_annotator_b_filled2.csv`): sentiment κ 0.39 (representative, n=58), 0.59 (challenge, n=40). Main disagreement: A `not_happy` vs B `neutral`.
-- **Wave-2 gold check** (97 posts, `wave2_gold_scores.json`): GPT-4o-mini sentiment 0.637 vs VADER 0.428; mini under-calls not happy (recall 0.59), so v2 not-happy is likely understated. Issues: hybrid 0.477 vs rules 0.413.
+- **Recent-posts gold set** (97 posts from 10 Apr–26 Sep 2026, `recent_gold_scores.json`): GPT-4o-mini sentiment 0.637 vs VADER 0.428; mini under-calls not happy (recall 0.59), so the corpus not-happy share is likely understated. All three gold sets are in `data/evaluation/gold_labels.csv`. Issues: hybrid 0.477 vs rules 0.413.
 
 ---
 

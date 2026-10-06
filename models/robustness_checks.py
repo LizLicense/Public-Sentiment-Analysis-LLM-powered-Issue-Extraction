@@ -216,11 +216,13 @@ def annotator_agreement() -> dict:
     return out
 
 
-V2_CORPUS = PROJECT_ROOT / "data/processed/clean_posts_v2_mini_sentiment.csv"
+# "corpus" = the posts collected to 9 Apr 2026 (outage case study); "corpus_v2" = the full corpus.
+V1_CORPUS = PROJECT_ROOT / "data/processed/clean_posts_2026-08-21_203752_mini_sentiment.csv"
+V2_CORPUS = PROJECT_ROOT / "data/processed/corpus_posts_mini_sentiment.csv"
 
 
 def corpus_findings(path: Path | None = None, threshold: str = str(dash.HUDDLE_THRESHOLD)) -> dict:
-    rows, stats = dash.analyse(path or dash.MINI_CORPUS, EVAL / "representative_annotator_a.csv", threshold)
+    rows, stats = dash.analyse(path or V1_CORPUS, EVAL / "representative_annotator_a.csv", threshold)
     outage = {r["thread_key"] for r in rows if OUTAGE_TITLE.search(r["thread_title"])}
     rest = [r for r in rows if r["thread_key"] not in outage]
     pct_nh = lambda sub: dash.pct(sum(r["sentiment_final"] == "not_happy" for r in sub), len(sub))
@@ -294,7 +296,7 @@ def main() -> None:
         ),
         "stability": stability(),
         "annotator_agreement": annotator_agreement(),
-        "corpus": corpus_findings(),
+        "corpus": corpus_findings(V1_CORPUS, "20"),
         "corpus_v2": corpus_findings(V2_CORPUS, "auto") if V2_CORPUS.exists() else None,
         "method": f"Paired bootstrap over posts, {BOOTSTRAPS} resamples, seed {SEED}. Union is exploratory: chosen after seeing results.",
     }

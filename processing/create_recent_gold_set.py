@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Blind gold sample of wave-2 posts, to check model accuracy on data the original gold set
+"""Blind gold sample of recent posts (wave=2 rows, collected 10 Apr-26 Sep 2026), to check model accuracy on data the original gold set
 never covered (posts after 2026-04-09: newest HWZ thread pages, Reddit via Arctic Shift).
 
 Same rules as processing/create_evaluation_set.py: only posts that name a telco, one copy of
@@ -7,11 +7,10 @@ each text, at most --max-per-thread posts per thread, sources in proportion to t
 pool, and no model labels, scores, usernames or URLs in the sheet.
 
 Usage (from project root):
-  python processing/create_wave2_gold_set.py
-Then fill the *_manual columns (see data/evaluation/ANNOTATION_GUIDE.md) and score with:
-  python models/llm_evaluation.py --in data/evaluation/wave2_annotator_a.csv \\
-      --out-dir data/evaluation/llm_comparison_wave2 --model gpt-4o-mini \\
-      --input-cost-per-million 0.15 --output-cost-per-million 0.60
+  python processing/create_recent_gold_set.py
+Then fill the *_manual columns (see data/evaluation/ANNOTATION_GUIDE.md), rebuild
+data/evaluation/gold_labels.csv with processing/build_gold_labels.py, and score the production
+labels with models/score_recent_gold.py.
 """
 
 from __future__ import annotations
@@ -24,9 +23,9 @@ import re
 from collections import defaultdict
 from pathlib import Path
 
-DEFAULT_INPUT = Path("data/processed/clean_posts_v2_mini_sentiment.csv")
-DEFAULT_OUTPUT = Path("data/evaluation/wave2_annotator_a.csv")
-DEFAULT_METADATA = Path("data/evaluation/wave2_sampling_metadata.json")
+DEFAULT_INPUT = Path("data/processed/corpus_posts_mini_sentiment.csv")
+DEFAULT_OUTPUT = Path("data/evaluation/recent_annotator_a.csv")
+DEFAULT_METADATA = Path("data/evaluation/recent_sampling_metadata.json")
 FIELDS = [
     "sample_id", "evaluation_set", "source", "thread_title", "post_text",
     "telco_relevance_manual", "telco_targets_manual", "sentiment_manual",
@@ -39,7 +38,7 @@ def norm(text: str) -> str:
 
 
 def main() -> None:
-    ap = argparse.ArgumentParser(description="Blind wave-2 gold sample")
+    ap = argparse.ArgumentParser(description="Blind recent-posts gold sample")
     ap.add_argument("--in", dest="input_path", type=Path, default=DEFAULT_INPUT)
     ap.add_argument("--out", type=Path, default=DEFAULT_OUTPUT)
     ap.add_argument("--metadata-out", type=Path, default=DEFAULT_METADATA)

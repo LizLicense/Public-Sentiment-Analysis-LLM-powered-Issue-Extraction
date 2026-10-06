@@ -1,10 +1,9 @@
 {
-  "gold_file": "data/evaluation/wave2_annotator_a.csv",
+  "gold_file": "data/evaluation/gold_labels.csv",
   "matched": 100,
   "unmatched_sample_ids": [],
   "relevant": 97,
   "typo_fixes_applied": {
-    "sentiment 'netural' -> 'neutral'": 29,
     "issue 'evices' -> 'Devices'": 1,
     "issue 'pring & promotions' -> 'Pricing & Promotions'": 1
   },
@@ -133,10 +132,10 @@
   "issues": {
     "n": 93,
     "excluded_relevant_without_issue_label": [
-      "W2-0025",
-      "W2-0044",
-      "W2-0054",
-      "W2-0064"
+      "REC-0025",
+      "REC-0044",
+      "REC-0054",
+      "REC-0064"
     ],
     "rules_macro_f1": 0.413,
     "hybrid_macro_f1": 0.477,

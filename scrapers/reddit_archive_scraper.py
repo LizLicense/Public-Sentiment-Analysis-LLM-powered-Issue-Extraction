@@ -14,7 +14,7 @@ that was deleted before it was captured.
 
 Usage (from project root):
   python scrapers/reddit_archive_scraper.py --subreddits singapore,askSingapore \\
-      --since 2026-04-10 --out data/raw/wave2/reddit_archive
+      --since 2026-04-10 --out data/raw/apr_sep_2026/reddit_archive
 
 Progress is checkpointed next to --out, so an interrupted run resumes where it stopped.
 """

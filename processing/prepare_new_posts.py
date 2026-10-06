@@ -1,28 +1,29 @@
 #!/usr/bin/env python3
 """
-Run wave-2 raw data (data/raw/wave2/) through the same pipeline as the original corpus,
-writing only to data/processed/wave2/. No API calls; existing processed files are untouched.
+Run the posts collected 10 Apr-26 Sep 2026 (data/raw/apr_sep_2026/) through the same pipeline as
+the earlier posts, writing only to data/processed/apr_sep_2026/. Internally these rows carry wave=2. No API calls; existing processed files are untouched.
 
 Steps (all local):
-  1. combine   data/raw/wave2/*.csv (pilot files excluded) -> raw_combined_wave2.csv
+  1. combine   data/raw/apr_sep_2026/*.csv (pilot files excluded) -> raw_combined_wave2.csv
   2. clean     processing/preprocess.py                    -> cleaned_posts_wave2.csv
   3. label     processing/telco_labeler.py (brand + VADER) -> posts_labeled_wave2.csv
   4. issues    processing/issue_extraction.py (rules only) -> issues_posts_labeled_wave2.csv
 
 Then, with OPENAI_API_KEY set (you run this; GPT-4o costs ~$0.0004 per unresolved row):
   python processing/issue_extraction.py \\
-    --in data/processed/wave2/posts_labeled_wave2.csv \\
-    --out data/processed/wave2/issues_posts_labeled_wave2_gpt4o_hybrid.csv \\
-    --summary-out data/processed/wave2/issues_summary_wave2_gpt4o_hybrid.json \\
-    --checkpoint data/processed/wave2/llm_unresolved_gpt4o_checkpoint_wave2.jsonl \\
+    --in data/processed/apr_sep_2026/posts_labeled_wave2.csv \\
+    --out data/processed/apr_sep_2026/issues_posts_labeled_wave2_gpt4o_hybrid.csv \\
+    --summary-out data/processed/apr_sep_2026/issues_summary_wave2_gpt4o_hybrid.json \\
+    --checkpoint data/processed/apr_sep_2026/llm_unresolved_gpt4o_checkpoint_wave2.jsonl \\
     --use-llm --llm-unresolved-only --llm-model gpt-4o --resume \\
     --input-cost-per-million 2.50 --output-cost-per-million 10.00
 
-Finally `python processing/prepare_wave2.py --merge` builds the combined v2 clean corpus.
+Finally `python processing/prepare_new_posts.py --merge` builds the full clean corpus
+(data/processed/corpus_posts.csv).
 
 Usage (from project root):
-  python processing/prepare_wave2.py            # steps 1-4
-  python processing/prepare_wave2.py --merge    # after the GPT-4o hybrid pass
+  python processing/prepare_new_posts.py            # steps 1-4
+  python processing/prepare_new_posts.py --merge    # after the GPT-4o hybrid pass
 """
 
 import argparse
@@ -34,13 +35,13 @@ from pathlib import Path
 import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[1]
-RAW = ROOT / "data/raw/wave2"
-OUT = ROOT / "data/processed/wave2"
+RAW = ROOT / "data/raw/apr_sep_2026"
+OUT = ROOT / "data/processed/apr_sep_2026"
 V1_HYBRID = ROOT / "data/processed/issues_posts_labeled_2026-08-21_203752_gpt4o_hybrid.csv"
 WAVE2_HYBRID = OUT / "issues_posts_labeled_wave2_gpt4o_hybrid.csv"
 V2_RAW = OUT / "issues_posts_labeled_v1_plus_wave2_hybrid.csv"
-V2_CLEAN = ROOT / "data/processed/clean_posts_v2.csv"
-V2_SUMMARY = ROOT / "data/processed/clean_corpus_summary_v2.json"
+V2_CLEAN = ROOT / "data/processed/corpus_posts.csv"
+V2_SUMMARY = ROOT / "data/processed/corpus_summary.json"
 
 
 def run(cmd):
@@ -103,14 +104,14 @@ def merge() -> None:
     run(["processing/build_clean_corpus.py", "--in", V2_RAW, "--out", V2_CLEAN, "--summary-out", V2_SUMMARY])
     print("\nNext (API, ~$0.00003 per new post): python models/corpus_llm_sentiment.py "
           f"--in {V2_CLEAN.relative_to(ROOT)} "
-          "--out data/processed/clean_posts_v2_mini_sentiment.csv "
-          "--summary-out data/processed/clean_posts_v2_mini_sentiment_summary.json")
+          "--out data/processed/corpus_posts_mini_sentiment.csv "
+          "--summary-out data/processed/corpus_posts_mini_sentiment_summary.json")
     print("It reuses the existing checkpoint, so only new posts are sent to the API.")
 
 
 def main() -> None:
-    ap = argparse.ArgumentParser(description="Process wave-2 raw data into data/processed/wave2/")
-    ap.add_argument("--merge", action="store_true", help="Merge the wave-2 hybrid file with v1 into clean_posts_v2.")
+    ap = argparse.ArgumentParser(description="Process the Apr-Sep 2026 raw data into data/processed/apr_sep_2026/")
+    ap.add_argument("--merge", action="store_true", help="Merge with the earlier posts into data/processed/corpus_posts.csv.")
     args = ap.parse_args()
     merge() if args.merge else prepare()
 

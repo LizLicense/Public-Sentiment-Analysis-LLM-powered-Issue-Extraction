@@ -56,9 +56,9 @@ of Singapore Telecommunications Discussions}
 \vfill
 
 \begin{abstract}
-Singapore telecommunications operators receive continuous, unsolicited customer feedback through online forums, but the volume, informality and platform-specific language make manual monitoring difficult. This project develops an end-to-end pipeline that collects forum discussions, normalises heterogeneous records, identifies telecommunications brands, assigns sentiment and issue labels, and presents findings through a static HTML dashboard. The analysis corpus combines Reddit and HardwareZone (HWZ) posts up to 26~September~2026: after removing repeated copies and off-topic threads, 9,162 unique posts in 349 telco threads remain. GPT-4o-mini labels 44\% of them not happy and 19\% happy (42\% and 18\% with threads weighted equally), whereas VADER on the same posts reports 28\% and 46\%. Network quality is the largest issue theme (37--41\% of posts), followed by mobile plans (13--14\%) and pricing (7--8\%). Reddit and HWZ differ mainly in topic rather than tone, and no brand stands out beyond small, weighting-sensitive differences. The original, smaller corpus (1,711 posts) serves as a case study: 39\% of it sat in threads about one March 2026 Singtel outage, which inflated negativity to 55\% and made Singtel and Reddit look uniquely negative.
+Singapore telecommunications operators receive continuous, unsolicited customer feedback through online forums, but the volume, informality and platform-specific language make manual monitoring difficult. This project develops an end-to-end pipeline that collects forum discussions, normalises heterogeneous records, identifies telecommunications brands, assigns sentiment and issue labels, and presents findings through a static HTML dashboard. The analysis corpus combines Reddit and HardwareZone (HWZ) posts up to 26~September~2026: after removing repeated copies and off-topic threads, 9,162 unique posts in 349 telco threads remain. GPT-4o-mini labels 44\% of them not happy and 19\% happy (42\% and 18\% with threads weighted equally), whereas VADER on the same posts reports 28\% and 46\%. Network quality is the largest issue theme (37--41\% of posts), followed by mobile plans (13--14\%) and pricing (7--8\%). Reddit and HWZ differ mainly in topic rather than tone, and no brand stands out beyond small, weighting-sensitive differences. One event shows why that care is needed: 45 outage threads, led by the March 2026 Singtel outage, hold 12\% of posts, are 71\% not happy against 40\% elsewhere, and sit almost entirely on Reddit, which creates most of the apparent Reddit--HWZ gap.
 
-The system combines deterministic brand matching, VADER sentiment, a keyword issue taxonomy, an optional Hugging Face sentiment model and OpenAI chat-completions classification. Independent human labels on a blinded 300-row representative sample (295 telco-relevant rows) show that \textbf{gpt-4o-mini-2024-07-18} improves sentiment over VADER (macro F1 0.631 versus 0.360; accuracy 67\% versus 37\%). \textbf{gpt-4o-2024-08-06} is similar on sentiment (macro F1 0.623) and still loses to keyword issue rules when it labels every row (macro F1 0.600 versus 0.639). A hybrid that keeps rule labels and applies GPT-4o only to unresolved \texttt{general\_discussion} rows raises issue macro F1 to \textbf{0.680}, and was applied to 8,786 unresolved corpus rows (29.7 minutes, estimated \textbf{\$3.45}). On a held-out 100-post challenge set of harder posts, the sentiment result holds (GPT-4o-mini 0.773 versus VADER 0.491), but the hybrid's gain over rules is not significant (0.509 versus 0.499) and GPT-4o labelling every post scores best (0.596), so no single issue method wins on both sets. GPT-4o-mini sentiment on all 9,162 posts cost about \$0.28, and a repeated run reproduced 292 of 295 gold-set labels. On a separate 100-post gold sample drawn from the newer wave-2 posts, GPT-4o-mini scores macro F1 0.637 against VADER's 0.428, so the sentiment result carries over, although the model under-calls complaints there, so the corpus not-happy share is likely an underestimate. An earlier 150-record VADER ``100\% accuracy'' file is discarded because its labels match VADER exactly and were model-prefilled. The operational recommendation is therefore LLM sentiment (mini is sufficient), keyword rules plus a targeted GPT-4o pass for issues, and human review of alerts. The business analysis indicates that operators should prioritise incident communication during outages, comparable plan terms such as fair-use limits and add-on charges, and equipment and app friction, with billing and customer-service aftercare planned for incidents; roaming and porting are small in this corpus. The principal contribution is a reproducible analytics workflow that converts noisy forum data into decision-oriented signals while making its evidential limits explicit.
+The system combines deterministic brand matching, VADER sentiment, a keyword issue taxonomy, an optional Hugging Face sentiment model and OpenAI chat-completions classification. Independent human labels on a blinded 300-row representative sample (295 telco-relevant rows) show that \textbf{gpt-4o-mini-2024-07-18} improves sentiment over VADER (macro F1 0.631 versus 0.360; accuracy 67\% versus 37\%). \textbf{gpt-4o-2024-08-06} is similar on sentiment (macro F1 0.623) and still loses to keyword issue rules when it labels every row (macro F1 0.600 versus 0.639). A hybrid that keeps rule labels and applies GPT-4o only to unresolved \texttt{general\_discussion} rows raises issue macro F1 to \textbf{0.680}, and was applied to all 12,497 unresolved corpus rows (about 41 minutes, estimated \textbf{\$4.80}). On a held-out 100-post challenge set of harder posts, the sentiment result holds (GPT-4o-mini 0.773 versus VADER 0.491), but the hybrid's gain over rules is not significant (0.509 versus 0.499) and GPT-4o labelling every post scores best (0.596), so no single issue method wins on both sets. GPT-4o-mini sentiment on all 9,162 posts cost about \$0.28, and a repeated run reproduced 292 of 295 gold-set labels. On a third 100-post gold set drawn from posts published between April and September 2026, GPT-4o-mini scores macro F1 0.637 against VADER's 0.428, so the sentiment result carries over, although the model under-calls complaints there, so the corpus not-happy share is likely an underestimate. An earlier 150-record VADER ``100\% accuracy'' file is discarded because its labels match VADER exactly and were model-prefilled. The operational recommendation is therefore LLM sentiment (mini is sufficient), keyword rules plus a targeted GPT-4o pass for issues, and human review of alerts. The business analysis indicates that operators should prioritise incident communication during outages, comparable plan terms such as fair-use limits and add-on charges, and equipment and app friction, with billing and customer-service aftercare planned for incidents; roaming and porting are small in this corpus. The principal contribution is a reproducible analytics workflow that converts noisy forum data into decision-oriented signals while making its evidential limits explicit.
 \end{abstract}
 
 \vfill
@@ -101,13 +101,13 @@ The project has five objectives:
 
 \subsection{Scope and claimed contribution}
 
-The repository implements collection modules for HWZ and Reddit. It includes preprocessing, brand detection, sentiment labelling, issue extraction, evaluation scripts and a static HTML dashboard. The report only claims findings supported by persisted repository outputs. GPT-4o-mini and GPT-4o are evaluated on human labels for both the representative and challenge sets, and GPT-4o is used on unresolved corpus issues. The findings and dashboard use GPT-4o-mini sentiment and hybrid issue labels on the 9,162-post v2 corpus; the original 1,711-post corpus is kept as an outage case study.
+The repository implements collection modules for HWZ and Reddit. It includes preprocessing, brand detection, sentiment labelling, issue extraction, evaluation scripts and a static HTML dashboard. The report only claims findings supported by persisted repository outputs. GPT-4o-mini and GPT-4o are evaluated on human labels for both the representative and challenge sets, and GPT-4o is used on unresolved corpus issues. The findings and dashboard use GPT-4o-mini sentiment and hybrid issue labels on the 9,162-post corpus.
 
 \section{Data and Pipeline}
 
 \subsection{Data sources}
 
-Data were collected in two waves. Wave~1 (to 9~April~2026) collected Reddit posts from Singapore-focused communities through the public JSON interface using telco and mobile-plan keywords, and HWZ posts from relevant XenForo threads. Wave~2 (10~April to 26~September~2026) collected the newest pages of HWZ telco threads and, because Reddit now blocks unauthenticated access and gates new API applications, Reddit posts and comments (including replies) from the Arctic Shift research archive, filtered to telco posts with the same strict brand rule. The scrapers preserve thread titles, post or comment text, timestamps, source identifiers and available engagement metadata.
+The corpus covers Reddit posts from Singapore-focused communities, matched on telco and mobile-plan keywords, and HWZ posts from relevant XenForo threads, up to 26~September~2026. Reddit posts up to 9~April~2026 came from the public JSON interface; because Reddit then blocked unauthenticated access and gated new API applications, later Reddit posts and comments (including replies) came from the Arctic Shift research archive, filtered with the same strict brand rule. A page-counter bug meant early HWZ scrapes read only the first page of each thread; after the fix, the newest pages of each telco thread were collected as well. The scrapers preserve thread titles, post or comment text, timestamps, source identifiers and available engagement metadata.
 
 \begin{table}[H]
 \centering
@@ -117,18 +117,10 @@ Data were collected in two waves. Wave~1 (to 9~April~2026) collected Reddit post
 \toprule
 \textbf{Dataset} & \textbf{Rows} & \textbf{Role} \\
 \midrule
-\texttt{cleaned\_posts.csv} & 15,504 & Normalised corpus used by labelling and issue extraction \\
-\texttt{posts\_labeled\_2026-08-21\_203752.csv} & 15,504 & Brand and VADER sentiment output \\
-\texttt{issues\_posts\_labeled\_\ldots.csv} & 15,504 & Rule-based multi-label issue output \\
-\texttt{issues\_\ldots\_gpt4o\_hybrid.csv} & 15,504 & Rules plus GPT-4o on 8,786 unresolved rows \\
-\texttt{clean\_posts\_2026-08-21\_203752.csv} & 1,711 & Original corpus: unique posts in 105 telco threads \\
-\texttt{clean\_posts\_\ldots\_mini\_sentiment.csv} & 1,711 & Original clean corpus plus GPT-4o-mini sentiment; case study \\
-\texttt{data/raw/wave2/} & 9,753 & Wave-2 raw rows: HWZ newest pages (3,343) and Reddit archive (6,410) \\
-\texttt{issues\_posts\_labeled\_wave2\_gpt4o\_hybrid.csv} & 9,186 & Wave-2 rules plus GPT-4o on 3,711 unresolved rows \\
-\texttt{clean\_posts\_v2\_mini\_sentiment.csv} & 9,162 & v2 analysis corpus (original plus wave 2) with GPT-4o-mini sentiment; findings and dashboard input \\
-\texttt{wave2\_annotator\_a.csv} & 100 & Blind wave-2 gold sample (97 telco-relevant); scores in \texttt{wave2\_gold\_scores.json} \\
-\texttt{representative\_annotator\_a.csv} & 300 & Blind human labels; 295 telco-relevant rows used for headline metrics \\
-\texttt{challenge\_annotator\_a.csv} & 100 & Harder posts; reported separately from the headline table \\
+\texttt{issues\_posts\_labeled\_\ldots\_gpt4o\_hybrid.csv} & 24,690 & All scraped rows after preprocessing, with brand, VADER and issue labels (rules plus GPT-4o on 12,497 unresolved rows) \\
+\texttt{corpus\_posts.csv} & 9,162 & Clean corpus: unique posts in 349 telco threads \\
+\texttt{corpus\_posts\_mini\_sentiment.csv} & 9,162 & Clean corpus with GPT-4o-mini sentiment; findings and dashboard input \\
+\texttt{gold\_labels.csv} & 500 & Annotator~A's three blind gold sets in one file, scored separately by \texttt{evaluation\_set}: representative (300; 295 telco-relevant, headline metrics), challenge (100 harder posts) and recent (100 posts from April--September 2026; 97 relevant) \\
 \texttt{llm\_comparison\_representative/} & 295 & GPT-4o-mini vs VADER/rules predictions, metrics, tokens and cost \\
 \texttt{llm\_comparison\_representative\_gpt4o/} & 295 & GPT-4o vs VADER/rules on the same gold labels \\
 \texttt{llm\_comparison\_representative\_gpt4o\_hybrid/} & 295 & Rules, then GPT-4o only where rules output \texttt{general\_discussion} \\
@@ -140,7 +132,7 @@ Data were collected in two waves. Wave~1 (to 9~April~2026) collected Reddit post
 \end{tabularx}
 \end{table}
 
-The scraped rows are not independent posts. The original 15,504 rows hold 2,693 unique posts, because successive scrape rounds saved the same comments again; rounds 2--9 of ten added no new posts. Forty-seven of 152 threads were off-topic, such as a 98-post insurance lawsuit thread, and matched a keyword by accident. \texttt{processing/build\_clean\_corpus.py} keeps one row per post ID (Reddit comment or post ID; HWZ thread URL and timestamp), so identical text from different users stays separate, and drops a thread unless at least 20\% of its posts name a telco or its title is telco-related; kept threads name a telco in at least 25\% of their posts and dropped threads in at most 8\%. The original corpus has 1,711 posts in 105 threads (1,257 Reddit, 454 HWZ). Combining it with wave~2 and applying the same steps gives the v2 corpus: 24,690 rows, 11,643 unique posts, 96 off-topic threads dropped, and 9,162 posts in 349 threads (5,711 Reddit, 3,451 HWZ). An earlier 158-post dashboard sample (67 Reddit, 91 HWZ) is superseded.
+The scraped rows are not independent posts. The 24,690 labelled rows hold 11,643 unique posts, because successive scrape rounds saved the same comments again; in one ten-round scrape, rounds 2--9 added no new posts. Ninety-six of 445 threads were off-topic and matched a keyword by accident, such as a 248-post thread on what feels cheaper in Singapore and a 98-post insurance lawsuit thread. \texttt{processing/build\_clean\_corpus.py} keeps one row per post ID (Reddit comment or post ID; HWZ thread URL and timestamp), so identical text from different users stays separate, and drops a thread unless at least 20\% of its posts name a telco or its title is telco-related. The result is 9,162 posts in 349 threads (5,711 Reddit, 3,451 HWZ). An earlier 158-post dashboard sample (67 Reddit, 91 HWZ) is superseded.
 
 \subsection{Preprocessing}
 
@@ -192,7 +184,7 @@ VADER is a suitable operational baseline because it runs locally, is determinist
 
 The benchmark module supports \texttt{cardiffnlp/twitter-roberta-base-sentiment-latest}, a RoBERTa-family model adapted to social-media sentiment \cite{loureiro2022tweeteval}. Its positive, negative and neutral outputs are mapped to the project's three business labels. The persisted benchmark states that the required \texttt{transformers} package was unavailable, so no transformer metrics are reported.
 
-The main labelling module also implements LLM sentiment through an OpenAI-compatible chat-completions interface. Its configured default is \textbf{GPT-4o-mini}. Formal comparison uses the snapshots returned by the API, \textbf{gpt-4o-mini-2024-07-18} and \textbf{gpt-4o-2024-08-06}, with temperature 0 and JSON object responses in batches of ten posts. An earlier 100-record HWZ file contains 100 neutral LLM labels and no model-version metadata; that file is treated as a failed or fallback run and is not used as evidence. Both corpora were labelled with the same prompt, batching and settings through \texttt{models/corpus\_llm\_sentiment.py}; the checkpoint is keyed by post ID, so posts shared by the two corpora were labelled once. The original corpus cost \$0.048 and the full v2 corpus about \$0.28.
+The main labelling module also implements LLM sentiment through an OpenAI-compatible chat-completions interface. Its configured default is \textbf{GPT-4o-mini}. Formal comparison uses the snapshots returned by the API, \textbf{gpt-4o-mini-2024-07-18} and \textbf{gpt-4o-2024-08-06}, with temperature 0 and JSON object responses in batches of ten posts. An earlier 100-record HWZ file contains 100 neutral LLM labels and no model-version metadata; that file is treated as a failed or fallback run and is not used as evidence. The corpus was labelled with the same prompt, batching and settings through \texttt{models/corpus\_llm\_sentiment.py}; the checkpoint is keyed by post ID, so posts already labelled in an earlier run were not sent again. Labelling all 9,162 posts cost about \$0.28.
 
 \subsection{Issue taxonomy and rationale}
 
@@ -346,7 +338,7 @@ General discussion & 40 & 0.464 & 0.446 & 0.608 & 0.559 \\
 
 \subsection{GPT-4o unresolved hybrid on the corpus}
 
-Because the hybrid beat rules on gold labels, \texttt{processing/issue\_extraction.py} was run with \texttt{--use-llm --llm-unresolved-only --llm-model gpt-4o} on the 15,504-row labelled corpus. The API snapshot was the same \textbf{gpt-4o-2024-08-06} used in evaluation, in batches of ten, with a resumable checkpoint. All 879 batches succeeded. Keyword-only labels were kept in a separate file; the dashboard now overlays the hybrid labels.
+Because the hybrid beat rules on gold labels, \texttt{processing/issue\_extraction.py} was run with \texttt{--use-llm --llm-unresolved-only --llm-model gpt-4o} on all 24,690 labelled rows, of which 12,497 had no rule match. The API snapshot was the same \textbf{gpt-4o-2024-08-06} used in evaluation, in batches of ten, with a resumable checkpoint. No batch failed. Keyword-only labels were kept in a separate file; the dashboard now overlays the hybrid labels.
 
 \begin{table}[H]
 \centering
@@ -356,21 +348,21 @@ Because the hybrid beat rules on gold labels, \texttt{processing/issue\_extracti
 \toprule
 \textbf{Label} & \textbf{Rules} & \textbf{Hybrid} & \textbf{Change} \\
 \midrule
-General discussion & 8,786 & 6,180 & $-$2,606 \\
-Network quality & 3,607 & 5,687 & $+$2,080 \\
-Pricing \& promotions & 1,028 & 1,300 & $+$272 \\
-Customer service & 811 & 1,016 & $+$205 \\
-Mobile plans & 1,348 & 1,524 & $+$176 \\
-Billing \& payment & 1,002 & 1,122 & $+$120 \\
-Roaming & 545 & 598 & $+$53 \\
-App \& account & 495 & 535 & $+$40 \\
-Devices & 1,574 & 1,610 & $+$36 \\
-Porting & 249 & 271 & $+$22 \\
+General discussion & 3,229 & 1,342 & $-$1,887 \\
+Network quality & 2,769 & 3,764 & $+$995 \\
+Mobile plans & 2,079 & 2,376 & $+$297 \\
+Pricing \& promotions & 901 & 1,144 & $+$243 \\
+Customer service & 579 & 748 & $+$169 \\
+Roaming & 853 & 959 & $+$106 \\
+Devices & 1,611 & 1,691 & $+$80 \\
+Porting & 527 & 600 & $+$73 \\
+App \& account & 641 & 713 & $+$72 \\
+Billing \& payment & 659 & 730 & $+$71 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-GPT-4o mainly pulled network talk out of the leftover bucket. Devices barely moved, which matches the gold set: rules already catch most device posts. These corpus counts have no human labels, so they are a production overlay rather than a second accuracy table. The same pass was run on wave~2, where rules left 3,711 of 9,186 rows as \texttt{general\_discussion}. Section~5 uses the combined labels.
+Counts are posts carrying each label in the 9,162-post clean corpus. General discussion fell from 35\% of posts to 15\%, and GPT-4o mainly pulled network talk out of the leftover bucket. Devices barely moved, which matches the gold set: rules already catch most device posts. These corpus counts have no human labels, so they are a production overlay rather than a second accuracy table.
 
 \subsection{Held-out challenge set ($n=100$)}
 \label{sec:challenge}
@@ -395,15 +387,15 @@ Hybrid: rules, then GPT-4o on unresolved posts & --- & 0.509 \\
 
 The sentiment conclusion holds on hard posts. GPT-4o-mini beats VADER (difference 0.282, 95\% CI 0.138 to 0.413) and is not beaten by GPT-4o (mini minus GPT-4o 0.062, CI $-0.002$ to 0.127). The issue conclusion does not fully hold. The hybrid's gain over rules shrinks to 0.010 (CI $-0.039$ to 0.065), and GPT-4o labelling every post is best, beating both rules (0.097, CI 0.014 to 0.181) and the hybrid (0.087, CI 0.017 to 0.151). On these posts GPT-4o does better on customer service, roaming and billing, while rules still recall more device posts (0.75 versus 0.33). The hybrid remains the default for the corpus, because the representative set rather than the challenge set reflects its mix of posts, but its 0.680 should be read as optimistic. A union of rule and GPT-4o labels scored 0.703 on the representative set but 0.533 on the challenge set; it was found after seeing both results and is not adopted.
 
-\subsection{Wave-2 gold check ($n=97$)}
-\label{sec:wave2gold}
+\subsection{Recent-posts gold set ($n=97$)}
+\label{sec:recentgold}
 
-Because the findings use the v2 corpus, a blind 100-post sample was drawn from the wave-2 posts with the same rules as the original gold set (\texttt{processing/create\_wave2\_gold\_set.py}: posts naming a telco, one copy per text, at most five per thread, 56 Reddit and 44 HWZ from 73 threads) and labelled by Annotator~A; 97 were telco-relevant. \texttt{models/score\_wave2\_gold.py} scores the production labels already stored in the corpus, so no new API calls were made. Three spelling errors in the annotation file (29 instances of ``netural'' and two misspelt issue labels) were normalised at scoring time, and four relevant posts without an issue label were left out of the issue scores.
+The representative and challenge sets were drawn from posts up to early April~2026, so a third blind 100-post set was drawn from posts published between 10~April and 26~September~2026, with the same rules as the representative set (\texttt{processing/create\_recent\_gold\_set.py}: posts naming a telco, one copy per text, at most five per thread, 56 Reddit and 44 HWZ from 73 threads) and labelled by Annotator~A; 97 were telco-relevant. \texttt{models/score\_recent\_gold.py} scores the production labels already stored in the corpus, so no new API calls were made. Two misspelt issue labels in the annotation file were normalised at scoring time, and four relevant posts without an issue label were left out of the issue scores.
 
 \begin{table}[H]
 \centering
-\caption{Wave-2 gold sample: production labels against Annotator~A}
-\label{tab:wave2gold}
+\caption{Recent-posts gold set: production labels against Annotator~A}
+\label{tab:recentgold}
 \begin{tabular}{lrr}
 \toprule
 \textbf{Method} & \textbf{Sentiment macro F1} & \textbf{Issue macro F1} \\
@@ -415,7 +407,7 @@ Hybrid: rules, then GPT-4o on unresolved posts & --- & \textbf{0.477} \\
 \end{tabular}
 \end{table}
 
-The sentiment result carries over: GPT-4o-mini beats VADER by 0.209 macro F1 (95\% CI 0.086 to 0.328), on both Reddit (0.651) and HWZ (0.614), and its score matches the original gold set (0.631). The error is not symmetric, however. Of 39 posts the annotator labelled not happy, GPT-4o-mini labelled 15 neutral (not-happy recall 0.59), and it labels 41\% of the sample neutral against the annotator's 30\%. Corpus not-happy shares are therefore more likely understated than overstated. Issue tagging is harder on wave~2 for every method; the hybrid still beats rules (0.064, CI 0.023 to 0.107), but Customer Service (F1 0.24) and Devices (0.16, on two posts) are weak. With 97 posts and one annotator, per-class values are indicative only.
+The sentiment result carries over: GPT-4o-mini beats VADER by 0.209 macro F1 (95\% CI 0.086 to 0.328), on both Reddit (0.651) and HWZ (0.614), and its score matches the representative set (0.631). The error is not symmetric, however. Of 39 posts the annotator labelled not happy, GPT-4o-mini labelled 15 neutral (not-happy recall 0.59), and it labels 41\% of the sample neutral against the annotator's 30\%. Corpus not-happy shares are therefore more likely understated than overstated. Issue tagging is harder on these recent posts for every method; the hybrid still beats rules (0.064, CI 0.023 to 0.107), but Customer Service (F1 0.24) and Devices (0.16, on two posts) are weak. With 97 posts and one annotator, per-class values are indicative only.
 
 \subsection{Qualitative disagreements}
 
@@ -446,25 +438,24 @@ Challenge eval & GPT-4o-mini & 100 & 28 & 12,948 & 0.0030 & 0 \\
 Representative eval & GPT-4o & 295 & 73 & 38,545 & 0.145 & 0 \\
 Challenge eval & GPT-4o & 100 & 20 & 12,920 & 0.050 & 0 \\
 Representative rerun & GPT-4o-mini & 295 & 66 & 38,476 & 0.0087 & 0 \\
-Corpus unresolved issues & GPT-4o & 8,786 & 1,785 & 917,697 & 3.45 & 0 \\
-Clean-corpus sentiment (original) & GPT-4o-mini & 1,711 & 382 & 204,623 & 0.048 & 0 \\
-Wave-2 unresolved issues & GPT-4o & 3,711 & 660 & 351,521 & 1.35 & 0 \\
-v2 corpus sentiment (all posts) & GPT-4o-mini & 9,162 & --- & 1,174,839 & 0.28 & 1 \\
+Corpus unresolved issues & GPT-4o & 12,497 & 2,445 & 1,269,218 & 4.80 & 0 \\
+Corpus sentiment (posts to 9 Apr) & GPT-4o-mini & 1,711 & 382 & 204,623 & 0.048 & 0 \\
+Corpus sentiment (all posts) & GPT-4o-mini & 9,162 & --- & 1,174,839 & 0.28 & 1 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Mini prices were \$0.15 per million input tokens and \$0.60 per million output tokens. GPT-4o prices were \$2.50 / \$10.00. VADER labelled the representative set in 0.22 seconds and keyword rules in 0.27 seconds, with no API charge. Twitter-RoBERTa was not run because \texttt{transformers} was not installed. The hybrid gold metrics in Tables~\ref{tab:headlinemetrics} and~\ref{tab:challenge} reuse the GPT-4o predictions and added no API cost. Per post, GPT-4o costs about \$0.0005 and GPT-4o-mini about \$0.00003. A first wave-2 pass that sent Reddit posts without thread titles (about \$1.10 of GPT-4o and \$0.05 of GPT-4o-mini) was discarded and is not included above.
+Mini prices were \$0.15 per million input tokens and \$0.60 per million output tokens. GPT-4o prices were \$2.50 / \$10.00. VADER labelled the representative set in 0.22 seconds and keyword rules in 0.27 seconds, with no API charge. Twitter-RoBERTa was not run because \texttt{transformers} was not installed. The hybrid gold metrics in Tables~\ref{tab:headlinemetrics} and~\ref{tab:challenge} reuse the GPT-4o predictions and added no API cost. Per post, GPT-4o costs about \$0.0005 and GPT-4o-mini about \$0.00003. A first pass on the April--September posts that sent Reddit posts without thread titles (about \$1.10 of GPT-4o and \$0.05 of GPT-4o-mini) was discarded and is not included above.
 
 \section{Findings}
 
-RQ3 is answered in Section~4: GPT-4o-mini adds sentiment context over VADER on typical and hard posts; for issues, rules plus GPT-4o on unresolved posts is best on typical posts, and GPT-4o labelling every post is best on hard ones. This section applies GPT-4o-mini sentiment and hybrid issue labels to the v2 corpus: 9,162 unique posts in 349 telco threads, combining the original data with wave-2 posts from 10~April to 26~September~2026. Shares are reported per post and with every thread weighted equally, so that one large thread cannot drive a finding. Section~\ref{sec:casestudy} then reads the original 1,711-post corpus as a case study of one outage.
+RQ3 is answered in Section~4: GPT-4o-mini adds sentiment context over VADER on typical and hard posts; for issues, rules plus GPT-4o on unresolved posts is best on typical posts, and GPT-4o labelling every post is best on hard ones. This section applies GPT-4o-mini sentiment and hybrid issue labels to the corpus: 9,162 unique posts in 349 telco threads, collected up to 26~September~2026. Shares are reported per post and with every thread weighted equally, so that one large thread cannot drive a finding. Section~\ref{sec:casestudy} then shows how one outage distorts these aggregates.
 
 \subsection{Sentiment: most posts are negative or neutral}
 
 \begin{table}[H]
 \centering
-\caption{Sentiment shares by labeller, v2 corpus}
+\caption{Sentiment shares by labeller}
 \label{tab:corpussentiment}
 \begin{tabular}{lrrrr}
 \toprule
@@ -479,13 +470,13 @@ Human labels, representative gold set & 18\% & 50\% & 32\% & 295 \\
 \end{tabular}
 \end{table}
 
-About two in five posts are not happy under every weighting, and fewer than one in five is happy (RQ1). VADER again nearly reverses the picture: of 4,180 posts it calls happy, GPT-4o-mini reads 1,480 as not happy and 1,538 as neutral. The wave-2 gold sample (Section~\ref{sec:wave2gold}) shows the direction of GPT-4o-mini's error on the newer posts: it labels 41\% neutral where the human labels say 30\%, mainly by reading complaints as neutral, so the corpus not-happy share is more likely understated than overstated. These shares describe unsolicited forum discussion and are not a satisfaction rate.
+About two in five posts are not happy under every weighting, and fewer than one in five is happy (RQ1). VADER again nearly reverses the picture: of 4,180 posts it calls happy, GPT-4o-mini reads 1,480 as not happy and 1,538 as neutral. The recent-posts gold set (Section~\ref{sec:recentgold}) shows the direction of GPT-4o-mini's error on April--September posts: it labels 41\% neutral where the human labels say 30\%, mainly by reading complaints as neutral, so the corpus not-happy share is more likely understated than overstated. These shares describe unsolicited forum discussion and are not a satisfaction rate.
 
 \subsection{Issue themes}
 
 \begin{table}[H]
 \centering
-\caption{Primary issue themes in the v2 corpus}
+\caption{Primary issue themes}
 \label{tab:overallfindings}
 \begin{tabular}{lrrrrr}
 \toprule
@@ -505,17 +496,17 @@ Porting & 262 & 58 & 2.9\% & 2.8\% & 35\% \\
 \end{tabular}
 \end{table}
 
-Network quality leads under both weightings and carries 46\% of the thread-weighted not-happy discussion. Mobile-plan comparisons are second and pricing third. App and account access is small per post (3.7\%) but appears in 115 threads, so with threads weighted equally it rises to 9.2\%: it is a steady low-volume complaint across many conversations rather than a few large ones. Customer service and billing are the most negative themes by rate (59\% and 53\% not happy) but small in volume. In the original corpus they looked larger because they clustered around the outage (Section~\ref{sec:casestudy}).
+Network quality leads under both weightings and carries 46\% of the thread-weighted not-happy discussion. Mobile-plan comparisons are second and pricing third. App and account access is small per post (3.7\%) but appears in 115 threads, so with threads weighted equally it rises to 9.2\%: it is a steady low-volume complaint across many conversations rather than a few large ones. Customer service and billing are the most negative themes by rate (59\% and 53\% not happy) but small in volume.
 
 \subsection{Platform differences}
 
-Per post, Reddit is 48\% not happy and HWZ 37\%. Outside the outage threads the gap narrows to 42\% against 37\%, and human gold labels on the original corpus showed 51\% against 47\%. The remaining five points are confounded with topic: HWZ discussion in v2 is dominated by long plan and MVNO megathreads, which carry more neutral comparison, while Reddit carries more incident reports and scam warnings. For RQ2, the platforms differ mainly in what they discuss; the data do not support a claim that one platform's users are more negative.
+Per post, Reddit is 48\% not happy and HWZ 37\%. Outside the outage threads the gap narrows to 42\% against 37\%, and human labels on the representative gold set show 51\% against 47\%. The remaining five points are confounded with topic: HWZ discussion is dominated by long plan and MVNO megathreads, which carry more neutral comparison, while Reddit carries more incident reports and scam warnings. For RQ2, the platforms differ mainly in what they discuss; the data do not support a claim that one platform's users are more negative.
 
 \subsection{Cross-brand observations}
 
 \begin{table}[H]
 \centering
-\caption{Not-happy share for brands with at least 92 posts and 10 threads, v2 corpus}
+\caption{Not-happy share for brands with at least 92 posts and 10 threads}
 \label{tab:brands}
 \begin{tabular}{lrrrrr}
 \toprule
@@ -537,14 +528,14 @@ Outside outage threads, Singtel, StarHub, SIMBA, M1 and Giga sit within three po
 \subsection{Case study: the March 2026 Singtel outage}
 \label{sec:casestudy}
 
-The original corpus (1,711 unique posts, collected up to 9~April~2026) is dominated by one event: 22 outage threads hold 665 posts (39\%), led by ``16 March 26: Singtel mobile service outage''. It shows how an incident distorts every aggregate. In that corpus 55\% of posts are not happy, but 42\% outside the outage threads; Singtel is 63\% not happy but 44\% outside them, level with StarHub (47\%); Reddit is 60\% not happy against HWZ 40\%, but 43\% against 40\% outside them, because every original Reddit post is from 2026 and Reddit holds the outage threads. Billing and customer service were the most negative themes there, and many of those posts were outage aftercare: whether compensation is a refund or a goodwill credit, and support lines that could not be reached.
+Forty-five threads are about outages, led by ``16 March 26: Singtel mobile service outage''. They hold 1,102 posts (12\%), and they show how one incident distorts every aggregate. Inside them 71\% of posts are not happy, against 40\% in all other threads. Singtel is 73\% not happy inside them and 42\% outside, next to StarHub (68\% and 40\%). And 1,099 of the 1,102 outage posts are on Reddit, against 57\% of other posts, so the outage threads create most of Reddit's per-post lead over HWZ (48\% against 37\%, but 42\% against 37\% outside them). Many billing and customer-service posts in these threads are outage aftercare: whether compensation is a refund or a goodwill credit, and support lines that could not be reached.
 
-The weekly huddle view catches the event. In the original corpus, three weeks cross the 20-post threshold, all in March--April 2026 (352, 70 and 42 queue posts). On v2, with a threshold set relative to a normal week (Section~\ref{sec:dashboard}), only two weeks qualify: the outage week (352 posts) and the week of 14~September~2026 (149 posts). The second is a different kind of event, spread across brands: StarHub broadband going down, OTP failures on the SIMBA app, and complaints in the SIMBA, Singtel, M1 Maxx and Eight threads. The screen therefore flags both a single-operator outage and a multi-brand bad week, which is the early-warning use the project set out to support.
+The weekly huddle view catches the event. With a threshold set relative to a normal week (Section~\ref{sec:dashboard}), only two weeks qualify: the outage week (352 posts) and the week of 14~September~2026 (149 posts). The second is a different kind of event, spread across brands: StarHub broadband going down, OTP failures on the SIMBA app, and complaints in the SIMBA, Singtel, M1 Maxx and Eight threads. The screen therefore flags both a single-operator outage and a multi-brand bad week, which is the early-warning use the project set out to support.
 
 \subsection{Dashboard design}
 \label{sec:dashboard}
 
-\texttt{dashboard/generate\_dashboard.py} builds a static page from a clean corpus: \texttt{index\_v2.html} for v2 and \texttt{index\_v1.html} for the original corpus. Chart titles are computed from the data and state the takeaway (for example, ``Network Quality leads, then Mobile Plans''). Where a result would invite a wrong reading, the title says so: a per-post Reddit--HWZ gap is shown as ``check topic mix first'', not as a platform effect. The page opens with a weekly 30-minute huddle playbook and a weekly queue chart: (a) not-happy posts in Network Quality, App \& Account or Porting; (b) open ten source posts; (c) match them to tickets or outages; (d) assign one owner; (e) check next week whether the share fell. A fixed threshold does not scale with the corpus: 20 posts suited the original data but is crossed in 27 of the v2 weeks. The v2 page therefore acts when a week reaches twice the median of the last 26 weeks (115 posts).
+\texttt{dashboard/generate\_dashboard.py} builds a single static page, \texttt{dashboard/index.html}, from the clean corpus. Chart titles are computed from the data and state the takeaway (for example, ``Network Quality leads, then Mobile Plans''). Where a result would invite a wrong reading, the title says so: a per-post Reddit--HWZ gap is shown as ``check topic mix first'', not as a platform effect. The page opens with a weekly 30-minute huddle playbook and a weekly queue chart: (a) not-happy posts in Network Quality, App \& Account or Porting; (b) open ten source posts; (c) match them to tickets or outages; (d) assign one owner; (e) check next week whether the share fell. A fixed threshold does not scale with volume: a 20-post threshold is crossed in 27 weeks. The page therefore acts when a week reaches twice the median of the last 26 weeks (115 posts).
 
 \begin{itemize}
   \item \textbf{Tone:} GPT-4o-mini shares beside VADER and the human gold labels, so readers see why VADER is not used.
@@ -559,7 +550,7 @@ Outputs remain screening signals, not verified customer facts.
 
 \section{Business Recommendations}
 
-Each recommendation names an owner, an action and a check. They are ordered by each issue's share of not-happy discussion in the v2 corpus. Forum counts are a triage queue, not proof of market failure.
+Each recommendation names an owner, an action and a check. They are ordered by each issue's share of not-happy discussion in the corpus. Forum counts are a triage queue, not proof of market failure.
 
 \subsection{Network: communicate during incidents, then prove local fixes}
 
@@ -593,13 +584,13 @@ Do not publish a brand league table. A weekly 30-minute process is enough:
   \item next week, check whether that issue's share fell.
 \end{enumerate}
 
-Use GPT-4o-mini for sentiment on the whole feed: labelling all 9,162 v2 posts cost about \$0.28, so a daily run costs cents. For issues, keep keyword rules and apply GPT-4o to \texttt{general\_discussion} rows. On hard posts, GPT-4o labelling every post is more accurate and, at about \$0.0005 per post, affordable on a deduplicated feed. Keep a person in the loop before any public reply. That mix is the business reading of the evaluation, not a model contest.
+Use GPT-4o-mini for sentiment on the whole feed: labelling all 9,162 posts cost about \$0.28, so a daily run costs cents. For issues, keep keyword rules and apply GPT-4o to \texttt{general\_discussion} rows. On hard posts, GPT-4o labelling every post is more accurate and, at about \$0.0005 per post, affordable on a deduplicated feed. Keep a person in the loop before any public reply. That mix is the business reading of the evaluation, not a model contest.
 
 \section{Limitations and Ethical Considerations}
 
 \subsection{Representativeness and platform bias}
 
-Forum contributors are self-selecting and are not Singapore mobile users at large. Findings use the v2 corpus of 9,162 unique posts, after removing repeated copies (24,690 raw rows held 11,643 unique posts) and 96 off-topic threads. The corpus is 62\% Reddit, and 95\% of posts are from 2026; the few older posts are opening pages of long HWZ threads. Twelve per cent of posts sit in outage threads. Two collection artefacts are worth stating. The original HWZ scraper only ever read the first page of each thread because of a page-counting bug; wave~2 reads the newest pages instead. Wave-2 Reddit data come from the Arctic Shift research archive rather than Reddit directly, because Reddit blocks unauthenticated access and gates new API applications; the archive can miss content deleted before capture, and it includes replies that the original scraper skipped. There are no app-store reviews, tickets or NPS in the analysed set, so results cannot be generalised to market share, population sentiment, churn or Net Promoter Score.
+Forum contributors are self-selecting and are not Singapore mobile users at large. Findings use a corpus of 9,162 unique posts, after removing repeated copies (24,690 raw rows held 11,643 unique posts) and 96 off-topic threads. The corpus is 62\% Reddit, and 95\% of posts are from 2026; the few older posts are opening pages of long HWZ threads. Twelve per cent of posts sit in outage threads. Two collection artefacts are worth stating. Early HWZ scrapes read only the first page of each thread because of a page-counting bug; later scrapes add the newest pages. Reddit posts after 9~April~2026 come from the Arctic Shift research archive rather than Reddit directly, because Reddit blocks unauthenticated access and gates new API applications; the archive can miss content deleted before capture, and it includes replies that the earlier Reddit scraper skipped. There are no app-store reviews, tickets or NPS in the analysed set, so results cannot be generalised to market share, population sentiment, churn or Net Promoter Score.
 
 \subsection{Unequal and dependent observations}
 
@@ -607,7 +598,7 @@ One record can mention several brands, so mention counts are not unique customer
 
 \subsection{Label quality and LLM misclassification}
 
-GPT-4o-mini matches Annotator~A on about two-thirds of posts (accuracy 0.67, macro F1 0.631), and happy is its weakest class (F1 0.54). The benchmark is itself one annotator: on the representative overlap two humans agree only at $\kappa=0.39$, mostly because the guide did not say whether a bare failure report is \texttt{not\_happy} or \texttt{neutral}. Annotator~A treats such reports as complaints, and GPT-4o-mini agrees with A on the examples in Section~4, so part of its margin over VADER depends on that reading. On the wave-2 gold sample, sentiment accuracy holds (macro F1 0.637) but GPT-4o-mini recalls only 59\% of human not-happy posts, reading many as neutral, and issue tagging is markedly weaker than on the original posts (hybrid macro F1 0.477 against 0.680); that sample is 97 posts, labelled by Annotator~A alone, with three spelling fixes applied at scoring time. One of 9,162 v2 posts could not be labelled by GPT-4o-mini and falls back to VADER; 40 posts that failed in batches of ten were relabelled one at a time. A first wave-2 pass sent Reddit posts without their thread titles; those labels were discarded and the posts relabelled with titles. All-post LLMs under-label Devices relative to rules (GPT-4o recall 0.25 versus 0.81 on the representative set, 0.33 versus 0.75 on the challenge set) and often return one topic when the post has several. Keyword rules over-trigger on generic terms such as ``plan''. The hybrid's 0.680 was measured on the set used to choose it; on held-out hard posts its gain over rules was not significant and GPT-4o on every post did better. The corpus issue reassignments have no second human check. These errors are prompt- and snapshot-specific. Forum text sent to a vendor API is also a privacy limit: production jobs must not submit NRIC, phone numbers or other identifiers. The defensible stance is triage plus human review, not automated league tables.
+GPT-4o-mini matches Annotator~A on about two-thirds of posts (accuracy 0.67, macro F1 0.631), and happy is its weakest class (F1 0.54). The benchmark is itself one annotator: on the representative overlap two humans agree only at $\kappa=0.39$, mostly because the guide did not say whether a bare failure report is \texttt{not\_happy} or \texttt{neutral}. Annotator~A treats such reports as complaints, and GPT-4o-mini agrees with A on the examples in Section~4, so part of its margin over VADER depends on that reading. On the recent-posts gold set, sentiment accuracy holds (macro F1 0.637) but GPT-4o-mini recalls only 59\% of human not-happy posts, reading many as neutral, and issue tagging is markedly weaker than on the original posts (hybrid macro F1 0.477 against 0.680); that sample is 97 posts, labelled by Annotator~A alone, with two spelling fixes applied at scoring time. One of 9,162 posts could not be labelled by GPT-4o-mini and falls back to VADER; 40 posts that failed in batches of ten were relabelled one at a time. A first pass on the April--September posts sent Reddit posts without their thread titles; those labels were discarded and the posts relabelled with titles. All-post LLMs under-label Devices relative to rules (GPT-4o recall 0.25 versus 0.81 on the representative set, 0.33 versus 0.75 on the challenge set) and often return one topic when the post has several. Keyword rules over-trigger on generic terms such as ``plan''. The hybrid's 0.680 was measured on the set used to choose it; on held-out hard posts its gain over rules was not significant and GPT-4o on every post did better. The corpus issue reassignments have no second human check. These errors are prompt- and snapshot-specific. Forum text sent to a vendor API is also a privacy limit: production jobs must not submit NRIC, phone numbers or other identifiers. The defensible stance is triage plus human review, not automated league tables.
 
 \subsection{Privacy and responsible use}
 
@@ -616,7 +607,7 @@ Although forum posts are publicly accessible, public availability does not remov
 \section{Future Work}
 
 \begin{enumerate}
-  \item Improve wave-2 issue tagging, which scores well below the original posts (hybrid macro F1 0.477), starting with Customer Service (F1 0.24), and have a second annotator label part of the wave-2 gold sample.
+  \item Improve issue tagging on recent posts, which scores well below the representative set (hybrid macro F1 0.477), starting with Customer Service (F1 0.24), and have a second annotator label part of the recent-posts gold set.
   \item Adjudicate the remaining disagreements between the two annotators in a separate file, and relabel Annotator~A's overlap rows under the new guide rule for failure reports.
   \item Compare the hybrid with GPT-4o labelling every post on a fresh held-out sample, since the two gold sets disagree on which is better.
   \item Spot-check the corpus rows that GPT-4o moved out of \texttt{general\_discussion}, especially the extra network-quality tags, before treating huddle counts as incidents.
@@ -641,24 +632,23 @@ python processing/telco_labeler.py
 python processing/issue_extraction.py
 # Keyword-only labels. Hybrid GPT-4o unresolved run is already saved as
 # data/processed/issues_posts_labeled_2026-08-21_203752_gpt4o_hybrid.csv
-python processing/build_clean_corpus.py     # original corpus: 1,711 posts, 105 threads
-python models/corpus_llm_sentiment.py       # GPT-4o-mini sentiment, ~$0.05
-python dashboard/generate_dashboard.py
-python models/robustness_checks.py          # CIs, stability, kappa; no API calls
+python processing/build_clean_corpus.py     # posts up to 2026-04-09
 
-# Wave 2 (posts after 2026-04-09) and the combined v2 corpus
+# Posts from 2026-04-10 (newest HWZ pages; Reddit via the Arctic Shift archive)
 python scrapers/hwz_forum_scraper.py --forum-pages 5 --max-threads 60 \
-  --max-thread-pages 15 --latest-pages --since 2026-04-10 --out data/raw/wave2/hwz_latest
+  --max-thread-pages 15 --latest-pages --since 2026-04-10 --out data/raw/apr_sep_2026/hwz_latest
 python scrapers/reddit_archive_scraper.py --subreddits singapore,askSingapore \
-  --since 2026-04-10 --out data/raw/wave2/reddit_archive
-python processing/prepare_wave2.py          # clean, label, keyword issues
-# then the GPT-4o hybrid pass printed by prepare_wave2.py, and:
-python processing/prepare_wave2.py --merge  # -> data/processed/clean_posts_v2.csv
-python models/corpus_llm_sentiment.py --in data/processed/clean_posts_v2.csv \
-  --out data/processed/clean_posts_v2_mini_sentiment.csv \
-  --summary-out data/processed/clean_posts_v2_mini_sentiment_summary.json
-python dashboard/generate_dashboard.py --corpus data/processed/clean_posts_v2_mini_sentiment.csv \
-  --huddle-threshold auto --out-html dashboard/index_v2.html --out-readme dashboard/Dash_README_v2.md
+  --since 2026-04-10 --out data/raw/apr_sep_2026/reddit_archive
+python processing/prepare_new_posts.py          # clean, label, keyword issues
+# then the GPT-4o hybrid pass printed by prepare_new_posts.py, and:
+python processing/prepare_new_posts.py --merge  # -> data/processed/corpus_posts.csv
+python models/corpus_llm_sentiment.py --in data/processed/corpus_posts.csv \
+  --out data/processed/corpus_posts_mini_sentiment.csv \
+  --summary-out data/processed/corpus_posts_mini_sentiment_summary.json
+python dashboard/generate_dashboard.py      # -> dashboard/index.html
+python processing/build_gold_labels.py      # three gold sets -> gold_labels.csv
+python models/score_recent_gold.py          # recent-posts gold set; no API calls
+python models/robustness_checks.py          # CIs, stability, kappa; no API calls
 
 # Independent LLM vs baseline evaluation (after human labels)
 python models/llm_evaluation.py \
@@ -752,17 +742,18 @@ J.~Cohen,
 \texttt{llm\_comparison\_challenge\_gpt4o/} and \texttt{\_hybrid/} & GPT-4o and hybrid on the held-out challenge set \\
 \texttt{llm\_comparison\_representative\_rerun/} & Second GPT-4o-mini run for stability \\
 \texttt{robustness\_summary.json} & Bootstrap intervals, stability, $\kappa$ per set, corpus outage and brand checks \\
-\texttt{processing/build\_clean\_corpus.py}, \texttt{clean\_corpus\_summary.json} & Deduplication, off-topic thread filter, per-thread shares \\
-\texttt{models/corpus\_llm\_sentiment.py}, \texttt{clean\_posts\_mini\_sentiment\_summary.json} & Corpus GPT-4o-mini sentiment, tokens and cost \\
+\texttt{processing/build\_clean\_corpus.py}, \texttt{corpus\_summary.json} & Deduplication, off-topic thread filter, per-thread shares \\
+\texttt{models/corpus\_llm\_sentiment.py}, \texttt{corpus\_posts\_mini\_sentiment\_summary.json} & Corpus GPT-4o-mini sentiment, tokens and cost \\
 \texttt{qualitative\_disagreements.csv} & Rows where methods disagree with human labels \\
 \texttt{sentiment\_benchmark.json} & Earlier leaked VADER 100\% file; not used as evidence \\
 \texttt{issues\_summary.json} & Keyword-only full-corpus issue-label counts \\
 \texttt{issues\_summary\_gpt4o\_hybrid.json} & Hybrid full-corpus issue-label counts after GPT-4o on unresolved rows \\
-\texttt{dashboard/generate\_dashboard.py} & Dashboards (\texttt{index\_v2.html}, \texttt{index\_v1.html}): computed chart titles, weekly queue, recommendation order \\
-\texttt{scrapers/reddit\_archive\_scraper.py}, \texttt{hwz\_forum\_scraper.py} & Wave-2 collection (Arctic Shift archive; HWZ newest pages) \\
-\texttt{processing/prepare\_wave2.py} & Wave-2 cleaning, labelling, issue rules and v2 merge \\
-\texttt{processing/create\_wave2\_gold\_set.py}, \texttt{wave2\_sampling\_metadata.json} & Blind wave-2 gold sample \\
-\texttt{models/score\_wave2\_gold.py}, \texttt{wave2\_gold\_scores.json} & Production labels scored on the wave-2 gold sample \\
+\texttt{dashboard/generate\_dashboard.py} & Dashboard (\texttt{index.html}): computed chart titles, weekly queue, recommendation order \\
+\texttt{scrapers/reddit\_archive\_scraper.py}, \texttt{hwz\_forum\_scraper.py} & Collection from 10~April~2026 (Arctic Shift archive; HWZ newest pages) \\
+\texttt{processing/prepare\_new\_posts.py} & Cleaning, labelling and issue rules for posts from 10~April, and merge into the full corpus \\
+\texttt{processing/create\_recent\_gold\_set.py}, \texttt{recent\_sampling\_metadata.json} & Blind recent-posts gold sample \\
+\texttt{processing/build\_gold\_labels.py}, \texttt{gold\_labels.csv} & The three gold sets in one file \\
+\texttt{models/score\_recent\_gold.py}, \texttt{recent\_gold\_scores.json} & Production labels scored on the recent-posts gold set \\
 \texttt{dashboard/Dash\_README.md} & Dashboard input row counts and generated summary \\
 \bottomrule
 \end{longtable}

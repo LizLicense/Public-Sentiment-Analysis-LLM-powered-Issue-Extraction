@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Score the labels used in the v2 findings against the wave-2 gold sample. No API calls.
+"""Score the labels used in the findings against the recent-posts gold set. No API calls.
 
 The 100 gold posts were drawn from the v2 corpus, which already holds the production labels:
 GPT-4o-mini sentiment (llm_sentiment), VADER (sentiment_label), the hybrid issue labels
@@ -10,7 +10,7 @@ Obvious annotation typos are normalised here and listed in the output; the annot
 not modified. Relevant posts with no issue label are left out of issue scoring.
 
 Usage (from project root):
-  python models/score_wave2_gold.py
+  python models/score_recent_gold.py
 """
 
 from __future__ import annotations
@@ -37,9 +37,10 @@ from models.llm_evaluation import (  # noqa: E402
 )
 from processing.issue_extraction import detect_issue_labels  # noqa: E402
 
-GOLD = PROJECT_ROOT / "data/evaluation/wave2_annotator_a.csv"
-CORPUS = PROJECT_ROOT / "data/processed/clean_posts_v2_mini_sentiment.csv"
-OUT = PROJECT_ROOT / "data/evaluation/wave2_gold_scores.json"
+GOLD = PROJECT_ROOT / "data/evaluation/gold_labels.csv"
+GOLD_SET = "recent"
+CORPUS = PROJECT_ROOT / "data/processed/corpus_posts_mini_sentiment.csv"
+OUT = PROJECT_ROOT / "data/evaluation/recent_gold_scores.json"
 SENTIMENT_TYPOS = {"netural": "neutral"}
 ISSUE_TYPOS = {"evices": "Devices", "pring & promotions": "Pricing & Promotions"}
 BOOTSTRAPS, SEED = 2000, 7
@@ -89,7 +90,7 @@ def main() -> None:
     corpus = {key(r["thread_title"], r["post_text"]): r for r in read(CORPUS) if str(r.get("wave", "")).startswith("2")}
     fixes: list[str] = []
     rows, unmatched = [], []
-    for g in read(GOLD):
+    for g in (r for r in read(GOLD) if r["evaluation_set"] == GOLD_SET):
         c = corpus.get(key(g["thread_title"], g["post_text"]))
         if c is None:
             unmatched.append(g["sample_id"])

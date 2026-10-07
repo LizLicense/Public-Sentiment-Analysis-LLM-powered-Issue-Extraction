@@ -1,0 +1,583 @@
+{
+  "input_file": "data/evaluation/recent_for_llm_eval.csv",
+  "requested_model": "gpt-4o",
+  "returned_models": [
+    "gpt-4o-2024-08-06"
+  ],
+  "successful_rows": 93,
+  "failed_rows": 0,
+  "runtime": {
+    "llm_wall_seconds_this_run": 25.760806124992087,
+    "request_seconds_total": 25.753167748000124,
+    "llm_request_seconds_per_successful_row": 0.2769157822365605,
+    "vader_seconds": 0.0075078749941894785,
+    "vader_seconds_per_row": 8.072983864719869e-05,
+    "keyword_rules_seconds": 0.011679417002596892,
+    "keyword_rules_seconds_per_row": 0.00012558512906018165
+  },
+  "tokens": {
+    "input_tokens": 10079,
+    "output_tokens": 2062,
+    "total_tokens": 12141
+  },
+  "cost": {
+    "currency": "USD",
+    "pricing_provided": true,
+    "input_cost_per_million": 2.5,
+    "output_cost_per_million": 10.0,
+    "estimated_input_cost": 0.025197499999999998,
+    "estimated_output_cost": 0.02062,
+    "estimated_total_cost": 0.0458175
+  },
+  "sentiment": {
+    "vader": {
+      "n": 93,
+      "accuracy": 0.43010752688172044,
+      "macro_f1": 0.4067030965391621,
+      "per_class": {
+        "happy": {
+          "precision": 0.4782608695652174,
+          "recall": 0.7586206896551724,
+          "f1": 0.5866666666666667,
+          "support": 29
+        },
+        "not_happy": {
+          "precision": 0.5217391304347826,
+          "recall": 0.3157894736842105,
+          "f1": 0.39344262295081966,
+          "support": 38
+        },
+        "neutral": {
+          "precision": 0.25,
+          "recall": 0.23076923076923078,
+          "f1": 0.24000000000000002,
+          "support": 26
+        }
+      },
+      "confusion_matrix": [
+        [
+          22,
+          2,
+          5
+        ],
+        [
+          13,
+          12,
+          13
+        ],
+        [
+          11,
+          9,
+          6
+        ]
+      ],
+      "labels_order": [
+        "happy",
+        "not_happy",
+        "neutral"
+      ]
+    },
+    "llm": {
+      "n": 93,
+      "accuracy": 0.5698924731182796,
+      "macro_f1": 0.5604351659424397,
+      "per_class": {
+        "happy": {
+          "precision": 1.0,
+          "recall": 0.3793103448275862,
+          "f1": 0.5499999999999999,
+          "support": 29
+        },
+        "not_happy": {
+          "precision": 0.6585365853658537,
+          "recall": 0.7105263157894737,
+          "f1": 0.6835443037974684,
+          "support": 38
+        },
+        "neutral": {
+          "precision": 0.36585365853658536,
+          "recall": 0.5769230769230769,
+          "f1": 0.44776119402985076,
+          "support": 26
+        }
+      },
+      "confusion_matrix": [
+        [
+          11,
+          3,
+          15
+        ],
+        [
+          0,
+          27,
+          11
+        ],
+        [
+          0,
+          11,
+          15
+        ]
+      ],
+      "labels_order": [
+        "happy",
+        "not_happy",
+        "neutral"
+      ]
+    }
+  },
+  "issues": {
+    "keyword_rules": {
+      "n": 93,
+      "exact_match_accuracy": 0.1935483870967742,
+      "macro_f1": 0.4134853311477352,
+      "micro_precision": 0.37575757575757573,
+      "micro_recall": 0.4881889763779528,
+      "micro_f1": 0.4246575342465753,
+      "per_class": {
+        "network_quality": {
+          "precision": 0.5625,
+          "recall": 0.47368421052631576,
+          "f1": 0.5142857142857142,
+          "support": 38,
+          "confusion_matrix": [
+            [
+              41,
+              14
+            ],
+            [
+              20,
+              18
+            ]
+          ]
+        },
+        "pricing_promotions": {
+          "precision": 0.75,
+          "recall": 0.391304347826087,
+          "f1": 0.5142857142857143,
+          "support": 23,
+          "confusion_matrix": [
+            [
+              67,
+              3
+            ],
+            [
+              14,
+              9
+            ]
+          ]
+        },
+        "mobile_plans": {
+          "precision": 0.4090909090909091,
+          "recall": 0.6,
+          "f1": 0.4864864864864865,
+          "support": 15,
+          "confusion_matrix": [
+            [
+              65,
+              13
+            ],
+            [
+              6,
+              9
+            ]
+          ]
+        },
+        "roaming": {
+          "precision": 0.5714285714285714,
+          "recall": 0.7272727272727273,
+          "f1": 0.64,
+          "support": 11,
+          "confusion_matrix": [
+            [
+              76,
+              6
+            ],
+            [
+              3,
+              8
+            ]
+          ]
+        },
+        "porting": {
+          "precision": 0.3333333333333333,
+          "recall": 0.6,
+          "f1": 0.42857142857142855,
+          "support": 5,
+          "confusion_matrix": [
+            [
+              82,
+              6
+            ],
+            [
+              2,
+              3
+            ]
+          ]
+        },
+        "customer_service": {
+          "precision": 0.3333333333333333,
+          "recall": 0.1111111111111111,
+          "f1": 0.16666666666666666,
+          "support": 18,
+          "confusion_matrix": [
+            [
+              71,
+              4
+            ],
+            [
+              16,
+              2
+            ]
+          ]
+        },
+        "billing_payment": {
+          "precision": 0.6,
+          "recall": 0.8571428571428571,
+          "f1": 0.7058823529411764,
+          "support": 7,
+          "confusion_matrix": [
+            [
+              82,
+              4
+            ],
+            [
+              1,
+              6
+            ]
+          ]
+        },
+        "app_account": {
+          "precision": 0.25,
+          "recall": 0.5,
+          "f1": 0.3333333333333333,
+          "support": 4,
+          "confusion_matrix": [
+            [
+              83,
+              6
+            ],
+            [
+              2,
+              2
+            ]
+          ]
+        },
+        "devices": {
+          "precision": 0.09523809523809523,
+          "recall": 1.0,
+          "f1": 0.17391304347826084,
+          "support": 2,
+          "confusion_matrix": [
+            [
+              72,
+              19
+            ],
+            [
+              0,
+              2
+            ]
+          ]
+        },
+        "general_discussion": {
+          "precision": 0.0967741935483871,
+          "recall": 0.75,
+          "f1": 0.1714285714285714,
+          "support": 4,
+          "confusion_matrix": [
+            [
+              61,
+              28
+            ],
+            [
+              1,
+              3
+            ]
+          ]
+        }
+      }
+    },
+    "llm": {
+      "n": 93,
+      "exact_match_accuracy": 0.3763440860215054,
+      "macro_f1": 0.5022258010189045,
+      "micro_precision": 0.5877862595419847,
+      "micro_recall": 0.6062992125984252,
+      "micro_f1": 0.5968992248062016,
+      "per_class": {
+        "network_quality": {
+          "precision": 0.84375,
+          "recall": 0.7105263157894737,
+          "f1": 0.7714285714285714,
+          "support": 38,
+          "confusion_matrix": [
+            [
+              50,
+              5
+            ],
+            [
+              11,
+              27
+            ]
+          ]
+        },
+        "pricing_promotions": {
+          "precision": 0.8461538461538461,
+          "recall": 0.4782608695652174,
+          "f1": 0.6111111111111112,
+          "support": 23,
+          "confusion_matrix": [
+            [
+              68,
+              2
+            ],
+            [
+              12,
+              11
+            ]
+          ]
+        },
+        "mobile_plans": {
+          "precision": 0.4,
+          "recall": 0.6666666666666666,
+          "f1": 0.5,
+          "support": 15,
+          "confusion_matrix": [
+            [
+              63,
+              15
+            ],
+            [
+              5,
+              10
+            ]
+          ]
+        },
+        "roaming": {
+          "precision": 0.5294117647058824,
+          "recall": 0.8181818181818182,
+          "f1": 0.6428571428571428,
+          "support": 11,
+          "confusion_matrix": [
+            [
+              74,
+              8
+            ],
+            [
+              2,
+              9
+            ]
+          ]
+        },
+        "porting": {
+          "precision": 0.375,
+          "recall": 0.6,
+          "f1": 0.4615384615384615,
+          "support": 5,
+          "confusion_matrix": [
+            [
+              83,
+              5
+            ],
+            [
+              2,
+              3
+            ]
+          ]
+        },
+        "customer_service": {
+          "precision": 0.6363636363636364,
+          "recall": 0.3888888888888889,
+          "f1": 0.4827586206896552,
+          "support": 18,
+          "confusion_matrix": [
+            [
+              71,
+              4
+            ],
+            [
+              11,
+              7
+            ]
+          ]
+        },
+        "billing_payment": {
+          "precision": 0.8333333333333334,
+          "recall": 0.7142857142857143,
+          "f1": 0.7692307692307692,
+          "support": 7,
+          "confusion_matrix": [
+            [
+              85,
+              1
+            ],
+            [
+              2,
+              5
+            ]
+          ]
+        },
+        "app_account": {
+          "precision": 0.25,
+          "recall": 0.25,
+          "f1": 0.25,
+          "support": 4,
+          "confusion_matrix": [
+            [
+              86,
+              3
+            ],
+            [
+              3,
+              1
+            ]
+          ]
+        },
+        "devices": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 2,
+          "confusion_matrix": [
+            [
+              87,
+              4
+            ],
+            [
+              2,
+              0
+            ]
+          ]
+        },
+        "general_discussion": {
+          "precision": 0.36363636363636365,
+          "recall": 1.0,
+          "f1": 0.5333333333333333,
+          "support": 4,
+          "confusion_matrix": [
+            [
+              82,
+              7
+            ],
+            [
+              0,
+              4
+            ]
+          ]
+        }
+      }
+    }
+  },
+  "failed_sample_ids": [],
+  "request_log": [
+    {
+      "requested_model": "gpt-4o",
+      "returned_model": "gpt-4o-2024-08-06",
+      "request_id": "chatcmpl-EVp063x5BsXGs0OQcyLt1fJiHBV9b",
+      "attempts": 1,
+      "elapsed_seconds": 4.025197374998243,
+      "input_tokens": 1525,
+      "output_tokens": 225,
+      "total_tokens": 1750,
+      "error": ""
+    },
+    {
+      "requested_model": "gpt-4o",
+      "returned_model": "gpt-4o-2024-08-06",
+      "request_id": "chatcmpl-EVp09xc85ckBjLdp6VIg8frkntwni",
+      "attempts": 1,
+      "elapsed_seconds": 3.094715917002759,
+      "input_tokens": 1046,
+      "output_tokens": 230,
+      "total_tokens": 1276,
+      "error": ""
+    },
+    {
+      "requested_model": "gpt-4o",
+      "returned_model": "gpt-4o-2024-08-06",
+      "request_id": "chatcmpl-EVp0Cl9c5SzeXGVPDIXEhE0mXPEhx",
+      "attempts": 1,
+      "elapsed_seconds": 3.75085566699272,
+      "input_tokens": 875,
+      "output_tokens": 220,
+      "total_tokens": 1095,
+      "error": ""
+    },
+    {
+      "requested_model": "gpt-4o",
+      "returned_model": "gpt-4o-2024-08-06",
+      "request_id": "chatcmpl-EVp0FFpwSxdV79jFGxa0QzJyjsA2Y",
+      "attempts": 1,
+      "elapsed_seconds": 1.765582332998747,
+      "input_tokens": 1285,
+      "output_tokens": 216,
+      "total_tokens": 1501,
+      "error": ""
+    },
+    {
+      "requested_model": "gpt-4o",
+      "returned_model": "gpt-4o-2024-08-06",
+      "request_id": "chatcmpl-EVp0GkPcC7tfuscngvQwFSI8UaPsy",
+      "attempts": 1,
+      "elapsed_seconds": 2.1887965829955647,
+      "input_tokens": 746,
+      "output_tokens": 213,
+      "total_tokens": 959,
+      "error": ""
+    },
+    {
+      "requested_model": "gpt-4o",
+      "returned_model": "gpt-4o-2024-08-06",
+      "request_id": "chatcmpl-EVp0Jy3orm6jBOo2o0T9BQYYU21A5",
+      "attempts": 1,
+      "elapsed_seconds": 2.5221535409946227,
+      "input_tokens": 829,
+      "output_tokens": 213,
+      "total_tokens": 1042,
+      "error": ""
+    },
+    {
+      "requested_model": "gpt-4o",
+      "returned_model": "gpt-4o-2024-08-06",
+      "request_id": "chatcmpl-EVp0LMaD016rD6j3Na3ktFTUXj39t",
+      "attempts": 1,
+      "elapsed_seconds": 2.205101208004635,
+      "input_tokens": 741,
+      "output_tokens": 215,
+      "total_tokens": 956,
+      "error": ""
+    },
+    {
+      "requested_model": "gpt-4o",
+      "returned_model": "gpt-4o-2024-08-06",
+      "request_id": "chatcmpl-EVp0Oktcs0LHyMz5WdG4xTPhRPXkZ",
+      "attempts": 1,
+      "elapsed_seconds": 3.0590379160130396,
+      "input_tokens": 1280,
+      "output_tokens": 239,
+      "total_tokens": 1519,
+      "error": ""
+    },
+    {
+      "requested_model": "gpt-4o",
+      "returned_model": "gpt-4o-2024-08-06",
+      "request_id": "chatcmpl-EVp0QCdxpkQ7YtCPWCsSJhI68zDA5",
+      "attempts": 1,
+      "elapsed_seconds": 2.029234625006211,
+      "input_tokens": 1275,
+      "output_tokens": 221,
+      "total_tokens": 1496,
+      "error": ""
+    },
+    {
+      "requested_model": "gpt-4o",
+      "returned_model": "gpt-4o-2024-08-06",
+      "request_id": "chatcmpl-EVp0S9eIEGuR8KitXhcUP8QUZCX12",
+      "attempts": 1,
+      "elapsed_seconds": 1.112492582993582,
+      "input_tokens": 477,
+      "output_tokens": 70,
+      "total_tokens": 547,
+      "error": ""
+    }
+  ]
+}

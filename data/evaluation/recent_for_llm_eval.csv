@@ -1,0 +1,241 @@
+﻿sample_id,evaluation_set,source,thread_title,post_text,telco_relevance_manual,telco_targets_manual,sentiment_manual,issues_manual,confidence_manual,notes_manual
+REC-0001,recent,reddit,[day 2] Starhub cable internet down / very slow. Anyone else encountering this?,"Data something keeps getting cut-off, i have to turn on and off airplane mode to reset the shit.",Yes,Starhub,not_happy,Network Quality,high,
+REC-0002,recent,reddit,StarHub to move all MyRepublic Mobile customers onto its network,"""For a safe and secure society!""",Yes,Starhub,happy,Customer Service,high,
+REC-0003,recent,reddit,"Switching from GOMO as cannot get 5G service, eight/giga ok?",Oh oops I thought Eight was Singtel too,Yes,"Eight,giga,gomo",neutral,"Porting, Network Quality, Mobile Plans",high,title as not happy to giga due to Network Quality. The post is asking different mobile brand and willing to port
+REC-0004,recent,reddit,StarHub says I got to pay for repairs even if the issue is due to them,">So this means that every single time an outage happens that impacts our daily lives we gotta fork out $13.50 just to get someone to come down and say, ""Sorry, it's our fault. We will get it fixed.""
+Generally if there is a service outage, there is usually no need for a technician to visit. Mostly just call them to let them know that there is a problem and they will do something on their backend and then you just need to hard reset modem and router and the problem will be solved.
+If there is a need for their tech to come down, it is usually a hardware issue (either your hardware or the optifiber port) and those don't happen all the time. So it's not like every time there is an issue you need to bear the transport fees. (Although I agree that the fees are a bunch of BS to charge customers.)",Yes,Starhub,neutral,"Network Quality, Customer Service",high,
+REC-0005,recent,reddit,Horrible starhub customer support experience,"Your submission has been automatically removed because your account does not meet the minimum account age or karma requirements.
+*I am a bot, and this action was performed automatically. Please [contact the moderators of this subreddit](/message/compose/?to=/r/askSingapore) if you have any questions or concerns.*",No,Starhub,,,,"Post is relevant to telco but the reply is admin reply, bot reply"
+REC-0006,recent,reddit,"What is EIGHT eSIM process? Port-in to EIGHT eSIM 24h ago. My old SIM stopped working, still did not receive eSIM QR",I can confirm also that the eSIM email is supposed to be sent together with the confirmation email after you port in. It’ll come with a temporary number.,Yes,eight,neutral,"customer service, Porting",high,
+REC-0007,recent,hwz,senior mobile plans - which telco have best package?,"if you want better experience, get singtel and it's mvnos. There are $7 and $6 plans",Yes,singtel,happy,"customer service, Pricing & Promotions",high,
+REC-0008,recent,hwz,Comparison of SIM only plans - Part 2,"It depends on the locations, mobile plans and even mobile phone used.
+I can get mostly 5G SA connections in most locations I frequent, even for those difficult underground EWL MRT stations. But then I do not take MRT during peak hours in general, usually only over the weekend. I see 4G mainly at some lifts and occasionally at some underground MRT stations.
+I can see 5G SA coverage greatly improved for both Singtel 5G network and M1/StarHub 5G network.
+Then many others are complaining about lack of 5G coverage. YMMV.
+Reference for my EWL ride on Friday morning around 7am.
+My earlier experience on Friday 5-June-2026 around 7am -- 5G SA connections across the four difficult EWL underground MRT stations near to the city area. But you can see the speed at Raffles Place is low even with 5G SA connection.
+Last edited:
+Jul 6, 2026",Yes,"singtel, starhub, M1",happy,network quality,high,
+REC-0009,recent,hwz,[MNO] Starhub Mobile Discussion,Can you share how to go back to the SingTel *ahem* plan?,Yes,singtel,neutral,Mobile Plans,medium,not clear on the topic
+REC-0010,recent,hwz,Singtel 5G is here!,Hi! Have the lowest priority? no issues on other ST mvnos,Yes,singtel,happy,Network Quality,medium,not clear on the topic
+REC-0011,recent,hwz,[MNO] Starhub Mobile Discussion,"More StarHub 5G+ FAQs:
+https://www.starhub.com/personal/support/article.html?id=uyu7jnAgiM5NdRhAt0jR79
+2. How is StarHub's 5G+ different from 5G?
+5G+ builds on regular 5G with added network capacity. You get up to 4x faster speeds, stronger connections in places like indoors, underground, and crowded environments, and a smoother, more consistent experience overall.
+9. What are the benefits of 5G+ besides faster speed?
+Beyond speed, 5G+ gives you stronger connections in places that are usually tricky for any network, like indoors, underground, and crowded environments. The result is a smoother, more consistent experience overall, not just a faster one.
+10. Does 5G+ work while roaming overseas?
+Not yet. 5G+ runs on 5G Standalone (SA) technology, and our roaming partners currently only support 5G Non-Standalone (NSA). While roaming, you'll stay connected on 5G NSA or 4G, depending on what's available in that country.
+11. How do I get connected to StarHub 5G+?
+You'll need three things: a 5G mobile plan, a 5G SIM or eSIM, and a supported 5G+ device
+12. How will I know my device is connected to 5G+?
+Your network indicator may vary depending on your device manufacturer and software version. For supported Android models, customers will see “5G+” beside network signal strength. E.g. Samsung Galaxy Fold8/Fold8 Ultra/Flip8 will display 5G+.
+13. What happens if I'm temporarily unable to connect to the StarHub 5G+ network?
+On instances where the 5G+ network is unavailable, you will automatically be switched to our 5G or 4G network to ensure you remain connected online. As soon as 5G+ network becomes accessible, you will automatically be reconnected back.
+14. In what frequency band and spectrum(s) is StarHub running its 5G+ network on?
+StarHub's 5G Standalone Access (SA) is deployed on 3.5GHz, 2.1GHz and 700MHz spectrum that allows us to enhance and expand our 5G coverage.",Yes,Starhub,neutral,Customer Service,high,
+REC-0012,recent,hwz,[MNO] Starhub Mobile Discussion,"Just checked the PAssion card offer page, seems to me the 20% deal is no more liao unless you senior
+If later got time I go down and ask cos I starting to buay tahan SIMBA speeds",Yes,"Starhub, simba",not_happy,Pricing & Promotions,high,"not happy on starhub promotion and happy to simba(lower price, speed)"
+REC-0013,recent,hwz,M1 Mobile discussion thread,Yes... they will also say there some background app data running that's why even with data roaming off also will triggered... what a joke from M1,Yes,M1,not_happy,"Roaming, Pricing & Promotions, Customer Service",high,
+REC-0014,recent,reddit,eSIM Recommendations for Japan Self-Driving Trip?,"Just in case - if you're on Singtel Hi! or any of the SIMBA plans, they already come with APAC data bundled in.",Yes,singtel,happy,roaming,high,
+REC-0015,recent,reddit,which telco do you use for your mobile plans?,StarHub unlimited 5G. Company covers phone bill,Yes,Starhub,happy,Pricing & Promotions,high,
+REC-0016,recent,reddit,Singtel super slow upload speed,"Recently realised how slow my internet is for uploading, for both mobile phone and wifi, when I tried to back up to cloud. Did a speed test. Downloads are fine. 600mbps on fibre wifi, 200mbps on mobile 5G on peak times. I know the limits of Wifi and those download speeds are ok. But uploads are 7mbps or wifi and 12mbps on mobile. Yes, you read that right. What could be the issue? Singtel helped me changed the router, changed ""frequency"", which helped on downloads speeds but no change in uploads. Are these speeds normal?",Yes,singtel,not_happy,"Network Quality, Customer Service",high,
+REC-0017,recent,reddit,[day 2] Starhub cable internet down / very slow. Anyone else encountering this?,Removed your comment because you shouldn't reveal your postal code to the internet.,no,,,,,"Post is relevant to telco but the reply is admin reply, bot reply"
+REC-0018,recent,hwz,Singtel hi! Discussion Thread,No issue with recurring auto payment via credit card. Nothing to worry about data!,Yes,singtel,happy,Billing & Payment,high,
+REC-0019,recent,reddit,"Trying to port-out from M1 and was rejected, CSO told me 'quota reached'",Probably too many people porting out of m1.,Yes,M1,not_happy,porting,high,
+REC-0020,recent,hwz,[Official] SingTel SIM Only Plans,Try the $15.28/mo form,Yes,,neutral,Pricing & Promotions,low,"not sure the telco brand, didn’t mentiono in the reply"
+REC-0021,recent,hwz,⚡️💻 README First! How to Select Low Cost SIM Only Plans in Singapore? ✨,"Starhub CEO's priority to raise the ARPU.
+Mobile service side.
+1) Removal of the eight S$8 and S$10.8 plan for the new users, replaced with S$8.8 plan and S$11.8 plan first and now no more 4G plans to new users.
+2) Removal of the legacy S$10 Starhub Prepaid S 5G plan and replaced it with S$12 4G plan
+3) Increasing the price of the Starhub 5G Lite plan from S$22 to S$25 and now S$28 per month. Moreover this 5G Lite plan can no longer enjoy 20% OFF Passion Card offer.
+Fibre Broadband side
+1) Recent increase of the price of digital voice from S$2.14 to S$5 per month
+2) They have downgraded the free bundled router for Starhub 5Gbps plan from HB710 to HB615.
+3) Moreover, they have raised the Starhub Shop cash and carry price of HB710 from S$192 to S$240.",Yes,Starhub,neutral,Pricing & Promotions,high,
+REC-0022,recent,hwz,RedONE debuts in Singapore,"If competitors view redONE as a big market, they may lure them with special port-in offer. I guess those who are still redONE users are those who don't bother to check good deal or trying out other Telcos network but now they are forced to leave, they may be more aware of what's on offer in the market.",Yes,redone,neutral,Pricing & Promotions,high,
+REC-0023,recent,reddit,Simba Mobile data slow speeds?,How about you post a screenshot of your zero1 reception now?,Yes,zero1,not_happy,Network Quality,high,
+REC-0024,recent,reddit,Porting Numbers Under Family Plan In and Out of Telco,Just take note you cannot have any outstanding bill in M1 or they will reject the letter.,Yes,M1,not_happy,Billing & Payment,high,
+REC-0026,recent,reddit,MyRepublic 10Gbps Renewal – Should I Stay or Switch?,"On SingTel 3gbps, it’s the same situation.
+Video I think it might be throttling somewhere (not sure who isp or site server) cause whenever I swap to mobile data, video load smoothly. Speedtest not much diff from usual.
+Smart devices, I m suspecting it’s tp link, a lot of smart features are not really ideal for smart devices. Some of my esp32 boards have difficulty connecting tp link ax73 but no issue connecting to the lousier WG660242. Tried turning off multiple features on tp link but it’s still bad.",Yes,singtel,not_happy,Network Quality,high,
+REC-0027,recent,reddit,Beware of Singtel's shady practice with their internet plans,i just hacked the onr to become ont.,Yes,singtel,not_happy,Network Quality,high,
+REC-0028,recent,hwz,senior mobile plans - which telco have best package?,"wth, i just check my mum contract agreement for the $6 senior plan, i asked to confirm with that on whatsapp, it's unlimited data and 1000mins outgoing before i sign up, but i saw and it's as below. checking with singtel now. it does have the 50gb msia roaming
+Current Mobile Plan: SIM Only Plus (40GB Local Data, 100 mins of Outgoing Calls,
+Free Incoming Calls, 100 Local SMS).
+the mention of add ons, i dont see in my sales agreement also, but it's okay if dont have cause i dont need those
+Last edited:
+Sep 9, 2026",Yes,,not_happy,"Pricing & Promotions, mobile Plans, customer service",high,not clear on the topic and telco brand
+REC-0029,recent,hwz,Eight Telecom discussion thread,Website already updated to 28GB APAC (20 Countries),Yes,,neutral,roaming,high,not clear on the topic and telco brand
+REC-0030,recent,reddit,Starhub internet down for anyone?,Tried restarting the device ? Full power down and on again.,Yes,Starhub,not_happy,Network Quality,high,
+REC-0031,recent,reddit,Double-charged payments by StarHub,"In the past, when I was double charged by Starhub (because of various issues), my next month's bill will be $0 (or negative if the amount paid exceeds my bill)
+Not sure if they same will be for you",Yes,Starhub,neutral,Billing & Payment,high,
+REC-0032,recent,hwz,Singtel 5G is here!,Phew means I am not the only one experiencing...,Yes,singtel,not_happy,Network Quality,medium,not clear on the topic
+REC-0033,recent,hwz,The Circles Life 1tb for $6 plan...is there some kind of catch?,provide yr area M1 5G is good else it will fall to M1 4G,Yes,M1,happy,Network Quality,high,
+REC-0034,recent,reddit,Simba admits exceeding spectrum limits amid failed M1 deal; full-year profits surge 277%,Bruh Gomo was NOT working for me. 5G is never available and I had to switch to maxx,Yes,"gomo, maxx",not_happy,Network Quality,high,"not happy to gomo network, want to port to Maxx"
+REC-0035,recent,reddit,better to go for SIM-only plans or contract plans if?,$60 is yours even if you use $7? I'll go zero1. Singtel network.,Yes,zero1,not_happy,Pricing & Promotions,high,
+REC-0036,recent,reddit,Problems with OTP on Simba App,Im in Australia rn. facing the same thing haha,Yes,simba,not_happy,roaming,high,
+REC-0037,recent,reddit,Home Broadband Plans Recommendations,">I see tons of recommendations for Starhub and M1 - anyone used both before and which is more stable?
+Unless you have specialized needs (i.e. specific network routing for latency, or some specialized VPN) , all home fiber Broadband are the same. Your losing connection could likely mean hardware issue (router placement, mesh configuration) etc.",Yes,all brands,not_happy,Network Quality,high,not happy to all brands broadband
+REC-0038,recent,hwz,M1 auto-activating $0.99 Daily Passport roaming on disabled primary lines?,"Has anyone else had M1 automatically trigger their Daily Passport roaming?
+My daughter and I traveled with eSIMs as secondary lines and kept our M1 primary lines toggled off. Despite this, M1’s Daily Passport activated randomly, charging us for data we didn't use.
+When I reached out to M1, they claimed we must have tapped roaming accidentally. I requested to turn off auto-activation in the app, but they said it cannot be disabled because it’s an automatic $0.99/day feature on the plan.
+It feels completely unreasonable to force an auto-activation feature with no option to opt out, and then charge customers for background usage.
+Has anyone successfully disputed these charges with M1 or found a way to completely lock roaming on their account?",Yes,M1,not_happy,"customer service, Billing & Payment, App & Account",high,
+REC-0039,recent,reddit,Anyone experienced this while recontracting with Singtel?,"Some companies reimburse you for mobile plans, but not for mobile phone purchases.
+So these $90 plans help in moving most of the up front mobile phone cost to monthly mobile plan costs which can be claimed from company.
+But if your company does not have such benefits, then yeah it is more cost efficient to get a SIM Only plan and purchase the mobile phone separately.",Yes,singtel,neutral,Pricing & Promotions,high,
+REC-0040,recent,reddit,Best no-contract / 12-month broadband plan in Singapore: SIMBA vs WhizComms vs GOMO vs Eight?,"I would go with simba, they are willing to break them law to provide good service to customers",Yes,simba,happy,Customer Service,high,
+REC-0041,recent,hwz,The Circles Life 1tb for $6 plan...is there some kind of catch?,"""Lousy network"" was true for M1's 4G network. It's not true for 5G.
+M1 and StarHub share the sane 5G network hardware because they co-deployed it. So by extension, if M1 5G sucks where you are at, there's a good chance StarHub 5G would be poor in that same spot.
+https://www.antina.com.sg/",Yes,M1,not_happy,Network Quality,high,
+REC-0042,recent,reddit,Double-charged payments by StarHub,"Does your Starhub account recognise both credits?
+Is the amount just paying off a phone (hardware) purchase, or does it include your monthly usage bill too?
+If it includes usage, and you can live without the $100 tvis month, I'd be inclined just to leave it, just means youre going to get smaller or no bills for usage in the following months.
+If its just paying off a phone only, I'd probably say the same thing, but try to get confirmation they will end the installments 1 month early to make up for it.
+If the $100 is really important for you to get back, you cant really do much with GXS, as you willingly made that payment, theres no fraud or error with that payment.
+The problem seems to be the DBS payment, it went through so no error from DVS, the problem seems the starhun app just didn't reflect it. You're probably going to rely on Starhubs goodwill to refund.
+You could try doing a chargeback for the payment ""paid by other means"" which covers non-fraud and where the merchant received payment already via a different method/card for the same goods or service. This would only work for the 2nd payment and only for a main scheme card such as Visa or Mastercard where this is a specific chargeback condition covering this situation built into their rules. But honestly its probably not worth it, just consider it as a extra $100 you paid early, so your final payment will also finish a month early.",Yes,Starhub,neutral,Billing & Payment,high,
+REC-0043,recent,reddit,Singtel/Gomo down this morning?,No issue for me. U tried both turning on and off airplane mode and restarting phone?,Yes,Gomo,neutral,Network Quality,high,
+REC-0045,recent,hwz,[PSA] Read this before porting out of Simba... possibly other telcos? (Hidden fees & wallet traps),"it do helps posting on facebook, or tiktok because audience there do not really know all these common sense that we know. Overhere on hardwarezone, we all are more tech savvy and know all these.
+I notice those TikTok videos, Facebook posts, most people there knows nothing about all these, some even will comment ""pm please"".I don't blame them, they believe what ads is posted, they don't even know what they are entitled.
+So benefit of the doubt for those who really do not know.",no,,,,,
+REC-0046,recent,hwz,Is StarHub $5 5G Data-only SIM worth it,"eight & starhub both using same network. starhub QCI - 170, eight - QCI 140",Yes,"eight, starhub",neutral,Pricing & Promotions,high,
+REC-0047,recent,reddit,zym mobile roaming APAC for China,Did you have any issues where it just doesn’t connect and keeps prompting the error that your sim is not allowed to connect,Yes,zym,not_happy,Network Quality,high,
+REC-0048,recent,reddit,What is the best mobile data carrier for MRT?,"Most of them suck, but I heard best success is Singtel directly, with Samsung Ultra variants. Something about the antenna being one of the better ones.",Yes,singtel,happy,Network Quality,high,
+REC-0049,recent,reddit,Giga 5G plan speed test,"Wait till u start missing calls outside, then u know.",Yes,giga,not_happy,Network Quality,high,
+REC-0050,recent,reddit,StarHub to move all MyRepublic Mobile customers onto its network,I recently switched from MR to eight for the cheaper plan but worried about the network. now both same network. Hurhur,Yes,eight,not_happy,Network Quality,high,
+REC-0051,recent,reddit,Singtel/Gomo 5G service: what’s going on?,"Im on m1 maxx, I also think its good",Yes,maxx,happy,Network Quality,high,
+REC-0052,recent,reddit,which telco do you use for your mobile plans?,"singtel ,. i swapped from singtel to cricle and back to singtel before and now on singtel for 3+yrs. issues when was admitted to SGH and circle go no nework. like zero and ward wifi sk balls. and my wife singtel is normal.
+so i swapped to singtel and good choice for me cos SGH is like 2nd home/holiday retreat for me.",Yes,singtel,happy,Network Quality,high,
+REC-0053,recent,hwz,Is StarHub $5 5G Data-only SIM worth it,"IMHO.
+If Starhub and Eight don't share. Likely
+More people using Eight 5G
+Less people using Eight 4G",Yes,"Starhub, eight",neutral,"Mobile Plans, network quality",high,
+REC-0055,recent,hwz,Eight Telecom discussion thread,Not any particular shop but Shopee itself - see earlier posts which included screenshots.,Yes,eight,not_happy,Pricing & Promotions,high,
+REC-0056,recent,hwz,Mobile Network Experience (Singtel vs StarHub vs M1 vs SIMBA),Boycott singtel nao!!!,Yes,singtel,not_happy,Network Quality,high,
+REC-0057,recent,reddit,Singapore Wi-fi - which plans let you keep the router?,"M1 you can keep i think, previously when I got new plan, they gave a new identical router but I sold that later on brand new..",Yes,M1,happy,"customer service, Devices",high,
+REC-0058,recent,reddit,Is any gomo Singtel users experiencing this?,Because they shut down NSA,Yes,singtel,not_happy,Network Quality,high,
+REC-0059,recent,hwz,I dont understand Singtel's pricing,"Take note Singtel has SIM Only Priority Plans with no contract.
+As mentioned, everyone has different use cases and different preferences in terms of the budget
+The SingTel 5G+ Priority plans have an important advantage for some users as they have the highest priority among SingTel Mobile plans. Nothing wrong if the users are willing to pay.
+Last edited:
+Aug 22, 2026",Yes,singtel,not_happy,"Pricing & Promotions, mobile Plans",high,
+REC-0060,recent,reddit,Global data roaming plans in SG?,Eight and Simba is not fine,Yes,"eight, simba",not_happy,roaming,high,
+REC-0061,recent,hwz,Circles.Life Discussion Thread,"I only use my CL line at home with a 5G router. Signal is the strongest at home compared to Singtel, Starhub and their MVNOs. I think this use case is okay. Never use the line outside before. So crossing my fingers that nothing bad happens to my home CL line after reading this thread.",Yes,circle,happy,Network Quality,high,
+REC-0062,recent,hwz,M1 Mobile discussion thread,https://www.channelnewsasia.com/sin...sale-acquisition-investigation-keppel-6127346,Yes,M1,not_happy,general discussion,medium,
+REC-0063,recent,reddit,Does anyone know if the M1 Fibre Broadband is using CGNAT or Dynamic IP?,"CGNAT, M1 moved to CGNAT quite a while back",Yes,M1,not_happy,Network Quality,high,
+REC-0065,recent,reddit,"StarHub, Keppel confirm talks over potential M1 deal",Competition watchdog: noted with tks,Yes,Starhub,neutral,general discussion,medium,
+REC-0066,recent,reddit,Mobile Data on MRT Getting Worse,"Singtel has arguably the most mobile subs of ~50%. You will be competing with the other users on the train where resource is technically capped.
+Sometimes I felt using StarHub or M1 maybe better in that sense. Sure, singtel is super fast outdoor, but indoor especially mrt when it is crowded, the other two maybe faster.",Yes,"singtel, starhub, M1",neutral,Network Quality,high,not happy fo rsingtel and happy to starhub an dM1
+REC-0067,recent,hwz,Starhub launches new 5G Unlimited+ Plans with unlimited local 5G data and global roaming,"i remember a user shared that they signed up for another broadband contract under the new promo, then terminated the exisiting line after contract ended.
+This is made possible as there is 2 TP ports. By right cannot, we do by left.",Yes,Starhub,happy,"Pricing & Promotions, customer service",high,
+REC-0068,recent,reddit,Need suggestions for SIM card: best speeds,"I don't check the speeds but generally it's been pretty good for me. I tried Simba for one month and immediately stopped, it was bad everywhere. Was on M1 previously and for some reason I would never have signal in Changi airport, no problems now on Zym.",Yes,"M1,Simba, Zym",neutral,Network Quality,high,"nto happy for M1 Simba, happy for Zym"
+REC-0069,recent,hwz,Simba's sms centre number,"Are there any Simba subscribers here? Do you know what's Simba's sms centre number? Cos I've asked Simba this question on its fb page but till now, I've yet to receive an answer. Thank you!",Yes,simba,not_happy,"customer service, Billing & Payment, App & Account",high,
+REC-0070,recent,reddit,Singtel Fibre recontracting: can existing customers get new customer pricing?,I have been using M1 for more than 10 years. It's stable and cheap enough.,Yes,M1,happy,"Pricing & Promotions, network quality",high,
+REC-0071,recent,hwz,senior mobile plans - which telco have best package?,Curious as to how it compares with eight and simba,Yes,"eight, simba",neutral,Mobile Plans,medium,
+REC-0072,recent,reddit,Did anyone change SIM provider from starhub to anything else after they relocated from Singapore? Which one is the cheapest?,"That is perfect then because I am a lifelong postpaid user. Much appreciated, thank you",Yes,Starhub,happy,Mobile Plans,high,
+REC-0073,recent,reddit,Anyone tried the Gigaflex+ AI data plan?,pretty sure you can only use the ai in the giga app which kinda sucks,Yes,giga,not_happy,app & account,high,
+REC-0074,recent,hwz,zym.sg Mobile (Singtel MVNO),"Same ~ but don’t complain cause some ppl got no problem with his connection, can read book and stream music no problem to Jurong. He will say is our problem, not happy can port out lol",Yes,zym,not_happy,Network Quality,high,
+REC-0075,recent,reddit,Switching to a different phone plan without changing your number?,"Wife is using Zym.
+Not perfect but for your use case, it's good",Yes,zym,happy,porting,high,
+REC-0076,recent,reddit,Cheapest local eSIM plan? I don't require anything fancy,"m1 maxx, $7.90, 4G plan",Yes,m1,happy,Pricing & Promotions,high,
+REC-0077,recent,reddit,Anyone received this scam by 'singtel'?,Someone here got scammed recently but it was Simba. Same convo about a purchased iphone too.,Yes,simba,not_happy,Network Quality,high,
+REC-0078,recent,hwz,Circles.Life Discussion Thread,"I took the plunge with this new $6 plan and received my SIM today. I'm currently with CMLink, which isn't in the list of ""telcos to port from"" in the activation page??? What to do ah? Choose Singtel???
+Only the following are listed:
+---------------------------------
+Your current telco?
+Changi Mobile
+Geenet
+Gorilla
+M1
+M1 Maxx
+MyRepublic (4G)
+MyRepublic (5G)
+Singtel
+Sirius
+Starhub
+SIMBA
+ZOH
+Giga
+Eight
+GOMO
+VIVIFI
+VivoBee
+Zero1
+ZeroMobile
+Zym
+--------------------------
+Update: CSO indeed said just choose Singtel.
+Last edited:
+Jun 25, 2026",Yes,"CMLink, singtel",not_happy,"Customer Service, Pricing & Promotions","Customer Service, pring & promotions",
+REC-0079,recent,reddit,Cheapest local eSIM plan? I don't require anything fancy,I think Eight is well balanced between coverage and price for 5G.,Yes,eight,happy,Pricing & Promotions,high,
+REC-0080,recent,hwz,M1 auto-activating $0.99 Daily Passport roaming on disabled primary lines?,You can’t so it’s a risk / troublesome you have to balance,Yes,M1,not_happy,"Roaming, Pricing & Promotions, Customer Service",high,
+REC-0081,recent,hwz,"[Article] Singtel rolls out new bundles, student and senior plans – here’s what’s worth a look","The telco is tweaking its mobile and broadband lineup with more aggressive pricing, bundled savings and a few options aimed at specific users.
+View full story here...",Yes,singtel,neutral,Pricing & Promotions,high,
+REC-0082,recent,reddit,Gomo just increased the price of plan without informing beforehand,"Hey Fam! We're upgrading your plan with an upsized 200GB 4G local data, plus 8GB roaming across 5 destinations in M'sia, Indo, Thailand, Taiwan and Australia.
+Together with your existing 300 mins & SMS, your plan will be updated to $7.99/month, renewable every 30 days.
+No action is needed. We'll automatically apply the updates in your next renewal. T&Cs apply.
+For details, log in with your mobile number and check your GOMO app inbox.
+I'm have already switched to m1 Maxx. $12 600gb local data, free 5g and 20gb apac / 7gb global roaming data.
+I'm willing to pay abit more for 5g, local and roaming data. Gomo 5g plans are not attractive and I been with gomo ever since they launched with only a few months with giga before switching back. There is no loyalty staying with a Telco as Telco always prioritize new or port in sign up.",Yes,Gomo,neutral,Mobile Plans,high,
+REC-0083,recent,reddit,How to get a local phone number through singtell as a new international student for my off-side enrolment process at NUs?,"For new arrivals, best to go with prepaid cards initially. SIMBA offers prepaid plans, but only at one specific outlet.
+Once you've settled in, then you can look at postpaid plans.",Yes,simba,neutral,Mobile Plans,high,
+REC-0084,recent,hwz,Singtel Wifi calling,"just got back from VN. used eight, simba and a CMHK roaming sim.
+eight was inconsistent.
+- no VoWiFi on local wifi service (hotel, restaurants), none on another eight and simba acting as hotspot.
+- VoWiFi turned on when using CMHK acting as hotspot
+- phone used is NP2, which does NOT turn on VoWiFi in SG, regardless of telco (m1, st, sh)
+Simba (also on NP2). Did not turn on VoWiFi whether using local wifi services or other eight in hotspot mode.
+- this line always turns on VoWiFi in sg (regardless of telco)
+CMHK. turned on in VN only, so didnt try it out in SG
+- VoWiFi turned on using local WiFi services.
+whether the inconsistency was due to the phone (not, since it works), or telco support/provisioning, i didn't bother to document and note the pattern (lazy me)",Yes,"eight, simba, CMLink",neutral,roaming,high,"happy on eight, not happy to CMLink, Simba"
+REC-0085,recent,hwz,I dont understand Singtel's pricing,Zym offering for reference.,Yes,zym,happy,Pricing & Promotions,high,
+REC-0086,recent,reddit,Best SIM-only plan for people around Bendemeer?,"Singtel should be the best, buy and try first? Singtel Hi or Gomo or the MVNO, Starhub and M1 use common 5G infra so either one....",Yes,singtel,happy,"Mobile Plans, network quality",high,
+REC-0087,recent,reddit,Huge discrepancy in Fibre Broadband promotional prices,Been there before with m1. Forgot to do renewal then got bill shock. I called cs and they just ask me to sign up new plan at m1 shop and ask for waiver. Then next month all good.,Yes,M1,happy,Billing & Payment,high,
+REC-0088,recent,hwz,SIMBA Telecom discussion thread,"not sure if this has been mentioned here before, but for those who are based overseas on a long-term basis and using your simba line, please note that simba will throttle your roaming data speed once it detects that your line is not connected to sg for more than 30 days.",Yes,simba,not_happy,"roaming, customer service, app & account",high,
+REC-0089,recent,hwz,Is StarHub $5 5G Data-only SIM worth it,"I am using Simba. $5 every month. Comes with 500gb, SMS, talktime and even roaming.
+4G. Volte whatever.
+I am now posting this on Simba. I do online shopping on Shopee, Lazada, TikTok using Simba. I Whatsapp with it and even upload pictures. And I watch YouTube with Simba. Sometimes I watch those cat videos and China movies on Simba.
+So far so good. Why the need for 5G. Even if you give me 100G, the speed of the phone performance is ultimately constrained by the speed of my typing.
+The only thing I don't do with my $195 Vivo Y18 phone is to watch porn with it.",Yes,simba,happy,"Mobile Plans, network quality",high,
+REC-0090,recent,hwz,Singtel Wifi calling,"@BBCWatcher
+You may want to take a look at the above comment from
+@A7997A
+who is probably one of the most knowledgeable about Voice over Wi-Fi and SIM Only plans in Singapore.
+I understand you were hopping VoWiFi may work with eight when roaming. Most likely it does not.
+Of course we may want to get more clear confirmations.
+My wife is actually traveling in China now with eight and SingTel hi! for roaming. Unfortunately she will not entertain any of my requests to carry out any testing...",Yes,singtel,happy,"Network Quality, roaming",high,
+REC-0091,recent,hwz,SIMBA Telecom discussion thread,"Using new app on Android phone, can receive OTP and log in successfully.
+Tried two separate numbers under two different email (Gmail and Hotmail) , both can receive
+Last edited:
+Sep 14, 2026",Yes,simba,happy,"device, network quality",high,
+REC-0092,recent,hwz,Mobile Network Experience (Singtel vs StarHub vs M1 vs SIMBA),"Yes, they are push the price higher and higher",Yes,,not_happy,"Pricing & Promotions, mobile Plans",high,not clear on the telco brand
+REC-0093,recent,hwz,zym.sg Mobile (Singtel MVNO),"Just saw on ZYM website, there's 2 Roam Plus plans now.
+- ROAM PLUS
+5G+
+@
+$11.10/mth
+(All port-in and New number)
+5G+ connectivity forever
+Non Singtel port-in - FREE $10.10 OFF for 3 months
+- ROAM PLUS
+4G+
+@
+$10.10/mth
+(Non Singtel port-in and New number)
+Non Singtel port-in - FREE 3 months subscription and 5G+ forever
+New number - 5G+ for 180 days
+I think the 1st plan probably to cater for ST MNO/MVNO user direct port-in.",Yes,zym,neutral,Mobile Plans,high,
+REC-0094,recent,reddit,Simba/eight as a main data source for living in Thailand?,"Anybody uses this configuration? It seems like a great deal. For example Simba at 12/month gives me internet in Thailand (where I live) and also roaming in so many countries if I travel. It's just a little bit more expensive than a Thai data sim but included roaming makes it totally worth it for me.
+I just wonder if they have some fineprint requiring you to stay in Singapore for x amount of time (like for EU sims).",Yes,simba,happy,roaming,high,
+REC-0095,recent,reddit,Best 10Gbps broadband plan in Singapore? Looking for recommendations,When I went Starhub they had all kind of promotions like NTUCvor whatever. My 3Gbitis 30 SGD. So you are saying now 10G is cheaper?,Yes,Starhub,happy,Pricing & Promotions,high,
+REC-0096,recent,reddit,Starhub prepaid porting to Singtel hi! Plan?,"So I went to a Singtel hi! dealer. Asked them if I can port my Starhub prepaid to Singtel hi! prepaid. They replied yes. So, I started the port-in process. Now I received the sms that the port-in is almost complete, lost signal on Starhub sim card. So thereafter changed to Singtel hi! sim but now it's showing some different number. Did someone else go through this port-in? Is it normal and I have to wait or should I contact the Singtel hi! dealer? How long does port-in takes?",Yes,singtel,not_happy,"Porting, Network Quality, Mobile Plans",high,
+REC-0097,recent,reddit,My singtel sim is damaged. Can I get replacement if I'm overseas?,SIM OTP isn't safe. I thought all bank change to device OTP like OCBC one touch. You should be able to reset it or else check with bank customer service.,Yes,singtel,neutral,Customer Service,high,
+REC-0098,recent,hwz,Starhub launches new 5G Unlimited+ Plans with unlimited local 5G data and global roaming,"Signed up to 5G Unlimited+ Max Core. There was no verification of CIS, just needed to provide the promo code.
+Roaming in Thailand and Australia was pretty good, with 5G available. Eight did not have 5G roaming in these destinations (only 4G). Outgoing calls and SMS while roaming also works as expected, and from Singapore it's nice to be able to call the foreign number directly without having to jump through v019 hoops.
+In Singapore, the plan works as expected with maybe marginally better connectivity compared to eight. IPv6 was available. Overall, the plans are not bad if you are looking for global SMS/calls with some roaming data allowances.",Yes,Starhub,happy,"Network Quality, Customer Service, roaming, mobile plan",high,
+REC-0099,recent,reddit,Simba admits exceeding spectrum limits amid failed M1 deal; full-year profits surge 277%,"If only they didn't ""accidentally"" use unauthorised spectrum usage, we might already start seeing SM1BA (M1+Simba).",Yes,"simba, M1",not_happy,general discussion,high,
+REC-0100,recent,reddit,Singtel seeks clarity on participating in telco consolidation following failed M1-Simba deal,Perhaps they wanna take over simba (or M1?) and want to avoid the same mistakes as the failed M1 simba deal?,Yes,"simba, M1",neutral,general discussion,high,

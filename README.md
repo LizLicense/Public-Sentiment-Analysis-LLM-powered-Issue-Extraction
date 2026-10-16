@@ -50,8 +50,7 @@ WIP/
 │   ├── issue_extraction.py # Keyword taxonomy, then optional/batched GPT-4o on unresolved rows
 │   └── build_clean_corpus.py # Deduplicate, drop off-topic threads, thread-weighted shares
 ├── models/
-│   ├── llm_evaluation.py      # VADER/rules vs GPT-4o-mini / GPT-4o on gold labels
-│   └── sentiment_benchmark.py # Compare VADER vs transformer with manual labels
+│   └── llm_evaluation.py      # VADER/rules vs GPT-4o-mini / GPT-4o on gold labels
 ├── dashboard/
 │   ├── generate_dashboard.py  # Regenerate index.html + Dash_README.md from CSVs
 │   ├── index.html             # Static HTML summary dashboard (Chart.js, capstone report)
@@ -71,7 +70,6 @@ WIP/
 2. **Preprocess** (optional): `processing/preprocess.py` → one cleaned CSV in `data/processed/`.
 3. **Label** raw or cleaned CSV with `processing/telco_labeler.py` → telco + sentiment + summary in `data/processed/`.
 4. **Evaluation**: `processing/create_labeled_sample.py` → template for manual labels; fill and use for model eval.
-5. **Benchmark**: `models/sentiment_benchmark.py` → compare VADER vs transformer (accuracy/F1).
 6. **Issue extraction**: `processing/issue_extraction.py` → keyword rules, then GPT-4o on `general_discussion` rows.
 7. **Clean corpus**: `processing/build_clean_corpus.py` → one row per unique post, off-topic threads dropped, shares per post and per thread.
 8. **Corpus sentiment**: `models/corpus_llm_sentiment.py` → GPT-4o-mini sentiment on the clean corpus, same prompt and settings as the evaluation (~$0.05).
@@ -177,7 +175,7 @@ python processing/create_evaluation_set.py
 # - sampling_metadata.json and ANNOTATION_GUIDE.md
 ```
 
-Annotators must not view VADER, transformer, or LLM outputs. Fill the manual
+Annotators must not view VADER or LLM outputs. Fill the manual
 columns using `data/evaluation/ANNOTATION_GUIDE.md`; keep both annotators'
 original files unchanged and adjudicate disagreements in a separate copy.
 
@@ -185,17 +183,6 @@ original files unchanged and adjudicate disagreements in a separate copy.
 sampling. Its `--prefill-from-model` option is unsafe for formal benchmarking
 because uncorrected prefills create target leakage.
 
-
-### 5. Sentiment benchmark (VADER vs transformer)
-
-After independently labeling the representative evaluation file:
-
-```bash
-python models/sentiment_benchmark.py \
-  --in data/evaluation/representative_annotator_a.csv \
-  --out-json data/evaluation/sentiment_benchmark.json \
-  --out-csv data/evaluation/sentiment_predictions.csv
-```
 
 ### 5b. Baseline vs LLM evaluation
 
@@ -371,7 +358,6 @@ Charts: weekly huddle queue against the n ≥ 20 threshold, sentiment with the h
 | File | Description |
 |------|-------------|
 | **llm_evaluation.py** | Blind comparison of VADER, keyword rules, GPT-4o-mini, and GPT-4o against human labels. Writes metrics, predictions, disagreements, and cost. |
-| **sentiment_benchmark.py** | Benchmarks VADER and a transformer model against `sentiment_label_manual` and reports accuracy/F1/confusion matrix. |
 
 ### Dashboard (`dashboard/`)
 
@@ -390,7 +376,6 @@ LLM issue extraction is **done** (hybrid: keyword rules, then `gpt-4o-2024-08-06
 Still open:
 
 - Adjudicate annotator A vs B (`double_annotation_annotator_b_filled_guide.csv`; κ 0.38 / 0.63) under the new guide rule for first-hand failure reports
-- Twitter-RoBERTa on the same 295 gold labels (`transformers` + `torch`)
 - Fill title-page placeholders and compile `final_report.tex`
 - Optional: `processing/coverage_checker.py --target 1000` per telco
 - Spot-check the 2,606 corpus rows GPT-4o moved out of `general_discussion` before treating huddle spikes as incidents

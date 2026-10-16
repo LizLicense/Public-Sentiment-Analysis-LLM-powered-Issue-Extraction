@@ -13,7 +13,7 @@ Capstone telco forum sentiment pipeline — scrape, label, analyse, and visualis
 | Data collection | **Done** (initial) | ~15.5k cleaned posts; Reddit multi-round + HWZ threads |
 | Telco + sentiment labeling | **Done** | Full labeled CSV + per-telco summary JSON |
 | Manual evaluation sample | **Done** | Annotator A: 300 representative + 100 challenge; 295/100 used in LLM eval |
-| Sentiment benchmark | **Done (LLM)** | GPT-4o-mini vs VADER on independent labels; transformer still not installed |
+| Sentiment benchmark | **Done (LLM)** | GPT-4o-mini vs VADER on independent labels |
 | LLM vs rules issues | **Done** | Representative: hybrid 0.680 > rules 0.639. Challenge: GPT-4o all posts 0.596 best |
 | Clean corpus | **Done** | 1,706 unique posts, 105 telco threads (`build_clean_corpus.py`) |
 | Corpus LLM sentiment | **Done** | GPT-4o-mini on 1,706 posts, $0.047 (`corpus_llm_sentiment.py`) |
@@ -67,11 +67,9 @@ data/
     ├── cleaned_posts.csv                              # 15,504 rows
     ├── posts_labeled_2026-04-09_221819.csv            # 15,504 rows
     ├── issues_posts_labeled_2026-04-09_221819.csv     # 15,504 rows (+ issue_primary)
-    ├── labeled_sample.csv                             # 150 rows; sentiment_label_manual is a copy of VADER, not human labels
-    ├── sentiment_benchmark.json                       # VADER metrics
-    └── sentiment_benchmark_predictions.csv
+    └── labeled_sample.csv                             # 150 rows; sentiment_label_manual is a copy of VADER, not human labels
 
-hwz_telco_posts_labeled.csv   # 100 HWZ posts (project root; Eight/StarHub/M1/Zym threads)
+hwz/hwz_telco_posts_labeled.csv   # 100 HWZ posts (hwz/ folder; Eight/StarHub/M1/Zym threads)
 ```
 
 ---
@@ -92,9 +90,6 @@ hwz_telco_posts_labeled.csv   # 100 HWZ posts (project root; Eight/StarHub/M1/Zy
                     │                     │                     │
                     ▼                     ▼                     ▼
          labeled_sample.csv      issues_posts_labeled_*.csv   index.html + Dash_README.md
-                    │
-                    ▼
-         sentiment_benchmark.py ──► sentiment_benchmark.json
 ```
 
 | Step | Script | Output |
@@ -103,7 +98,6 @@ hwz_telco_posts_labeled.csv   # 100 HWZ posts (project root; Eight/StarHub/M1/Zy
 | 2 Preprocess | `processing/preprocess.py` | `cleaned_posts.csv` |
 | 3 Label | `processing/telco_labeler.py` | `posts_labeled_*.csv`, `summary_*.json` |
 | 4 Eval sample | `processing/create_labeled_sample.py` | `labeled_sample_template.csv` |
-| 5 Benchmark | `models/sentiment_benchmark.py` | `sentiment_benchmark.json` |
 | 6 Issues | `processing/issue_extraction.py` | `issues_posts_labeled_*.csv` |
 | 7 Clean corpus | `processing/build_clean_corpus.py` | `clean_posts_*.csv`, `clean_corpus_summary.json` |
 | 8 Dashboard | `dashboard/generate_dashboard.py` | `index.html`, `Dash_README.md` |
@@ -165,10 +159,9 @@ python scrapers/hwz_forum_scraper.py
 python processing/preprocess.py
 python processing/telco_labeler.py
 
-# 3. Evaluation sample + benchmark
+# 3. Evaluation sample
 python processing/create_labeled_sample.py -n 150
 # fill sentiment_label_manual, save as labeled_sample.csv
-python models/sentiment_benchmark.py --in data/processed/labeled_sample.csv
 
 # 4. Issue extraction
 python processing/issue_extraction.py
@@ -189,7 +182,6 @@ Full CLI options: [`README.md`](README.md).
 
 - [x] **Fill human issue/sentiment labels** on representative and challenge sheets; compare VADER/rules vs GPT-4o-mini and GPT-4o.
 - [~] **Second annotator / kappa** — κ reported per set from the guide-applied B file; guide rule for failure reports added 26 Sep 2026; relabel the overlap under it and confirm challenge-overlap independence.
-- [ ] **Transformer benchmark** — install `transformers` + `torch`; compare against VADER on the representative labels.
 - [x] **LLM issue extraction** — hybrid `processing/issue_extraction.py --use-llm --llm-unresolved-only --llm-model gpt-4o` on 8,786 unresolved rows; dashboard overlay complete. Do not rerun all-row LLM issues.
 - [ ] **Scale coverage** — `processing/coverage_checker.py --target 1000` per telco.
 - [x] **Auto-regenerate dashboard** — `dashboard/generate_dashboard.py` rebuilds `index.html` + `Dash_README.md` from CSVs, overlaying hybrid issue labels.
@@ -212,6 +204,5 @@ Full CLI options: [`README.md`](README.md).
 | `processing/coverage_checker.py` | Auto loop until per-telco target met |
 | `processing/build_clean_corpus.py` | Dedupe, drop off-topic threads, per-thread shares |
 | `models/llm_evaluation.py` | Blind GPT-4o-mini vs VADER/rules evaluation |
-| `models/sentiment_benchmark.py` | VADER vs transformer evaluation |
 | `dashboard/generate_dashboard.py` | Regenerate static HTML dashboard + Dash_README from CSVs |
 | `dashboard/index.html` | Static Chart.js summary dashboard (generated) |

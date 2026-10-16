@@ -1,0 +1,333 @@
+{
+  "design": "Representative (295) + recent (97) relevant gold posts; challenge stays separate. GPT-4o on 388.",
+  "n": {
+    "sentiment": 392,
+    "issues": 388,
+    "sentiment_gpt4o": 388,
+    "issues_gpt4o": 388,
+    "by_set": {
+      "representative": 295,
+      "recent": 97
+    }
+  },
+  "gold_sentiment_shares_pct": {
+    "happy": 21,
+    "not_happy": 47,
+    "neutral": 32
+  },
+  "mini_sentiment_shares_pct": {
+    "happy": 18,
+    "not_happy": 47,
+    "neutral": 34
+  },
+  "sentiment": {
+    "gpt4o_mini": {
+      "macro_f1": 0.641,
+      "accuracy": 0.661,
+      "per_class": {
+        "happy": {
+          "p": 0.653,
+          "r": 0.573,
+          "f1": 0.61,
+          "support": 82
+        },
+        "not_happy": {
+          "p": 0.747,
+          "r": 0.747,
+          "f1": 0.747,
+          "support": 186
+        },
+        "neutral": {
+          "p": 0.545,
+          "r": 0.589,
+          "f1": 0.566,
+          "support": 124
+        }
+      },
+      "n": 392,
+      "confusion_matrix_rows_gold": [
+        [
+          47,
+          16,
+          19
+        ],
+        [
+          5,
+          139,
+          42
+        ],
+        [
+          20,
+          31,
+          73
+        ]
+      ],
+      "labels_order": [
+        "happy",
+        "not_happy",
+        "neutral"
+      ]
+    },
+    "vader": {
+      "macro_f1": 0.38,
+      "accuracy": 0.385,
+      "per_class": {
+        "happy": {
+          "p": 0.288,
+          "r": 0.646,
+          "f1": 0.398,
+          "support": 82
+        },
+        "not_happy": {
+          "p": 0.589,
+          "r": 0.339,
+          "f1": 0.43,
+          "support": 186
+        },
+        "neutral": {
+          "p": 0.347,
+          "r": 0.282,
+          "f1": 0.311,
+          "support": 124
+        }
+      },
+      "n": 392,
+      "confusion_matrix_rows_gold": [
+        [
+          53,
+          12,
+          17
+        ],
+        [
+          74,
+          63,
+          49
+        ],
+        [
+          57,
+          32,
+          35
+        ]
+      ],
+      "labels_order": [
+        "happy",
+        "not_happy",
+        "neutral"
+      ]
+    },
+    "gpt4o": {
+      "macro_f1": 0.611,
+      "accuracy": 0.649,
+      "per_class": {
+        "happy": {
+          "p": 0.775,
+          "r": 0.378,
+          "f1": 0.508,
+          "support": 82
+        },
+        "not_happy": {
+          "p": 0.743,
+          "r": 0.768,
+          "f1": 0.755,
+          "support": 185
+        },
+        "neutral": {
+          "p": 0.503,
+          "r": 0.653,
+          "f1": 0.568,
+          "support": 121
+        }
+      },
+      "n": 388,
+      "confusion_matrix_rows_gold": [
+        [
+          31,
+          13,
+          38
+        ],
+        [
+          3,
+          142,
+          40
+        ],
+        [
+          6,
+          36,
+          79
+        ]
+      ],
+      "labels_order": [
+        "happy",
+        "not_happy",
+        "neutral"
+      ]
+    }
+  },
+  "not_happy_gold": 186,
+  "vader_happy_on_not_happy": 74,
+  "ci_mini_minus_vader": {
+    "diff": 0.261,
+    "ci_low": 0.197,
+    "ci_high": 0.324
+  },
+  "ci_mini_minus_gpt4o": {
+    "diff": 0.029,
+    "ci_low": -0.02,
+    "ci_high": 0.08
+  },
+  "issues": {
+    "rules": {
+      "macro_f1": 0.59,
+      "micro_f1": 0.606,
+      "exact_match": 0.335,
+      "n": 388,
+      "per_class_f1": {
+        "network_quality": 0.689,
+        "pricing_promotions": 0.547,
+        "mobile_plans": 0.678,
+        "roaming": 0.716,
+        "porting": 0.533,
+        "customer_service": 0.424,
+        "billing_payment": 0.676,
+        "app_account": 0.582,
+        "devices": 0.652,
+        "general_discussion": 0.405
+      },
+      "general_discussion_false_positives": 94
+    },
+    "hybrid": {
+      "macro_f1": 0.639,
+      "micro_f1": 0.674,
+      "exact_match": 0.387,
+      "n": 388,
+      "per_class_f1": {
+        "network_quality": 0.766,
+        "pricing_promotions": 0.565,
+        "mobile_plans": 0.728,
+        "roaming": 0.784,
+        "porting": 0.6,
+        "customer_service": 0.471,
+        "billing_payment": 0.716,
+        "app_account": 0.593,
+        "devices": 0.652,
+        "general_discussion": 0.519
+      },
+      "general_discussion_false_positives": 16
+    },
+    "gpt4o_mini_all_posts": {
+      "macro_f1": 0.498,
+      "micro_f1": 0.515,
+      "exact_match": 0.302,
+      "n": 388,
+      "per_class_f1": {
+        "network_quality": 0.647,
+        "pricing_promotions": 0.449,
+        "mobile_plans": 0.486,
+        "roaming": 0.627,
+        "porting": 0.698,
+        "customer_service": 0.525,
+        "billing_payment": 0.613,
+        "app_account": 0.438,
+        "devices": 0.103,
+        "general_discussion": 0.393
+      },
+      "general_discussion_false_positives": 87
+    },
+    "gpt4o_all_posts": {
+      "macro_f1": 0.585,
+      "micro_f1": 0.628,
+      "exact_match": 0.353,
+      "n": 388,
+      "per_class_f1": {
+        "network_quality": 0.791,
+        "pricing_promotions": 0.542,
+        "mobile_plans": 0.589,
+        "roaming": 0.687,
+        "porting": 0.64,
+        "customer_service": 0.478,
+        "billing_payment": 0.746,
+        "app_account": 0.448,
+        "devices": 0.333,
+        "general_discussion": 0.596
+      },
+      "general_discussion_false_positives": 22
+    },
+    "union_rules_gpt4o": {
+      "macro_f1": 0.663,
+      "micro_f1": 0.698,
+      "exact_match": 0.41,
+      "n": 388,
+      "per_class_f1": {
+        "network_quality": 0.81,
+        "pricing_promotions": 0.619,
+        "mobile_plans": 0.719,
+        "roaming": 0.779,
+        "porting": 0.63,
+        "customer_service": 0.537,
+        "billing_payment": 0.747,
+        "app_account": 0.602,
+        "devices": 0.643,
+        "general_discussion": 0.55
+      },
+      "general_discussion_false_positives": 14
+    }
+  },
+  "issue_support": {
+    "network_quality": 192,
+    "pricing_promotions": 75,
+    "mobile_plans": 125,
+    "roaming": 33,
+    "porting": 25,
+    "customer_service": 57,
+    "billing_payment": 37,
+    "app_account": 48,
+    "devices": 54,
+    "general_discussion": 44
+  },
+  "rules_left_general_discussion": 129,
+  "hybrid_reassigned": 92,
+  "devices_recall": {
+    "n": 54,
+    "rules": 0.81,
+    "gpt4o_mini": 0.06,
+    "gpt4o": 0.24
+  },
+  "ci_hybrid_minus_rules": {
+    "diff": 0.049,
+    "ci_low": 0.024,
+    "ci_high": 0.074
+  },
+  "ci_rules_minus_mini_all": {
+    "diff": 0.092,
+    "ci_low": 0.037,
+    "ci_high": 0.146
+  },
+  "ci_gpt4o_all_minus_rules": {
+    "diff": -0.005,
+    "ci_low": -0.053,
+    "ci_high": 0.042
+  },
+  "ci_hybrid_minus_gpt4o_all": {
+    "diff": 0.054,
+    "ci_low": 0.016,
+    "ci_high": 0.092
+  },
+  "agreement_on_overlap": {
+    "representative": {
+      "n": 57,
+      "kappa_a_b": 0.372,
+      "kappa_a_mini": 0.33,
+      "kappa_b_mini": 0.52,
+      "kappa_a_b_not_happy_vs_rest": 0.368,
+      "kappa_a_b_without_a_nothappy_b_neutral": 0.572
+    },
+    "challenge": {
+      "n": 40,
+      "kappa_a_b": 0.592,
+      "kappa_a_mini": 0.661,
+      "kappa_b_mini": 0.544,
+      "kappa_a_b_not_happy_vs_rest": 0.612,
+      "kappa_a_b_without_a_nothappy_b_neutral": 0.857
+    }
+  }
+}

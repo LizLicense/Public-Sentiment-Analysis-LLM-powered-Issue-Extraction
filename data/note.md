@@ -1,5 +1,5 @@
 Done so far
-Scrapers (HWZ, Reddit, Twitter) → data/raw/
+Scrapers (HWZ, Reddit) → data/raw/
 Telco labeler (telco + sentiment + summary) → data/processed/
 Data docs (data/README.md)
 Preprocess script → cleaned CSV
@@ -11,12 +11,6 @@ Manually fill sentiment_label_manual and issue_manual in the template (e.g. in E
 Save as data/processed/labeled_sample.csv.
 This gives you ground truth to evaluate models later.
 
-2. Phase 3: Add a pretrained sentiment model
-Add a transformer-based sentiment model (e.g. Hugging Face: cardiffnlp/twitter-roberta-base-sentiment-latest or similar).
-In a small script or notebook:
-Run VADER and the transformer on the same posts.
-Compare both to your labeled_sample.csv (accuracy / F1).
-Pick one as your “main” sentiment model and note it in the report.
 3. Phase 4: Structured issue extraction
 Use the fixed ten-topic taxonomy: Network Quality, Pricing & Promotions, Mobile Plans, Roaming, Porting, Customer Service, Billing & Payment, App & Account, Devices, and General Discussion.
 Add a step (script or part of the pipeline) that uses the LLM to assign one or more issues per post (reuse your existing LLM setup).
@@ -29,9 +23,8 @@ Shows sentiment distribution and issue breakdown.
 Adds simple temporal and cross-brand views (e.g. trends over time, compare telcos).
 Suggested “do this next”
 Immediate: Generate the template and start labeling (step 1).
-Then: Implement the transformer sentiment comparison and evaluate on labeled_sample.csv (step 2).
 
-If you say which you want to do first (labeling workflow vs. transformer sentiment script), I can outline exact commands and code changes step by step.
+If you say which you want to do first (labeling workflow vs. issue extraction), I can outline exact commands and code changes step by step.
 
 
 Run in order (now)

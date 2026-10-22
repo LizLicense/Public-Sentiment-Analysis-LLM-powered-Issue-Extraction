@@ -31,34 +31,50 @@ End-to-end flow: **collect raw posts → clean → add telco + VADER sentiment �
 - **Step 3 — Label:** Run `telco_labeler.py` on raw or cleaned CSV to add telco, sentiment (VADER/LLM), and per-telco summary.
 - **Step 4 — Evaluation (optional):** Run `create_labeled_sample.py` to get a template; fill manual labels and use for evaluating sentiment/issue models.
 
-All commands are run from the project root (`WIP/`). See `data/README.md` for column definitions and [`Project_Progress.md`](Project_Progress.md) for pipeline status.
+All commands are run from the repo root. See `data/README.md` for column definitions and [`Project_Progress.md`](Project_Progress.md) for pipeline status.
 
 ---
 
 ## Folder structure
 
 ```
-WIP/
+./                         # repo root
 ├── scrapers/              # Fetch posts from each source
-│   ├── hwz_forum_scraper.py      # Single XenForo (e.g. HardwareZone)
+│   ├── hwz_forum_scraper.py      # Single XenForo (e.g. HardwareZone); --latest-pages for recent posts
 │   ├── hwz_multi_forum_scraper.py # Multiple XenForo forums
-│   └── reddit_scraper.py          # Reddit listing or search mode (OAuth app recommended)
+│   ├── reddit_scraper.py          # Reddit listing or search mode (OAuth app needed)
+│   └── reddit_archive_scraper.py  # Reddit via Arctic Shift archive (no Reddit key)
 ├── processing/            # Sentiment + telco labeling + preprocessing
 │   ├── telco_labeler.py   # Telco detection, VADER/LLM sentiment, per-telco summary
 │   ├── preprocess.py      # Raw → cleaned dataset (noise removal, optional English filter)
-│   ├── create_labeled_sample.py  # Sample N rows + template for manual sentiment/issue labels
+│   ├── coverage_checker.py # Loop scrapes until each telco reaches a target count
 │   ├── issue_extraction.py # Keyword taxonomy, then optional/batched GPT-4o on unresolved rows
-│   └── build_clean_corpus.py # Deduplicate, drop off-topic threads, thread-weighted shares
+│   ├── build_clean_corpus.py # Deduplicate, drop off-topic threads, thread-weighted shares
+│   ├── prepare_new_posts.py  # Clean, label and merge posts from 10 Apr 2026 into the full corpus
+│   ├── create_evaluation_set.py  # Blind representative / challenge / overlap annotation sheets
+│   ├── create_recent_gold_set.py # Gold sample from the posts collected after 10 Apr 2026
+│   ├── build_gold_labels.py      # Combine the three gold sheets into data/evaluation/gold_labels.csv
+│   └── create_labeled_sample.py  # Quick exploratory sample (not for formal benchmarking)
 ├── models/
-│   └── llm_evaluation.py      # VADER/rules vs GPT-4o-mini / GPT-4o on gold labels
+│   ├── llm_evaluation.py      # VADER/rules vs GPT-4o-mini / GPT-4o on gold labels
+│   ├── corpus_llm_sentiment.py # GPT-4o-mini sentiment on the full corpus
+│   ├── score_recent_gold.py   # Score production labels on the recent gold set
+│   ├── score_merged_gold.py   # Score on the merged representative + recent set
+│   └── robustness_checks.py   # Bootstrap CIs, kappa, held-out checks (no API calls)
 ├── dashboard/
 │   ├── generate_dashboard.py  # Regenerate index.html + Dash_README.md from CSVs
 │   ├── index.html             # Static HTML summary dashboard (Chart.js, capstone report)
 │   └── Dash_README.md         # Auto-generated; how to view/regenerate dashboard
 ├── data/
 │   ├── raw/               # Scraper outputs (CSV + JSONL)
-│   ├── processed/         # Cleaned CSV, labeled outputs, summary JSON, labeled-sample template
-│   ├── README.md          # Data dictionary and reproducibility
+│   ├── processed/         # Cleaned CSV, labeled outputs, corpus files, summary JSON
+│   ├── evaluation/        # Gold sheets, annotation guide, model comparison outputs
+│   └── README.md          # Data dictionary and reproducibility
+├── report/                # final_report_revised.tex/.pdf, poster, dashboard PDF
+├── presentation/          # Capstone deck (.pptx) and SMU template
+├── diagrams/              # Pipeline diagrams (HTML)
+├── hwz/, reddit/          # Source-specific working folders
+├── CLAUDE.md              # Agent handoff: decisions that must stay consistent
 ├── Project_Progress.md    # Pipeline status, findings, reproduction steps
 ├── requirements_telco_labeler.txt
 └── README.md
@@ -69,17 +85,18 @@ WIP/
 1. **Scrape** from one or more sources → files in `data/raw/`.
 2. **Preprocess** (optional): `processing/preprocess.py` → one cleaned CSV in `data/processed/`.
 3. **Label** raw or cleaned CSV with `processing/telco_labeler.py` → telco + sentiment + summary in `data/processed/`.
-4. **Evaluation**: `processing/create_labeled_sample.py` → template for manual labels; fill and use for model eval.
-6. **Issue extraction**: `processing/issue_extraction.py` → keyword rules, then GPT-4o on `general_discussion` rows.
-7. **Clean corpus**: `processing/build_clean_corpus.py` → one row per unique post, off-topic threads dropped, shares per post and per thread.
-8. **Corpus sentiment**: `models/corpus_llm_sentiment.py` → GPT-4o-mini sentiment on the clean corpus, same prompt and settings as the evaluation (~$0.05).
-9. **Dashboard**: `dashboard/generate_dashboard.py` reads the clean corpus; open `dashboard/index.html` to view.
+4. **Evaluation**: `processing/create_evaluation_set.py` → blind annotation sheets; fill them and score with `models/llm_evaluation.py`.
+5. **Issue extraction**: `processing/issue_extraction.py` → keyword rules, then GPT-4o on `general_discussion` rows.
+6. **Clean corpus**: `processing/build_clean_corpus.py` → one row per unique post, off-topic threads dropped, shares per post and per thread.
+7. **Full corpus**: `processing/prepare_new_posts.py` merges posts from 10 Apr to 26 Sep 2026 → `data/processed/corpus_posts.csv` (9,162 posts).
+8. **Corpus sentiment**: `models/corpus_llm_sentiment.py` → GPT-4o-mini sentiment on the full corpus, same prompt and settings as the evaluation.
+9. **Dashboard**: `dashboard/generate_dashboard.py` reads the full corpus; open `dashboard/index.html` to view.
 
-Run from project root (`WIP/`). See `data/README.md` for column definitions and [`Project_Progress.md`](Project_Progress.md) for current status and findings.
+Run from the repo root. See `data/README.md` for column definitions and [`Project_Progress.md`](Project_Progress.md) for current status and findings.
 
 ### 1. Scrape
 
-Run from project root (`WIP/`). All scrapers write to `data/raw/` by default.
+Run from the repo root. All scrapers write to `data/raw/` by default.
 
 **HWZ (single forum)** — requires forum login (set in script):
 ```bash
@@ -207,16 +224,16 @@ venv/bin/python models/llm_evaluation.py \
 
 Report the challenge sheet separately (`challenge_annotator_a.csv`, `--out-dir data/evaluation/llm_comparison_challenge`). Enter the provider's current USD prices per one million tokens so the saved cost calculation is traceable.
 
-Persisted runs on the 295-row representative set:
+Headline results use the merged representative set (the 300-row representative sheet plus the recent-posts sheet: 392 posts for sentiment, 388 for issues), scored by `models/score_merged_gold.py` → `data/evaluation/merged_gold_scores.json`:
 
-| Model | Sentiment macro F1 | Issue macro F1 | Est. USD |
-|---|---:|---:|---:|
-| VADER / keyword rules | 0.360 | **0.639** | 0 |
-| gpt-4o-mini-2024-07-18 | **0.631** | 0.504 | 0.0087 |
-| gpt-4o-2024-08-06 (all rows) | 0.623 | 0.600 | 0.145 |
-| GPT-4o hybrid (rules, then unresolved only) | — | **0.680** | (reuses the GPT-4o predictions) |
+| Method | Sentiment macro F1 | Issue macro F1 |
+|---|---:|---:|
+| VADER / keyword rules | 0.380 | 0.590 |
+| gpt-4o-mini-2024-07-18 (all rows) | **0.641** | 0.498 |
+| gpt-4o-2024-08-06 (all rows) | 0.611 | 0.585 |
+| GPT-4o hybrid (rules, then unresolved only) | — | **0.639** |
 
-Challenge metrics are in `data/evaluation/llm_comparison_challenge/` and are not pooled with the headline table.
+Per-run token counts and costs are in each run's `metrics.json`. Challenge metrics (`data/evaluation/llm_comparison_challenge/`) are never pooled with the headline table; on those 100 posts the hybrid (0.509) does not significantly beat rules (0.499), so treat the hybrid's lead as optimistic. See `data/evaluation/robustness_summary.json`.
 
 Results include:
 
@@ -286,21 +303,20 @@ Both scrapers add a timestamp to output names and refuse to overwrite. `--latest
 
 ### 8. Corpus sentiment and dashboard
 
-GPT-4o-mini labels sentiment on the clean corpus with the exact prompt, batching and model settings that scored macro F1 0.631 on the gold set. It is resumable: rerun the same command to retry failed batches only.
+GPT-4o-mini labels sentiment on the full corpus with the exact prompt, batching and model settings used in the gold-set evaluation. It is resumable: rerun the same command to retry failed batches only. The full-corpus command is in §7b; the earlier 1,706-post clean corpus was labelled the same way.
 
 ```bash
 export OPENAI_API_KEY="..."
-python models/corpus_llm_sentiment.py --dry-run   # 1,706 posts, 171 batches, ~$0.05
-python models/corpus_llm_sentiment.py
-# → data/processed/clean_posts_2026-08-21_203752_mini_sentiment.csv
-# → data/processed/clean_posts_mini_sentiment_summary.json
+python models/corpus_llm_sentiment.py --in data/processed/corpus_posts.csv --dry-run   # count batches and cost first
+# → data/processed/corpus_posts_mini_sentiment.csv
+# → data/processed/corpus_posts_mini_sentiment_summary.json
 ```
 
 **Regenerate static HTML** (writes `index.html` + `Dash_README.md`):
 
 ```bash
 python dashboard/generate_dashboard.py
-# default: the GPT-4o-mini file above; falls back to VADER on the clean corpus, with a warning on the page
+# default: corpus_posts_mini_sentiment.csv; falls back to VADER with a warning on the page
 ```
 
 **View static summary** (no install; good for capstone report screenshots):
@@ -340,7 +356,8 @@ Charts: weekly huddle queue against the n ≥ 20 threshold, sentiment with the h
 |------|-------------|
 | **hwz_forum_scraper.py** | Scrapes a single XenForo-based forum (e.g. HardwareZone). Logs in, crawls forum listing by keyword, fetches thread pages, and extracts post text and timestamps. Writes CSV + JSONL to `data/raw/hwz_posts.*`. Optional login via `HWZ_USERNAME` / `HWZ_PASSWORD`. |
 | **hwz_multi_forum_scraper.py** | Same as above but for multiple forum URLs in one run. Each row is tagged with `source_forum`. Can also take seed thread URLs. Writes to `data/raw/hwz_multi_posts.*`. |
-| **reddit_scraper.py** | Fetches posts and optionally comments from subreddits via Reddit’s public JSON API (no API key). Filters by keywords, records telco mentions. Writes to `data/raw/reddit_posts_<keywords>_<timestamp>.*`. |
+| **reddit_scraper.py** | Fetches posts and optionally comments from subreddits via Reddit's API. Reddit blocks unauthenticated access, so set `REDDIT_CLIENT_ID` / `REDDIT_CLIENT_SECRET` / `REDDIT_USER_AGENT`. Filters by keywords, records telco mentions. Writes to `data/raw/reddit_posts_<keywords>_<timestamp>.*`. |
+| **reddit_archive_scraper.py** | Pulls subreddit posts and comments from the Arctic Shift archive (no Reddit key) from a `--since` date. Used for Reddit data after 9 Apr 2026. Adds a timestamp to the output name and refuses to overwrite. |
 
 ### Processing (`processing/`)
 
@@ -352,12 +369,20 @@ Charts: weekly huddle queue against the n ≥ 20 threshold, sentiment with the h
 | **create_labeled_sample.py** | Samples N rows from a cleaned or labeled CSV, adds empty columns `sentiment_label_manual`, `issue_manual`, `notes`, and writes a template CSV plus an INSTRUCTIONS file. You fill the manual labels (e.g. in Excel) and save as e.g. `labeled_sample.csv` for evaluating sentiment and issue-extraction models. |
 | **build_clean_corpus.py** | Deduplicates the hybrid issue file to one row per (thread, post text), drops threads where under 20% of posts name a telco unless the title is telco-related, and writes shares per post, per thread (each thread weighted equally) and capped at 5 posts per thread to `clean_corpus_summary.json`. |
 | **issue_extraction.py** | Keyword issue labels using the ten-topic taxonomy, plus a batched GPT-4o pass on unresolved `general_discussion` rows (`--use-llm --llm-unresolved-only`). Completed hybrid output: `data/processed/issues_posts_labeled_2026-08-21_203752_gpt4o_hybrid.csv`. |
+| **prepare_new_posts.py** | Cleans, labels and keyword-tags posts collected from 10 Apr 2026, prints the GPT-4o hybrid command, and with `--merge` builds `data/processed/corpus_posts.csv` (9,162 posts in 349 threads). |
+| **create_evaluation_set.py** | Builds thread-disjoint, model-blind annotation sheets (representative, challenge, double-annotation overlap) plus `ANNOTATION_GUIDE.md` and sampling metadata. |
+| **create_recent_gold_set.py** | Samples the recent-posts gold sheet (10 Apr to 26 Sep 2026) for annotation. |
+| **build_gold_labels.py** | Combines the three gold sheets into `data/evaluation/gold_labels.csv`; score each `evaluation_set` separately. |
 
 ### Models (`models/`)
 
 | File | Description |
 |------|-------------|
 | **llm_evaluation.py** | Blind comparison of VADER, keyword rules, GPT-4o-mini, and GPT-4o against human labels. Writes metrics, predictions, disagreements, and cost. |
+| **corpus_llm_sentiment.py** | Resumable GPT-4o-mini sentiment pass over the corpus; writes the `*_mini_sentiment.csv` the dashboard reads. |
+| **score_recent_gold.py** | Scores the production labels on the recent gold set → `recent_gold_scores.json`. |
+| **score_merged_gold.py** | Scores on the merged representative + recent set → `merged_gold_scores.json` (the headline table). |
+| **robustness_checks.py** | Bootstrap CIs, kappa and held-out checks → `robustness_summary.json`. No API calls. |
 
 ### Dashboard (`dashboard/`)
 
@@ -375,27 +400,14 @@ LLM issue extraction is **done** (hybrid: keyword rules, then `gpt-4o-2024-08-06
 
 Still open:
 
-- Adjudicate annotator A vs B (`double_annotation_annotator_b_filled_guide.csv`; κ 0.38 / 0.63) under the new guide rule for first-hand failure reports
-- Fill title-page placeholders and compile `final_report.tex`
+- Adjudicate annotator A vs B (`double_annotation_annotator_b_filled2.csv`; sentiment κ 0.39 representative / 0.59 challenge) under the guide rule for first-hand failure reports, in a new file. Then recompute kappa.
+- Fill title-page placeholders and compile `report/final_report_revised.tex`
 - Optional: `processing/coverage_checker.py --target 1000` per telco
 - Spot-check the 2,606 corpus rows GPT-4o moved out of `general_discussion` before treating huddle spikes as incidents
 
-# Local token for scrapers
+## Credentials
 
-This file is listed in `.gitignore` so it should not be pushed to GitHub.  
-Still prefer a **password manager** (1Password, Bitwarden, Apple Keychain) over a text file.
-
-Fill in **only on your machine**:
-
-| Item | Value (you type here) |
-|------|------------------------|
-| HWZ / forum username | |
-| HWZ / forum password | |
-| GitHub username | |
-| GitHub token (PAT) | `ghp_...` |
-| OpenAI API key (optional) | |
-
-Environment variables (same info, safer for scripts):
+Never put keys or passwords in this repo. Scrapers and labelers read them from the environment:
 
 ```bash
 export HWZ_USERNAME=""
@@ -405,5 +417,4 @@ export REDDIT_CLIENT_SECRET=""
 export OPENAI_API_KEY=""
 ```
 
-If any token or password was ever in git history or shared, **revoke it** and create a new one.
-
+If any token or password was ever in git history or shared, revoke it and create a new one (see `CLAUDE.md`, "Leaked credentials").

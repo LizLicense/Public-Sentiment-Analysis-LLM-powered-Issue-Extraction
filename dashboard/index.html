@@ -76,7 +76,7 @@
       <p class="meta">
         Reddit + HWZ &middot; 9,162 unique posts in 349 telco threads &middot;
         2019-03-26 to 2026-09-26 &middot; sentiment: GPT-4o-mini &middot;
-        issues: keyword rules + GPT-4o &middot; generated 2026-10-03 05:51 UTC &middot; data/processed/corpus_posts_mini_sentiment.csv
+        issues: keyword rules + GPT-4o &middot; generated 2026-10-22 13:39 UTC &middot; data/processed/corpus_posts_mini_sentiment.csv
       </p>
     </header>
 
@@ -84,7 +84,7 @@
 
     <section class="exec-summary">
       <h2>Executive Summary</h2>
-      <p>An <strong>early-warning screen</strong>, not CSAT or NPS: 9,162 unique posts in 349 telco threads (2019-03-26 to 2026-09-26; 95% from 2026). The three largest threads hold 10% of posts; the biggest is “zym.sg Mobile (Singtel MVNO)”. GPT-4o-mini, the labeller that best matched human labels (macro F1 0.631 vs VADER 0.360), reads <strong>44% of posts as not happy</strong> and 19% as happy; VADER on the same posts says 28% and 46%. <strong>Network Quality leads</strong> (36.9% with every thread weighted equally, 40.7% per post), then Mobile Plans (12.6%). Network Quality carries the most not-happy discussion. Using the same labeller on both sources, Reddit is 48% not happy and HWZ 37% (the platforms also discuss different topics). Among brands with at least 92 posts and 10 threads, Singtel (48% not happy, n=3970) and Giga (46% not happy, n=360) show the highest not-happy share. In the weekly huddle view, 2 week(s) crossed the huddle threshold (n ≥ 115 (twice the median week of 57.5 over the last 26 weeks)), the largest 352 posts in the week of 2026-03-16. Sentiment by GPT-4o-mini; issues by keyword rules plus GPT-4o.</p>
+      <p>An <strong>early-warning screen</strong>, not CSAT or NPS: 9,162 unique posts in 349 telco threads (2019-03-26 to 2026-09-26; 95% from 2026). The three largest threads hold 10% of posts; the biggest is “zym.sg Mobile (Singtel MVNO)”. GPT-4o-mini, the labeller that best matched human labels (macro F1 0.641 vs VADER 0.380), reads <strong>44% of posts as not happy</strong> and 19% as happy; VADER on the same posts says 28% and 46%. <strong>Network Quality leads</strong> (36.9% with every thread weighted equally, 40.7% per post), then Mobile Plans (12.6%). Network Quality carries the most not-happy discussion. Using the same labeller on both sources, Reddit is 48% not happy and HWZ 37% (the platforms also discuss different topics). Among brands with at least 92 posts and 10 threads, Singtel (48% not happy, n=3970) and Giga (46% not happy, n=360) show the highest not-happy share. In the weekly huddle view, 2 week(s) crossed the huddle threshold (n ≥ 115 (twice the median week of 57.5 over the last 26 weeks)), the largest 352 posts in the week of 2026-03-16. Sentiment by GPT-4o-mini; issues by keyword rules plus GPT-4o.</p>
     </section>
 
     <section class="huddle">
@@ -123,14 +123,14 @@
     <div class="charts-grid">
       <div class="chart-card">
         <h3>Forum tone is a screen, not a CSAT score</h3>
-        <p class="subtitle">GPT-4o-mini on all 9,162 posts. VADER on the same posts: 46% happy, 28% not happy. Human gold labels (295 posts): 18% happy, 50% not happy.</p>
+        <p class="subtitle">GPT-4o-mini on all 9,162 posts. VADER on the same posts: 46% happy, 28% not happy. Human gold labels (392 posts): 21% happy, 47% not happy.</p>
         <div class="chart-wrap"><canvas id="sentimentChart"></canvas></div>
       </div>
       <div class="chart-card">
         <h3>Reddit–HWZ gap of 11 points: check topic mix first</h3>
         <p class="subtitle">
           GPT-4o-mini: Reddit 48% not happy (n=5,711) vs HWZ 37% (n=3,451).
-          Human gold labels: Reddit 51% vs HWZ 47%.
+          Human gold labels: Reddit 49% vs HWZ 44%.
           The platforms discuss different topics and periods, so a gap is not a platform effect on its own.
         </p>
         <div class="chart-wrap"><canvas id="sourceChart"></canvas></div>
@@ -235,7 +235,7 @@
         9,162 unique posts from self-selecting Reddit and HWZ users, not Singapore subscribers.
         95% are from 2026 and the largest thread is “zym.sg Mobile (Singtel MVNO)”, so brand and
         network shares describe those events as much as the market. Posts in a thread are not independent; compare
-        per-post and thread-weighted shares. Sentiment is GPT-4o-mini, which scored macro F1 0.631 against human labels (VADER 0.360).
+        per-post and thread-weighted shares. Sentiment is GPT-4o-mini, which scored macro F1 0.641 against human labels (VADER 0.380).
         One sentiment is copied to every brand a post names. Issue tags are keyword rules plus GPT-4o on unresolved
         rows; the corpus reassignments have no human check. This is a triage queue, not NPS, churn or market share.
         1 post(s) had no GPT-4o-mini label and use VADER.

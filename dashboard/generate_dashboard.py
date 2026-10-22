@@ -7,7 +7,7 @@ Default inputs:
       (clean corpus + GPT-4o-mini sentiment; written by models/corpus_llm_sentiment.py)
   - falls back to data/processed/corpus_posts.csv with VADER sentiment,
     and says so on the page, if the GPT-4o-mini file does not exist yet
-  - data/evaluation/representative_annotator_a.csv (human sentiment check)
+  - data/evaluation/gold_labels.csv (human sentiment check, representative + recent)
 
 The clean corpus is one row per unique post in telco threads (processing/build_clean_corpus.py).
 Issue labels are the hybrid (keyword rules, then GPT-4o on unresolved rows).
@@ -181,6 +181,8 @@ def load_gold_pct(path: Path | None) -> dict[str, dict[str, int]]:
     for row in read_csv(path):
         if (row.get("telco_relevance_manual") or "").strip().lower() != "yes":
             continue
+        if "evaluation_set" in row and row["evaluation_set"] not in ("representative", "recent"):
+            continue  # challenge set is deliberately hard, not representative
         label = norm_sentiment(row.get("sentiment_manual") or "")
         if label:
             by_source[(row.get("source") or "").strip().lower()][label] += 1
@@ -384,7 +386,7 @@ def build_executive_summary(stats: dict) -> str:
     ranked = stats["brands_ranked"][:2]
     who = labeller_name(stats)
     tone = (
-        f"GPT-4o-mini, the labeller that best matched human labels (macro F1 0.631 vs VADER 0.360), reads "
+        f"GPT-4o-mini, the labeller that best matched human labels (macro F1 0.641 vs VADER 0.380), reads "
         f"<strong>{s['not_happy']}% of posts as not happy</strong> and {s['happy']}% as happy; VADER on the same posts "
         f"says {v['not_happy']}% and {v['happy']}%. "
         if stats["labeller"] == "gpt-4o-mini"
@@ -759,7 +761,7 @@ def render_html(stats: dict) -> str:
         {stats["n"]:,} unique posts from self-selecting Reddit and HWZ users, not Singapore subscribers.
         {stats["share_2026_pct"]}% are from 2026 and the largest thread is “{html.escape(stats["top_thread"])}”, so brand and
         network shares describe those events as much as the market. Posts in a thread are not independent; compare
-        per-post and thread-weighted shares. Sentiment is {who}{", which scored macro F1 0.631 against human labels (VADER 0.360)" if stats["labeller"] == "gpt-4o-mini" else ", which scored macro F1 0.360 against human labels"}.
+        per-post and thread-weighted shares. Sentiment is {who}{", which scored macro F1 0.641 against human labels (VADER 0.380)" if stats["labeller"] == "gpt-4o-mini" else ", which scored macro F1 0.380 against human labels"}.
         One sentiment is copied to every brand a post names. Issue tags are keyword rules plus GPT-4o on unresolved
         rows; the corpus reassignments have no human check. This is a triage queue, not NPS, churn or market share.
         {f"{stats['llm_missing']} post(s) had no GPT-4o-mini label and use VADER." if stats["llm_missing"] else ""}
@@ -861,7 +863,7 @@ def main() -> None:
     parser.add_argument(
         "--gold",
         type=Path,
-        default=ROOT / "data/evaluation/representative_annotator_a.csv",
+        default=ROOT / "data/evaluation/gold_labels.csv",
         help="Human-labelled gold set shown next to the corpus sentiment.",
     )
     parser.add_argument("--huddle-threshold", default="auto",

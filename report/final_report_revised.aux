@@ -1,0 +1,117 @@
+\relax 
+\providecommand\hyper@newdestlabel[2]{}
+\providecommand\HyField@AuxAddToFields[1]{}
+\providecommand\HyField@AuxAddToCoFields[2]{}
+\citation{pang2008opinion}
+\citation{liu2012sentiment}
+\citation{arcticshift}
+\@writefile{toc}{\contentsline {section}{\numberline {1}Introduction}{4}{section.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.1}Background, objectives and research questions}{4}{subsection.1.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.2}Scope and claimed contribution}{4}{subsection.1.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {2}Data and Pipeline}{4}{section.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}Data sources}{4}{subsection.2.1}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Persisted analytical datasets}}{5}{table.caption.2}\protected@file@percent }
+\providecommand*\caption@xref[2]{\@setref\relax\@undefined{#1}}
+\newlabel{tab:data}{{1}{5}{Persisted analytical datasets}{table.caption.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.2}Preprocessing}{5}{subsection.2.2}\protected@file@percent }
+\citation{hutto2014vader}
+\citation{openai2024gpt4omini}
+\citation{openai2024gpt4o}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.3}End-to-end architecture}{6}{subsection.2.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {3}Analytical Methods}{6}{section.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Telco detection}{6}{subsection.3.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Sentiment baseline: VADER}{6}{subsection.3.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}LLM sentiment}{6}{subsection.3.3}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces End-to-end pipeline. Boxes in the left column are the data steps. The right column is the evaluation branch: dashed arrows mark checks against human gold labels, not data flow. Accent colour marks the hybrid issue labels and the dashboard, the two headline outputs.}}{7}{figure.caption.3}\protected@file@percent }
+\newlabel{fig:pipeline}{{1}{7}{End-to-end pipeline. Boxes in the left column are the data steps. The right column is the evaluation branch: dashed arrows mark checks against human gold labels, not data flow. Accent colour marks the hybrid issue labels and the dashboard, the two headline outputs}{figure.caption.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.4}Issue taxonomy and rationale}{8}{subsection.3.4}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Issue taxonomy and business rationale}}{8}{table.caption.4}\protected@file@percent }
+\newlabel{tab:taxonomy}{{2}{8}{Issue taxonomy and business rationale}{table.caption.4}{}}
+\citation{landis1977kappa}
+\citation{cohen1960kappa}
+\@writefile{toc}{\contentsline {section}{\numberline {4}Evaluation Design and Evidence}{9}{section.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Required metrics}{9}{subsection.4.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Independent annotation}{9}{subsection.4.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Human agreement}{9}{subsection.4.3}\protected@file@percent }
+\newlabel{sec:agreement}{{4.3}{9}{Human agreement}{subsection.4.3}{}}
+\citation{efron1993bootstrap}
+\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces Cohen's $\kappa $ for sentiment on the annotator-B overlap (posts with all three labels)}}{10}{table.caption.5}\protected@file@percent }
+\newlabel{tab:agreement}{{3}{10}{Cohen's $\kappa $ for sentiment on the annotator-B overlap (posts with all three labels)}{table.caption.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}Headline comparison (representative, $n=392$)}{10}{subsection.4.4}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces Representative-set comparison against Annotator~A labels}}{10}{table.caption.6}\protected@file@percent }
+\newlabel{tab:headlinemetrics}{{4}{10}{Representative-set comparison against Annotator~A labels}{table.caption.6}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {5}{\ignorespaces VADER sentiment confusion matrix, representative set (rows = human label)}}{11}{table.caption.7}\protected@file@percent }
+\newlabel{tab:cmvader}{{5}{11}{VADER sentiment confusion matrix, representative set (rows = human label)}{table.caption.7}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {6}{\ignorespaces GPT-4o-mini sentiment confusion matrix, representative set (rows = human label)}}{11}{table.caption.8}\protected@file@percent }
+\newlabel{tab:cmllm}{{6}{11}{GPT-4o-mini sentiment confusion matrix, representative set (rows = human label)}{table.caption.8}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {7}{\ignorespaces Per-class sentiment metrics on the representative set}}{11}{table.caption.9}\protected@file@percent }
+\newlabel{tab:sentclass}{{7}{11}{Per-class sentiment metrics on the representative set}{table.caption.9}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {8}{\ignorespaces Per-class issue F1 on the representative set ($n=388$)}}{12}{table.caption.10}\protected@file@percent }
+\newlabel{tab:issueclass}{{8}{12}{Per-class issue F1 on the representative set ($n=388$)}{table.caption.10}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.5}GPT-4o unresolved hybrid on the corpus}{12}{subsection.4.5}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {9}{\ignorespaces Full-corpus issue counts: keyword rules versus GPT-4o on unresolved rows}}{12}{table.caption.11}\protected@file@percent }
+\newlabel{tab:corpushybrid}{{9}{12}{Full-corpus issue counts: keyword rules versus GPT-4o on unresolved rows}{table.caption.11}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.6}Held-out challenge set ($n=100$)}{13}{subsection.4.6}\protected@file@percent }
+\newlabel{sec:challenge}{{4.6}{13}{Held-out challenge set ($n=100$)}{subsection.4.6}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {10}{\ignorespaces Challenge-set comparison against Annotator~A labels}}{13}{table.caption.12}\protected@file@percent }
+\newlabel{tab:challenge}{{10}{13}{Challenge-set comparison against Annotator~A labels}{table.caption.12}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.7}Qualitative disagreements}{13}{subsection.4.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.8}Runtime and cost}{13}{subsection.4.8}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {11}{\ignorespaces Measured LLM cost and runtime}}{14}{table.caption.13}\protected@file@percent }
+\newlabel{tab:cost}{{11}{14}{Measured LLM cost and runtime}{table.caption.13}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {5}Findings}{14}{section.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Sentiment: most posts are negative or neutral}{14}{subsection.5.1}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {12}{\ignorespaces Sentiment shares by labeller}}{14}{table.caption.14}\protected@file@percent }
+\newlabel{tab:corpussentiment}{{12}{14}{Sentiment shares by labeller}{table.caption.14}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}Issue themes}{15}{subsection.5.2}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {13}{\ignorespaces Primary issue themes}}{15}{table.caption.15}\protected@file@percent }
+\newlabel{tab:overallfindings}{{13}{15}{Primary issue themes}{table.caption.15}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.3}Platform differences}{15}{subsection.5.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.4}Cross-brand observations}{15}{subsection.5.4}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {14}{\ignorespaces Not-happy share for brands with at least 92 posts and 10 threads}}{15}{table.caption.16}\protected@file@percent }
+\newlabel{tab:brands}{{14}{15}{Not-happy share for brands with at least 92 posts and 10 threads}{table.caption.16}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.5}Case study: the March 2026 Singtel outage}{16}{subsection.5.5}\protected@file@percent }
+\newlabel{sec:casestudy}{{5.5}{16}{Case study: the March 2026 Singtel outage}{subsection.5.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.6}Dashboard design}{16}{subsection.5.6}\protected@file@percent }
+\newlabel{sec:dashboard}{{5.6}{16}{Dashboard design}{subsection.5.6}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Dashboard, part 1 of 3: executive summary, weekly huddle playbook with the weekly queue chart and threshold, and headline counts.}}{17}{figure.caption.17}\protected@file@percent }
+\newlabel{fig:dash1}{{2}{17}{Dashboard, part 1 of 3: executive summary, weekly huddle playbook with the weekly queue chart and threshold, and headline counts}{figure.caption.17}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Dashboard, part 2 of 3: overall tone, Reddit against HWZ, issue volume per post and thread-weighted, not-happy count by issue, brand volume and brand not-happy share.}}{18}{figure.caption.18}\protected@file@percent }
+\newlabel{fig:dash2}{{3}{18}{Dashboard, part 2 of 3: overall tone, Reddit against HWZ, issue volume per post and thread-weighted, not-happy count by issue, brand volume and brand not-happy share}{figure.caption.18}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Dashboard, part 3 of 3: per-telco highlights, anonymised example posts for the leading not-happy issues, recommendations in order of not-happy share, and limitations.}}{19}{figure.caption.19}\protected@file@percent }
+\newlabel{fig:dash3}{{4}{19}{Dashboard, part 3 of 3: per-telco highlights, anonymised example posts for the leading not-happy issues, recommendations in order of not-happy share, and limitations}{figure.caption.19}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {6}Business Recommendations}{20}{section.6}\protected@file@percent }
+\newlabel{sec:recs}{{6}{20}{Business Recommendations}{section.6}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.1}Network: communicate during incidents, then prove local fixes}{20}{subsection.6.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.2}Product and commercial: make plan terms comparable}{20}{subsection.6.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.3}Devices and digital: fix equipment and app friction}{20}{subsection.6.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.4}Customer service and billing: plan the incident aftercare}{20}{subsection.6.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.5}Lower-volume themes: roaming and porting}{20}{subsection.6.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.6}Insight huddle: operate the dashboard as an alert-and-review tool}{21}{subsection.6.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {7}Limitations and Ethical Considerations}{21}{section.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.1}Representativeness and platform bias}{21}{subsection.7.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.2}Unequal and dependent observations}{21}{subsection.7.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.3}Label quality and LLM misclassification}{21}{subsection.7.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.4}Privacy and responsible use}{22}{subsection.7.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {8}Future Work}{22}{section.8}\protected@file@percent }
+\newlabel{sec:future}{{8}{22}{Future Work}{section.8}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {9}Conclusion}{22}{section.9}\protected@file@percent }
+\bibcite{arcticshift}{1}
+\bibcite{pang2008opinion}{2}
+\bibcite{liu2012sentiment}{3}
+\bibcite{hutto2014vader}{4}
+\bibcite{openai2024gpt4omini}{5}
+\bibcite{openai2024gpt4o}{6}
+\bibcite{landis1977kappa}{7}
+\bibcite{cohen1960kappa}{8}
+\bibcite{efron1993bootstrap}{9}
+\@writefile{toc}{\contentsline {section}{\numberline {A}Repository-to-Report Traceability}{23}{appendix.A}\protected@file@percent }
+\gdef \LT@i {\LT@entry 
+    {1}{156.23138pt}\LT@entry 
+    {1}{283.69917pt}}
+\@writefile{toc}{\contentsline {section}{\numberline {B}LLM Cost Breakdown}{25}{appendix.B}\protected@file@percent }
+\newlabel{app:cost}{{B}{25}{LLM Cost Breakdown}{appendix.B}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {16}{\ignorespaces LLM cost by job, split into input and output tokens}}{25}{table.caption.21}\protected@file@percent }
+\newlabel{tab:costbreakdown}{{16}{25}{LLM cost by job, split into input and output tokens}{table.caption.21}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {C}Reproducibility}{26}{appendix.C}\protected@file@percent }
+\gdef \@abspage@last{27}
